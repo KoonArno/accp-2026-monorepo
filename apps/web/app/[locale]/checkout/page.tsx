@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/layout/Layout";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
@@ -12,65 +12,15 @@ import PaymentMethodCard from "@/components/checkout/PaymentMethodCard";
 import { useCheckoutWizard } from "@/hooks/checkout/useCheckoutWizard";
 import FormInput from "@/components/common/FormInput";
 import Button from "@/components/common/Button";
+import { formatCurrency } from "@/utils/currency";
 
-interface RegistrationPackage {
-  id: string;
-  priceUSD: number;
-  priceTHB: number;
-  originalPriceUSD?: number;
-  originalPriceTHB?: number;
-  features: string[];
-}
-
-interface AddOn {
-  id: string;
-  priceUSD: number;
-  priceTHB: number;
-}
-
-const registrationPackages: RegistrationPackage[] = [
-  {
-    id: "student",
-    priceUSD: 250,
-    priceTHB: 4900,
-    originalPriceUSD: 270,
-    originalPriceTHB: 4900,
-    features: [
-      "Full conference access",
-      "Conference materials",
-      "Certificate of attendance",
-      "Networking sessions"
-    ]
-  },
-  {
-    id: "professional",
-    priceUSD: 385,
-    priceTHB: 7900,
-    originalPriceUSD: 400,
-    originalPriceTHB: 8900,
-    features: [
-      "Full conference access",
-      "Conference materials",
-      "Certificate of attendance",
-      "Networking sessions",
-      "Workshop access",
-      "Premium seating"
-    ]
-  },
-];
-
-const addOns: AddOn[] = [
-  {
-    id: "workshop",
-    priceUSD: 70,
-    priceTHB: 2100,
-  },
-  {
-    id: "gala",
-    priceUSD: 75,
-    priceTHB: 2200,
-  },
-];
+import {
+  registrationPackages,
+  addOns,
+  workshopOptions,
+  type RegistrationPackage,
+  type AddOn
+} from "@/data/checkout";
 
 export default function Registration() {
   const t = useTranslations("checkout");
@@ -109,7 +59,7 @@ export default function Registration() {
       });
       setIsLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, locale, router, updateCheckoutData]);
 
   const validateStep = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -120,6 +70,11 @@ export default function Registration() {
       if (!checkoutData.email.trim()) newErrors.email = t("validation.emailRequired");
       if (!checkoutData.phone.trim()) newErrors.phone = t("validation.phoneRequired");
       if (!checkoutData.country.trim()) newErrors.country = t("validation.countryRequired");
+
+      // Workshop validation
+      if (checkoutData.selectedAddOns.includes('workshop') && !checkoutData.selectedWorkshopTopic) {
+        newErrors.workshop = t("validation.workshopRequired");
+      }
     }
 
     setErrors(newErrors);
@@ -147,28 +102,47 @@ export default function Registration() {
     router.push(`/${locale}/checkout/payment?amount=${total}&package=${checkoutData.selectedPackage}&method=${checkoutData.paymentMethod}`);
   };
 
+  const currentPackage = registrationPackages.find(p => p.id === checkoutData.selectedPackage);
+
+  const orderSummary = useMemo(() => {
+    return {
+      packageItem: {
+        id: checkoutData.selectedPackage,
+        name: t(`packages.${checkoutData.selectedPackage}`),
+        price: isThai ? currentPackage?.priceTHB || 0 : currentPackage?.priceUSD || 0
+      },
+      addOns: checkoutData.selectedAddOns.map(id => {
+        const addon = addOns.find(a => a.id === id);
+        let details = '';
+
+        if (id === 'workshop' && checkoutData.selectedWorkshopTopic) {
+          const option = workshopOptions.find(o => o.value === checkoutData.selectedWorkshopTopic);
+          if (option) details = option.label;
+        }
+
+        if (id === 'gala' && checkoutData.dietaryRequirement) {
+          if (checkoutData.dietaryRequirement === 'other' && checkoutData.dietaryOtherText) {
+            details = checkoutData.dietaryOtherText;
+          } else {
+            details = t(`dietaryOptions.${checkoutData.dietaryRequirement}`);
+          }
+        }
+
+        return {
+          id,
+          name: t(`addOns.${id}`),
+          price: isThai ? addon?.priceTHB || 0 : addon?.priceUSD || 0,
+          details
+        };
+      })
+    };
+  }, [checkoutData.selectedPackage, checkoutData.selectedAddOns, checkoutData.selectedWorkshopTopic, checkoutData.dietaryRequirement, checkoutData.dietaryOtherText, isThai, currentPackage, t]);
+
   if (!isAuthenticated || isLoading) {
     return null;
   }
 
-  const currentPackage = registrationPackages.find(p => p.id === checkoutData.selectedPackage);
-  const packagePrice = isThai ? currentPackage?.priceUSD || 0 : currentPackage?.priceUSD || 0;
-  
-  const orderSummary = {
-    packageItem: {
-      id: checkoutData.selectedPackage,
-      name: t(`packages.${checkoutData.selectedPackage}`),
-      price: isThai ? currentPackage?.priceTHB || 0 : currentPackage?.priceUSD || 0
-    },
-    addOns: checkoutData.selectedAddOns.map(id => {
-      const addon = addOns.find(a => a.id === id);
-      return {
-        id,
-        name: t(`addOns.${id}`),
-        price: isThai ? addon?.priceTHB || 0 : addon?.priceUSD || 0
-      };
-    })
-  };
+
 
   return (
     <Layout headerStyle={1} footerStyle={1}>
@@ -205,7 +179,7 @@ export default function Registration() {
                   marginBottom: "24px"
                 }}>
 
-                  
+
                   <div className="row">
                     <div className="col-md-6">
                       <FormInput
@@ -301,11 +275,11 @@ export default function Registration() {
                       <div style={{ textAlign: "right" }}>
                         {currentPackage?.originalPriceUSD && (
                           <div style={{ fontSize: "14px", color: "#999", textDecoration: "line-through" }}>
-                            {isThai ? `฿${currentPackage.originalPriceTHB}` : `$${currentPackage.originalPriceUSD}`}
+                            {formatCurrency(isThai ? (currentPackage.originalPriceTHB || 0) : (currentPackage.originalPriceUSD || 0), locale)}
                           </div>
                         )}
                         <div style={{ fontSize: "28px", fontWeight: "700", color: "#00C853" }}>
-                          {isThai ? `฿${currentPackage?.priceTHB}` : `$${currentPackage?.priceUSD}`}
+                          {formatCurrency(isThai ? (currentPackage?.priceTHB || 0) : (currentPackage?.priceUSD || 0), locale)}
                         </div>
                       </div>
                     </div>
@@ -320,7 +294,7 @@ export default function Registration() {
                       key={addon.id}
                       style={{
                         display: "flex",
-                        alignItems: "center",
+                        flexDirection: "column",
                         padding: "12px",
                         marginBottom: "10px",
                         border: checkoutData.selectedAddOns.includes(addon.id) ? "2px solid #00C853" : "2px solid #e0e0e0",
@@ -330,89 +304,219 @@ export default function Registration() {
                         transition: "all 0.3s ease"
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={checkoutData.selectedAddOns.includes(addon.id)}
-                        onChange={(e) => {
-                          const newAddOns = e.target.checked
-                            ? [...checkoutData.selectedAddOns, addon.id]
-                            : checkoutData.selectedAddOns.filter(id => id !== addon.id);
-                          updateCheckoutData({ selectedAddOns: newAddOns });
-                        }}
-                        style={{ marginRight: "12px", width: "18px", height: "18px" }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", fontSize: "15px" }}>{t(`addOns.${addon.id}`)}</div>
+                      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                        <input
+                          type="checkbox"
+                          checked={checkoutData.selectedAddOns.includes(addon.id)}
+                          onChange={(e) => {
+                            const newAddOns = e.target.checked
+                              ? [...checkoutData.selectedAddOns, addon.id]
+                              : checkoutData.selectedAddOns.filter(id => id !== addon.id);
+
+                            // Clear workshop topic if unchecked
+                            const updates: Partial<typeof checkoutData> = { selectedAddOns: newAddOns };
+                            if (addon.id === 'workshop' && !e.target.checked) {
+                              updates.selectedWorkshopTopic = '';
+                            }
+                            if (addon.id === 'gala' && !e.target.checked) {
+                              updates.dietaryRequirement = 'none';
+                            }
+                            updateCheckoutData(updates);
+                          }}
+                          style={{ marginRight: "12px", width: "18px", height: "18px" }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: "600", fontSize: "15px" }}>{t(`addOns.${addon.id}`)}</div>
+                        </div>
+                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#00C853" }}>
+                          {formatCurrency(isThai ? addon.priceTHB : addon.priceUSD, locale)}
+                        </div>
                       </div>
-                      <div style={{ fontSize: "16px", fontWeight: "700", color: "#00C853" }}>
-                        {isThai ? `฿${addon.priceTHB}` : `$${addon.priceUSD}`}
-                      </div>
+
+                      {/* Workshop Sub-options */}
+                      {addon.id === 'workshop' && checkoutData.selectedAddOns.includes('workshop') && (
+                        <div style={{
+                          marginLeft: '30px',
+                          marginTop: '8px',
+                          borderLeft: '2px solid #e0e0e0',
+                          paddingLeft: '16px',
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '10px'
+                        }}>
+                          {workshopOptions.map(option => (
+                            <label key={option.value} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '12px',
+                              cursor: option.isFull ? 'not-allowed' : 'pointer',
+                              backgroundColor: option.isFull ? '#fcfcfc' : (checkoutData.selectedWorkshopTopic === option.value ? '#e8f5e9' : '#fff'),
+                              border: checkoutData.selectedWorkshopTopic === option.value ? '2px solid #00C853' : '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                              opacity: option.isFull ? 0.8 : 1,
+                              width: "100%"
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <input
+                                  type="radio"
+                                  name="workshopTopic"
+                                  value={option.value}
+                                  checked={checkoutData.selectedWorkshopTopic === option.value}
+                                  onChange={(e) => updateCheckoutData({ selectedWorkshopTopic: e.target.value })}
+                                  style={{ display: 'none' }}
+                                  disabled={option.isFull}
+                                />
+                                <div style={{ marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px' }}>
+                                  {checkoutData.selectedWorkshopTopic === option.value ? (
+                                    <i className="fa-solid fa-circle-check" style={{ color: '#00C853', fontSize: '20px' }} />
+                                  ) : (
+                                    <div style={{
+                                      width: '18px',
+                                      height: '18px',
+                                      borderRadius: '50%',
+                                      border: '2px solid #ddd',
+                                      backgroundColor: option.isFull ? '#e0e0e0' : 'transparent'
+                                    }} />
+                                  )}
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                  <span style={{ fontSize: '13px', color: '#333', fontWeight: checkoutData.selectedWorkshopTopic === option.value ? '600' : '500' }}>
+                                    {option.label}
+                                  </span>
+                                  {/* Participant Count */}
+                                  <span style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+                                    <i className="fa-solid fa-user-group" style={{ fontSize: '10px', marginRight: '4px' }} />
+                                    {option.count ? `${option.count}/50` : '0/50'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Full Label (Right Side) */}
+                              {option.isFull && (
+                                <span style={{
+                                  fontSize: '11px',
+                                  color: '#d32f2f',
+                                  fontWeight: '700',
+                                  background: '#ffebee',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  Full / เต็มแล้ว
+                                </span>
+                              )}
+                            </label>
+                          ))}
+                          {errors.workshop && (
+                            <div style={{
+                              color: '#d32f2f',
+                              fontSize: '13px',
+                              marginTop: '8px',
+                              marginLeft: '30px',
+                              fontWeight: '600'
+                            }}>
+                              {errors.workshop}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Gala Dinner Sub-options */}
+                      {addon.id === 'gala' && checkoutData.selectedAddOns.includes('gala') && (
+                        <div style={{
+                          marginLeft: '30px',
+                          marginTop: '8px',
+                          borderLeft: '2px solid #e0e0e0',
+                          paddingLeft: '16px'
+                        }}>
+                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px'}}>
+                            Optional
+                          </div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '10px'
+                          }}>
+                            {[
+                              { value: 'vegetarian', label: t("dietaryOptions.vegetarian") },
+                              { value: 'vegan', label: t("dietaryOptions.vegan") },
+                              { value: 'halal', label: t("dietaryOptions.halal") },
+                              { value: 'other', label: t("dietaryOptions.other") }
+                            ].map(option => (
+                              <label key={option.value} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '12px',
+                                cursor: 'pointer',
+                                backgroundColor: checkoutData.dietaryRequirement === option.value ? '#e8f5e9' : '#fff',
+                                border: checkoutData.dietaryRequirement === option.value ? '2px solid #00C853' : '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                              }}>
+                                <input
+                                  type="radio"
+                                  name="dietaryRequirement"
+                                  value={option.value}
+                                  checked={checkoutData.dietaryRequirement === option.value}
+                                  onChange={(e) => {
+                                    updateCheckoutData({
+                                      dietaryRequirement: e.target.value,
+                                      dietaryOtherText: e.target.value !== 'other' ? '' : checkoutData.dietaryOtherText
+                                    });
+                                  }}
+                                  style={{ display: 'none' }}
+                                />
+                                <div style={{ marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px' }}>
+                                  {checkoutData.dietaryRequirement === option.value ? (
+                                    <i className="fa-solid fa-circle-check" style={{ color: '#00C853', fontSize: '20px' }} />
+                                  ) : (
+                                    <div style={{
+                                      width: '18px',
+                                      height: '18px',
+                                      borderRadius: '50%',
+                                      border: '2px solid #ddd',
+                                      backgroundColor: 'transparent'
+                                    }} />
+                                  )}
+                                </div>
+                                <span style={{ fontSize: '13px', color: '#333', fontWeight: checkoutData.dietaryRequirement === option.value ? '600' : '500' }}>
+                                  {option.label}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+
+                          {/* Other text input */}
+                          {checkoutData.dietaryRequirement === 'other' && (
+                            <div style={{ marginTop: '12px' }}>
+                              <input
+                                type="text"
+                                placeholder="Special requirements"
+                                value={checkoutData.dietaryOtherText}
+                                onChange={(e) => updateCheckoutData({ dietaryOtherText: e.target.value })}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px',
+                                  border: '1px solid #e0e0e0',
+                                  borderRadius: '8px',
+                                  fontSize: '14px',
+                                  boxSizing: 'border-box',
+                                  backgroundColor: '#fff'
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </label>
                   ))}
                 </div>
 
-                {/* Section 3: Special Requirements */}
-                <div style={{
-                  backgroundColor: "#fff",
-                  padding: "30px",
-                  borderRadius: "16px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  marginBottom: "24px"
-                }}>
 
-
-                  <FormInput
-                    label={t("institution")}
-                    type="text"
-                    name="institution"
-                    value={checkoutData.institution}
-                    onChange={(e) => updateCheckoutData({ institution: e.target.value })}
-                    icon="fa-solid fa-building"
-                  />
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", fontSize: "14px" }}>
-                      {t("dietaryRequirement")}
-                    </label>
-                    <select
-                      value={checkoutData.dietaryRequirement}
-                      onChange={(e) => updateCheckoutData({ dietaryRequirement: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "14px 16px",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        fontSize: "15px"
-                      }}
-                    >
-                      <option value="none">{t("dietaryOptions.none")}</option>
-                      <option value="vegetarian">{t("dietaryOptions.vegetarian")}</option>
-                      <option value="vegan">{t("dietaryOptions.vegan")}</option>
-                      <option value="halal">{t("dietaryOptions.halal")}</option>
-                      <option value="other">{t("dietaryOptions.other")}</option>
-                    </select>
-                  </div>
-
-                  <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", fontSize: "14px" }}>
-                      {t("specialNeeds")}
-                    </label>
-                    <textarea
-                      value={checkoutData.specialNeeds}
-                      onChange={(e) => updateCheckoutData({ specialNeeds: e.target.value })}
-                      placeholder={t("specialNeedsPlaceholder")}
-                      style={{
-                        width: "100%",
-                        padding: "14px 16px",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        fontSize: "15px",
-                        minHeight: "80px",
-                        resize: "vertical"
-                      }}
-                    />
-                  </div>
-                </div>
 
               </div>
 

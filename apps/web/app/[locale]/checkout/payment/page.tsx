@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { useCheckoutWizard } from '@/hooks/checkout/useCheckoutWizard'
+import { registrationPackages, addOns } from '@/data/checkout'
 
 export default function Payment() {
 	const t = useTranslations('payment');
@@ -16,14 +18,36 @@ export default function Payment() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
-    // Determine currency based on user type or locale
-    // Logic matches checkout page: text is Thai or user is Thai delegate -> THB
-    const isThai = user?.delegateType?.includes('thai') || locale === 'th';
-    const currencySymbol = isThai ? '฿' : '$';
+	// Use checkout data from hook instead of URL params
+	const { checkoutData } = useCheckoutWizard();
+
+	// Determine currency based on payment country (Thailand = THB, Others = USD)
+	const isThaiPayment = checkoutData.country?.trim().toLowerCase() === 'thailand';
+	const currencySymbol = isThaiPayment ? '฿' : '$';
+
+	// Calculate total amount from checkout data
+	const currentPackage = registrationPackages.find(p => p.id === checkoutData.selectedPackage);
+	const packagePrice = isThaiPayment ? currentPackage?.priceTHB || 0 : currentPackage?.priceUSD || 0;
+	const addOnsPrice = addOns
+		.filter(a => checkoutData.selectedAddOns.includes(a.id))
+		.reduce((sum, a) => (isThaiPayment ? sum + a.priceTHB : sum + a.priceUSD), 0);
+	const totalAmount = packagePrice + addOnsPrice;
+
+	// Use data from hook
+	const amount = totalAmount.toString();
+	const packageType = checkoutData.selectedPackage || 'professional';
+	const orderNumber = `ACCP2026-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
 	// Get payment method from URL, default to 'qr' if not specified
 	const methodParam = searchParams.get('method') as 'qr' | 'card' | null;
-	const [paymentMethod, setPaymentMethod] = useState<'qr' | 'card'>(methodParam || 'qr');
+	const [paymentMethod, setPaymentMethod] = useState<'qr' | 'card'>(methodParam || 'qr'); // Fallback to URL or default
+	// Use checkoutData method if available
+	useEffect(() => {
+		if (checkoutData.paymentMethod) {
+			setPaymentMethod(checkoutData.paymentMethod);
+		}
+	}, [checkoutData.paymentMethod]);
+
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [qrTimer, setQrTimer] = useState(300); // 5 minutes
@@ -36,11 +60,6 @@ export default function Payment() {
 		cvv: ''
 	});
 	const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
-
-	// Get payment data from URL params
-	const amount = searchParams.get('amount') || '0';
-	const packageType = searchParams.get('package') || 'professional';
-	const orderNumber = `ACCP2026-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
 	// QR Timer countdown
 	useEffect(() => {
@@ -116,7 +135,7 @@ export default function Payment() {
 		}
 
 		setIsProcessing(true);
-		
+
 		// Simulate payment processing
 		setTimeout(() => {
 			setIsProcessing(false);
@@ -186,20 +205,21 @@ export default function Payment() {
 									</div>
 
 									<div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-										<Link 
-											href={`/${locale}/my-tickets`}
+										<div
+											onClick={() => router.push(`/${locale}/my-tickets`)}
 											style={{
 												padding: '12px 30px',
 												background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)',
 												color: '#fff',
 												borderRadius: '8px',
-												textDecoration: 'none',
-												fontWeight: '600'
+												cursor: 'pointer',
+												fontWeight: '600',
+												display: 'inline-block'
 											}}
 										>
 											{t('viewTicket')}
-										</Link>
-										<Link 
+										</div>
+										<Link
 											href={`/${locale}`}
 											style={{
 												padding: '12px 30px',
@@ -234,8 +254,8 @@ export default function Payment() {
 								<div className="heading1 text-center">
 									<h1>{t('pageTitle')}</h1>
 									<div className="space20" />
-									<Link href={`/${locale}`}>{tCommon('home')} <i className="fa-solid fa-angle-right" /> 
-										<Link href={`/${locale}/checkout`}>{tCheckout('breadcrumb')}</Link> <i className="fa-solid fa-angle-right" /> 
+									<Link href={`/${locale}`}>{tCommon('home')} <i className="fa-solid fa-angle-right" />
+										<Link href={`/${locale}/checkout`}>{tCheckout('breadcrumb')}</Link> <i className="fa-solid fa-angle-right" />
 										<span>{t('breadcrumb')}</span>
 									</Link>
 								</div>
@@ -303,7 +323,7 @@ export default function Payment() {
 										<h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', textAlign: 'center' }}>
 											{t('qrInstructions')}
 										</h4>
-										
+
 										<div style={{ textAlign: 'center', marginBottom: '20px' }}>
 											{qrTimer > 0 ? (
 												<>
@@ -323,9 +343,9 @@ export default function Payment() {
 													}}>
 														<div style={{ transform: 'rotate(45deg)' }}>◼</div>
 													</div>
-													
-													<p style={{ 
-														fontSize: '14px', 
+
+													<p style={{
+														fontSize: '14px',
 														color: '#666',
 														marginBottom: '15px',
 														padding: '0 20px'
@@ -353,7 +373,7 @@ export default function Payment() {
 													<button
 														onClick={handleGenerateNewQR}
 														style={{
-															padding:  '12px 30px',
+															padding: '12px 30px',
 															backgroundColor: '#00C853',
 															color: '#fff',
 															border: 'none',

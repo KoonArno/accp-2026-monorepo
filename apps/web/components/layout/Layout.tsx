@@ -13,10 +13,11 @@ interface LayoutProps {
 	footerStyle?: Number
 	children?: React.ReactNode
 	breadcrumbTitle?: string
+	headerBgWhite?: boolean
 }
 
 
-export default function Layout({ headerStyle, footerStyle, breadcrumbTitle, children }: LayoutProps) {
+export default function Layout({ headerStyle, footerStyle, breadcrumbTitle, children, headerBgWhite }: LayoutProps) {
 	const [scroll, setScroll] = useState<boolean>(false)
 	// Mobile Menu
 	const [isMobileMenu, setMobileMenu] = useState<boolean>(false)
@@ -45,7 +46,7 @@ export default function Layout({ headerStyle, footerStyle, breadcrumbTitle, chil
 		<>
 			<div id="top" />
 			<AddClassBody />
-			<Header1 scroll={scroll} isMobileMenu={isMobileMenu} handleMobileMenu={handleMobileMenu} isSearch={isSearch} handleSearch={handleSearch} />
+			<Header1 scroll={scroll} isMobileMenu={isMobileMenu} handleMobileMenu={handleMobileMenu} isSearch={isSearch} handleSearch={handleSearch} headerBgWhite={headerBgWhite} />
 			<MobileMenu isMobileMenu={isMobileMenu} handleMobileMenu={handleMobileMenu} />
 
 			{children}

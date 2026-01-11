@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
 
-export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSearch, handleSearch }: any) {
+export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSearch, handleSearch, headerBgWhite }: any) {
     const t = useTranslations('common');
     const locale = useLocale();
     const pathname = usePathname();
@@ -71,7 +71,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                 }
             `}</style>
             <header>
-                <div className={`header-area homepage1 header header-sticky d-none d-lg-block ${scroll ? 'sticky' : ''}`} id="header">
+                <div className={`header-area homepage1 header header-sticky d-none d-lg-block ${scroll ? 'sticky' : ''}`} id="header" style={headerBgWhite ? { background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' } : {}}>
                     <div className="container-fluid">
                         <div className="row">
                             <div className="col-lg-12">
@@ -88,12 +88,12 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
 
                                     <div className="main-menu">
                                         <ul>
-                                            <li><Link href={`/${locale}`} style={{ color: isActive(`/${locale}`) ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}`) ? '600' : 'normal' }}>{t('home')}</Link></li>
+                                            <li><Link href={`/${locale}`} style={{ color: isActive(`/${locale}`) ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}`) ? '600' : 'normal' }}>{t('home')}</Link></li>
                                             <li className={openDropdown === 'about' ? 'dropdown-open' : ''}>
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('about', e)}
-                                                    style={{ color: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) || openDropdown === 'about' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) || openDropdown === 'about' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('about')} <i className={`fa-solid ${openDropdown === 'about' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
@@ -106,7 +106,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('program', e)}
-                                                    style={{ color: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) || openDropdown === 'program' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) || openDropdown === 'program' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('program')} <i className={`fa-solid ${openDropdown === 'program' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
@@ -123,7 +123,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('abstracts', e)}
-                                                    style={{ color: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) || openDropdown === 'abstracts' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) || openDropdown === 'abstracts' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('callForAbstracts')} <i className={`fa-solid ${openDropdown === 'abstracts' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
@@ -136,7 +136,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('registration', e)}
-                                                    style={{ color: isActive(`/${locale}/registration`) || openDropdown === 'registration' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/registration`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/registration`) || openDropdown === 'registration' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/registration`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('registration')} <i className={`fa-solid ${openDropdown === 'registration' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
@@ -149,7 +149,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('travel', e)}
-                                                    style={{ color: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) || openDropdown === 'travel' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) || openDropdown === 'travel' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('travelAccommodation')} <i className={`fa-solid ${openDropdown === 'travel' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
@@ -162,7 +162,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                 <a
                                                     href="#"
                                                     onClick={(e) => toggleDropdown('more', e)}
-                                                    style={{ color: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) || openDropdown === 'more' ? '#FFBA00' : '#fff', fontWeight: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) ? '600' : 'normal', cursor: 'pointer' }}
+                                                    style={{ color: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) || openDropdown === 'more' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) ? '600' : 'normal', cursor: 'pointer' }}
                                                 >
                                                     {t('more')} <i className={`fa-solid ${openDropdown === 'more' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>

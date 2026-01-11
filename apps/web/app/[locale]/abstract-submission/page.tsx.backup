@@ -1,0 +1,666 @@
+'use client'
+import { useState } from 'react'
+import Layout from "@/components/layout/Layout"
+import Link from "next/link"
+
+// Categories for abstract submission
+const categories = [
+    "Clinical Pharmacy",
+    "Social and Administrative Pharmacy",
+    "Pharmacology and Toxicology",
+    "Pharmacoeconomics and Pharmacoepidemiology",
+    "Pharmacy Education",
+    "Pharmaceutics and Pharmaceutical Sciences",
+    "Medicinal Chemistry",
+    "Pharmacognosy and Pharmaceutical Biotechnology"
+]
+
+const presentationTypes = [
+    { value: "oral", label: "Oral Presentation" },
+    { value: "poster", label: "Poster Presentation" },
+    { value: "either", label: "Either (Oral or Poster)" }
+]
+
+export default function AbstractSubmission() {
+    const [formData, setFormData] = useState({
+        // Author Information
+        firstName: '',
+        lastName: '',
+        email: '',
+        affiliation: '',
+        country: '',
+        phone: '',
+
+        // Abstract Details
+        title: '',
+        category: '',
+        presentationType: '',
+        keywords: '',
+
+        // Co-Authors
+        coAuthors: '',
+
+        // Abstract Content
+        background: '',
+        methods: '',
+        results: '',
+        conclusions: '',
+
+        // File Upload
+        abstractFile: null as File | null,
+
+        // Declaration
+        coi: 'no',
+        coiDetails: '',
+        agreeTerms: false,
+        confirmOriginal: false
+    })
+
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+    const [wordCount, setWordCount] = useState(0)
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target
+
+        if (type === 'checkbox') {
+            const checked = (e.target as HTMLInputElement).checked
+            setFormData(prev => ({ ...prev, [name]: checked }))
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }))
+        }
+
+        // Calculate word count for abstract sections
+        if (['background', 'methods', 'results', 'conclusions'].includes(name)) {
+            const totalWords = [
+                formData.background,
+                formData.methods,
+                formData.results,
+                formData.conclusions
+            ].join(' ').split(/\s+/).filter(word => word.length > 0).length
+            setWordCount(totalWords)
+        }
+    }
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null
+        if (file) {
+            const validTypes = ['.doc', '.docx']
+            const fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+            if (!validTypes.includes(fileExtension.toLowerCase())) {
+                alert('Please upload only .doc or .docx files')
+                return
+            }
+            setFormData(prev => ({ ...prev, abstractFile: file }))
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsSubmitting(true)
+
+        // Validate word count
+        if (wordCount < 250 || wordCount > 300) {
+            alert(`Abstract word count must be between 250-300 words. Current: ${wordCount} words`)
+            setIsSubmitting(false)
+            return
+        }
+
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000))
+
+            // Here you would send to your backend API
+            console.log('Form Data:', formData)
+
+            setSubmitStatus('success')
+        } catch (error) {
+            setSubmitStatus('error')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    const inputStyle = {
+        width: '100%',
+        padding: '14px 16px',
+        border: '1px solid #e0e0e0',
+        borderRadius: '8px',
+        fontSize: '15px',
+        transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+        outline: 'none'
+    }
+
+    const labelStyle = {
+        display: 'block',
+        marginBottom: '8px',
+        fontWeight: '600' as const,
+        color: '#1a1a2e',
+        fontSize: '14px'
+    }
+
+    const sectionStyle = {
+        backgroundColor: '#fff',
+        padding: '30px',
+        borderRadius: '16px',
+        marginBottom: '24px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
+    }
+
+    if (submitStatus === 'success') {
+        return (
+            <Layout headerStyle={1} footerStyle={1}>
+                <div>
+                    <div className="inner-page-header" style={{ backgroundImage: 'url(/assets/img/bg/header-bg16.png)' }}>
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-lg-8 m-auto">
+                                    <div className="heading1 text-center">
+                                        <h1>Abstract Submission</h1>
+                                        <div className="space20" />
+                                        <Link href="/">Home <i className="fa-solid fa-angle-right" /> <span>Abstract Submission</span></Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="sp1" style={{ backgroundColor: '#f8f9fa' }}>
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-lg-8 m-auto">
+                                    <div style={{
+                                        backgroundColor: '#fff',
+                                        padding: '60px',
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                                    }}>
+                                        <div style={{
+                                            width: '100px',
+                                            height: '100px',
+                                            backgroundColor: '#e8f5e9',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            margin: '0 auto 24px'
+                                        }}>
+                                            <i className="fa-solid fa-check" style={{ fontSize: '48px', color: '#4caf50' }} />
+                                        </div>
+                                        <h2 style={{ color: '#1a1a2e', marginBottom: '16px' }}>Abstract Submitted Successfully!</h2>
+                                        <p style={{ color: '#666', fontSize: '16px', marginBottom: '24px' }}>
+                                            Thank you for your submission. You will receive a confirmation email with your tracking ID shortly.
+                                        </p>
+                                        <p style={{ color: '#999', fontSize: '14px', marginBottom: '32px' }}>
+                                            Tracking ID: <strong style={{ color: '#FFBA00' }}>ACCP2026-{Date.now().toString().slice(-6)}</strong>
+                                        </p>
+                                        <div className="btn-area1">
+                                            <Link href="/" className="vl-btn1">Return to Home</Link>
+                                            <Link href="/call-for-abstracts" className="vl-btn2" style={{ marginLeft: '16px' }}>View Guidelines</Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        )
+    }
+
+    return (
+        <Layout headerStyle={1} footerStyle={1}>
+            <div>
+                {/* Header */}
+                <div className="inner-page-header" style={{ backgroundImage: 'url(/assets/img/bg/header-bg16.png)' }}>
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-lg-8 m-auto">
+                                <div className="heading1 text-center">
+                                    <h1>Abstract Submission</h1>
+                                    <div className="space20" />
+                                    <Link href="/">Home <i className="fa-solid fa-angle-right" /> <span>Abstract Submission</span></Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Form Section */}
+                <div className="sp1" style={{ backgroundColor: '#f8f9fa' }}>
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-lg-10 m-auto">
+                                {/* Guidelines Link */}
+                                <div style={{
+                                    backgroundColor: '#e3f2fd',
+                                    padding: '20px',
+                                    borderRadius: '12px',
+                                    marginBottom: '30px',
+                                    border: '1px solid #2196F3'
+                                }}>
+                                    <p style={{ margin: 0, color: '#1565c0' }}>
+                                        <i className="fa-solid fa-info-circle" style={{ marginRight: '8px' }} />
+                                        Please read the <Link href="/call-for-abstracts" style={{ color: '#1565c0', fontWeight: '600' }}>Abstract Guidelines</Link> before submitting.
+                                        Each presenter is allowed to submit a maximum of 2 abstracts.
+                                    </p>
+                                </div>
+
+                                <form onSubmit={handleSubmit}>
+                                    {/* Section 1: Author Information */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-user" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Corresponding Author Information
+                                        </h3>
+
+                                        <div className="row">
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>First Name *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="firstName"
+                                                        value={formData.firstName}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                        placeholder="Enter your first name"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Last Name *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="lastName"
+                                                        value={formData.lastName}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                        placeholder="Enter your last name"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Email Address *</label>
+                                                    <input
+                                                        type="email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                        placeholder="your.email@example.com"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Phone Number</label>
+                                                    <input
+                                                        type="tel"
+                                                        name="phone"
+                                                        value={formData.phone}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        placeholder="+66 XX XXX XXXX"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col-md-8">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Affiliation / Institution *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="affiliation"
+                                                        value={formData.affiliation}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                        placeholder="University / Hospital / Organization"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="col-md-4">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Country *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="country"
+                                                        value={formData.country}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                        placeholder="Country"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 2: Co-Authors */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-users" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Co-Authors
+                                        </h3>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Co-Authors (Optional)</label>
+                                            <textarea
+                                                name="coAuthors"
+                                                value={formData.coAuthors}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                placeholder="Enter co-author names and affiliations (one per line)&#10;Example: John Smith¹, Jane Doe²&#10;¹University of Bangkok, Thailand&#10;²Monash University, Australia"
+                                            />
+                                            <p style={{ marginTop: '8px', fontSize: '13px', color: '#666' }}>
+                                                Use superscript numbers for multiple affiliations. Underline the presenting author.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 3: Abstract Details */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-file-alt" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Abstract Details
+                                        </h3>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Abstract Title *</label>
+                                            <input
+                                                type="text"
+                                                name="title"
+                                                value={formData.title}
+                                                onChange={handleInputChange}
+                                                style={inputStyle}
+                                                required
+                                                placeholder="Enter your abstract title (no abbreviations)"
+                                            />
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Category *</label>
+                                                    <select
+                                                        name="category"
+                                                        value={formData.category}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                    >
+                                                        <option value="">Select a category</option>
+                                                        {categories.map((cat, index) => (
+                                                            <option key={index} value={cat}>{cat}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-6">
+                                                <div style={{ marginBottom: '20px' }}>
+                                                    <label style={labelStyle}>Presentation Type *</label>
+                                                    <select
+                                                        name="presentationType"
+                                                        value={formData.presentationType}
+                                                        onChange={handleInputChange}
+                                                        style={inputStyle}
+                                                        required
+                                                    >
+                                                        <option value="">Select presentation type</option>
+                                                        {presentationTypes.map((type, index) => (
+                                                            <option key={index} value={type.value}>{type.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Keywords * (maximum 5, comma separated)</label>
+                                            <input
+                                                type="text"
+                                                name="keywords"
+                                                value={formData.keywords}
+                                                onChange={handleInputChange}
+                                                style={inputStyle}
+                                                required
+                                                placeholder="keyword1, keyword2, keyword3, keyword4, keyword5"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Section 4: Abstract Content */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '12px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-edit" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Abstract Content
+                                        </h3>
+                                        <p style={{ marginBottom: '24px', color: '#666', fontSize: '14px' }}>
+                                            Word count: <strong style={{ color: wordCount >= 250 && wordCount <= 300 ? '#4caf50' : '#f44336' }}>{wordCount}</strong> / 250-300 words
+                                        </p>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Background *</label>
+                                            <textarea
+                                                name="background"
+                                                value={formData.background}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                required
+                                                placeholder="Describe the background and objectives of your study..."
+                                            />
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Methods *</label>
+                                            <textarea
+                                                name="methods"
+                                                value={formData.methods}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                required
+                                                placeholder="Describe the methods used in your study..."
+                                            />
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Results *</label>
+                                            <textarea
+                                                name="results"
+                                                value={formData.results}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                required
+                                                placeholder="Describe the results of your study (must be completed, works in progress are not acceptable)..."
+                                            />
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Conclusions *</label>
+                                            <textarea
+                                                name="conclusions"
+                                                value={formData.conclusions}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+                                                required
+                                                placeholder="State the conclusions of your study..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Section 5: File Upload */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-upload" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Upload Abstract File
+                                        </h3>
+
+                                        <div style={{
+                                            border: '2px dashed #e0e0e0',
+                                            borderRadius: '12px',
+                                            padding: '40px',
+                                            textAlign: 'center',
+                                            backgroundColor: '#fafafa'
+                                        }}>
+                                            <i className="fa-solid fa-cloud-upload-alt" style={{ fontSize: '48px', color: '#FFBA00', marginBottom: '16px' }} />
+                                            <p style={{ marginBottom: '16px', color: '#666' }}>
+                                                Upload your abstract file (.doc or .docx only)
+                                            </p>
+                                            <input
+                                                type="file"
+                                                accept=".doc,.docx"
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                                id="abstractFile"
+                                            />
+                                            <label
+                                                htmlFor="abstractFile"
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    backgroundColor: '#FFBA00',
+                                                    color: '#1a1a2e',
+                                                    padding: '12px 24px',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '600',
+                                                    display: 'inline-block'
+                                                }}
+                                            >
+                                                Choose File
+                                            </label>
+                                            {formData.abstractFile && (
+                                                <p style={{ marginTop: '16px', color: '#4caf50' }}>
+                                                    <i className="fa-solid fa-check-circle" style={{ marginRight: '8px' }} />
+                                                    {formData.abstractFile.name}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Section 6: Declaration */}
+                                    <div style={sectionStyle}>
+                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                            <i className="fa-solid fa-check-double" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                            Declaration
+                                        </h3>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={labelStyle}>Conflict of Interest (COI) *</label>
+                                            <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                    <input
+                                                        type="radio"
+                                                        name="coi"
+                                                        value="no"
+                                                        checked={formData.coi === 'no'}
+                                                        onChange={handleInputChange}
+                                                        style={{ marginRight: '8px' }}
+                                                    />
+                                                    No conflict of interest
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                    <input
+                                                        type="radio"
+                                                        name="coi"
+                                                        value="yes"
+                                                        checked={formData.coi === 'yes'}
+                                                        onChange={handleInputChange}
+                                                        style={{ marginRight: '8px' }}
+                                                    />
+                                                    Yes, I have COI to declare
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {formData.coi === 'yes' && (
+                                            <div style={{ marginBottom: '20px' }}>
+                                                <label style={labelStyle}>Please specify your COI</label>
+                                                <textarea
+                                                    name="coiDetails"
+                                                    value={formData.coiDetails}
+                                                    onChange={handleInputChange}
+                                                    style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+                                                    placeholder="Describe your conflict of interest..."
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="confirmOriginal"
+                                                    checked={formData.confirmOriginal}
+                                                    onChange={handleInputChange}
+                                                    style={{ marginRight: '12px', marginTop: '4px' }}
+                                                    required
+                                                />
+                                                <span style={{ fontSize: '14px', color: '#333' }}>
+                                                    I confirm that this abstract is original work and has not been published previously.
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="agreeTerms"
+                                                    checked={formData.agreeTerms}
+                                                    onChange={handleInputChange}
+                                                    style={{ marginRight: '12px', marginTop: '4px' }}
+                                                    required
+                                                />
+                                                <span style={{ fontSize: '14px', color: '#333' }}>
+                                                    I agree to the <Link href="/abstract-submission-guideline" style={{ color: '#FFBA00' }}>terms and conditions</Link> of abstract submission.
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                                        <button
+                                            type="submit"
+                                            className="vl-btn1"
+                                            disabled={isSubmitting}
+                                            style={{
+                                                padding: '16px 48px',
+                                                fontSize: '16px',
+                                                opacity: isSubmitting ? 0.7 : 1,
+                                                cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                                            }}
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }} />
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <i className="fa-solid fa-paper-plane" style={{ marginRight: '8px' }} />
+                                                    Submit Abstract
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Layout>
+    )
+}

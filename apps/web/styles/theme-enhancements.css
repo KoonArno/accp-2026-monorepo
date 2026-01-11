@@ -1,0 +1,757 @@
+/* 
+ * ACCP 2026 - Premium Theme Enhancements
+ * This file contains advanced styling for premium look and feel
+ */
+
+/* ===== THEME VARIABLES ===== */
+:root {
+  --accp-primary: #1a237e;
+  --accp-primary-light: #3f51b5;
+  --accp-secondary: #ffba00;
+  --accp-secondary-light: #ffd54f;
+  --accp-accent: #7c4dff;
+  --accp-success: #4caf50;
+  --accp-danger: #f44336;
+  --accp-gradient-1: linear-gradient(
+    135deg,
+    #1a237e 0%,
+    #3f51b5 50%,
+    #7c4dff 100%
+  );
+  --accp-gradient-2: linear-gradient(135deg, #ffba00 0%, #ffd54f 100%);
+  --accp-gradient-3: linear-gradient(
+    180deg,
+    rgba(26, 35, 126, 0.9) 0%,
+    rgba(63, 81, 181, 0.8) 100%
+  );
+  --accp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --accp-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --accp-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
+  --accp-shadow-glow: 0 0 30px rgba(255, 186, 0, 0.3);
+  --accp-radius-sm: 8px;
+  --accp-radius-md: 12px;
+  --accp-radius-lg: 20px;
+  --accp-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== GLASSMORPHISM EFFECTS ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--accp-shadow-md);
+}
+
+.glass-dark {
+  background: rgba(26, 35, 126, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== REMOVE CIRCLE DECORATION FROM BUTTONS ===== */
+/* Hide the decorative circle (::after pseudo-element) from all button variants */
+.vl-btn1::after,
+.vl-btn2::after,
+.vl-btn3::after,
+.vl-btn4::after,
+.vl-btn5::after,
+.vl-btn6::after,
+.vl-btn7::after,
+.vl-btn8::after,
+.vl-btn9::after,
+.vl-btn10::after {
+  display: none !important;
+}
+
+/* ===== ENHANCED BUTTONS ===== */
+.vl-btn1 {
+  background: var(--accp-gradient-1) !important;
+  border: none !important;
+  padding: 14px 32px !important;
+  border-radius: var(--accp-radius-md) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: var(--accp-transition) !important;
+  box-shadow: var(--accp-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.vl-btn1::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.vl-btn1:hover::before {
+  left: 100%;
+}
+
+.vl-btn1:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: var(--accp-shadow-lg) !important;
+}
+
+.vl-btn2 {
+  background: transparent !important;
+  border: 2px solid var(--accp-primary) !important;
+  color: var(--accp-primary) !important;
+  padding: 14px 32px !important;
+  /* Match vl-btn1 */
+  border-radius: var(--accp-radius-md) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: var(--accp-transition) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vl-btn2:hover {
+  background: var(--accp-primary) !important;
+  color: #fff !important;
+  transform: translateY(-3px);
+  box-shadow: var(--accp-shadow-md);
+}
+
+/* Ensure both buttons are same height/alignment */
+.btn-area1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.btn-area1 .vl-btn1,
+.btn-area1 .vl-btn2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  min-width: 180px;
+}
+
+/* ===== ENHANCED CARDS ===== */
+.pricing-boxarea {
+  background: #fff;
+  border-radius: var(--accp-radius-lg) !important;
+  padding: 32px !important;
+  transition: var(--accp-transition);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--accp-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-boxarea::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accp-gradient-1);
+  opacity: 0;
+  transition: var(--accp-transition);
+}
+
+.pricing-boxarea:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--accp-shadow-lg);
+}
+
+.pricing-boxarea:hover::before {
+  opacity: 1;
+}
+
+/* ===== ENHANCED HEADINGS ===== */
+.heading2 h2 {
+  position: relative;
+  display: inline-block;
+}
+
+.heading2 h2::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: var(--accp-gradient-2);
+  border-radius: 2px;
+}
+
+.heading2.text-center h2::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ===== INNER PAGE HEADER ENHANCEMENT ===== */
+.inner-page-header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding: 180px 0 80px !important;
+}
+
+.inner-page-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--accp-gradient-3);
+  z-index: 0;
+}
+
+.inner-page-header .container {
+  position: relative;
+  z-index: 1;
+}
+
+.inner-page-header .heading1 h1 {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* ===== ANIMATION KEYFRAMES ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ===== HOVER EFFECTS ===== */
+.hover-lift {
+  transition: var(--accp-transition);
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--accp-shadow-md);
+}
+
+.hover-glow:hover {
+  box-shadow: var(--accp-shadow-glow);
+}
+
+/* ===== TIMELINE CARDS ===== */
+.timeline-card {
+  border-radius: var(--accp-radius-md);
+  padding: 24px;
+  transition: var(--accp-transition);
+  border-left: 5px solid;
+}
+
+.timeline-card:hover {
+  transform: translateX(5px);
+  box-shadow: var(--accp-shadow-md);
+}
+
+/* ===== TOPIC LIST ITEMS ===== */
+.topic-item {
+  transition: var(--accp-transition);
+  cursor: default;
+}
+
+.topic-item:hover {
+  transform: translateX(10px);
+  background-color: rgba(255, 186, 0, 0.1) !important;
+  border-left-color: var(--accp-primary) !important;
+}
+
+/* ===== SECTION BACKGROUNDS ===== */
+.section-pattern {
+  position: relative;
+}
+
+.section-pattern::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(
+      circle at 20% 80%,
+      rgba(255, 186, 0, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(26, 35, 126, 0.1) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+/* ===== ENHANCED FORM INPUTS ===== */
+.input-area input,
+.input-area textarea {
+  border-radius: var(--accp-radius-sm) !important;
+  border: 2px solid #e0e0e0 !important;
+  transition: var(--accp-transition) !important;
+  padding: 14px 18px !important;
+}
+
+.input-area input:focus,
+.input-area textarea:focus {
+  border-color: var(--accp-primary) !important;
+  box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.1) !important;
+}
+
+/* ===== SCROLLBAR STYLING (HIDDEN) ===== */
+/* Hide scrollbar but keep scroll functionality */
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* For IE/Edge Legacy */
+body {
+  -ms-overflow-style: none;
+}
+
+/* ===== LOADING SKELETON ===== */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--accp-radius-sm);
+}
+
+/* ===== RESPONSIVE ENHANCEMENTS ===== */
+@media (max-width: 991px) {
+  .inner-page-header {
+    padding: 140px 0 60px !important;
+  }
+
+  .pricing-boxarea {
+    margin-bottom: 24px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .inner-page-header {
+    padding: 120px 0 50px !important;
+  }
+
+  .inner-page-header .heading1 h1 {
+    font-size: 28px !important;
+    line-height: 36px !important;
+  }
+
+  .pricing-boxarea {
+    padding: 24px !important;
+  }
+
+  .vl-btn1,
+  .vl-btn2 {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .btn-area1 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .heading2 h2::after {
+    width: 40px;
+  }
+}
+
+/* ===== FLOATING ELEMENTS ===== */
+.floating {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ===== GRADIENT TEXT ===== */
+.gradient-text {
+  background: var(--accp-gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== BADGE STYLES ===== */
+.badge-primary {
+  background: var(--accp-gradient-1);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-secondary {
+  background: var(--accp-gradient-2);
+  color: #1a237e;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== DIVIDER ===== */
+.divider {
+  height: 3px;
+  background: var(--accp-gradient-2);
+  border-radius: 2px;
+  margin: 40px auto;
+  max-width: 100px;
+}
+
+/* ===== ENHANCED COUNTDOWN ===== */
+.countdown-area .single-countdown {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--accp-radius-md);
+  padding: 20px;
+  transition: var(--accp-transition);
+}
+
+.countdown-area .single-countdown:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* ===== ACCESSIBILITY FIXES ===== */
+
+/* Fix button text contrast - ensure white text on gradient backgrounds */
+.vl-btn1,
+.vl-btn1:visited,
+.vl-btn1:active {
+  color: #ffffff !important;
+}
+
+/* Fix secondary button on dark backgrounds in hero section */
+.hero1-section-area .vl-btn2,
+.hero1-section-area .hero1-header .btn-area1 .vl-btn2 {
+  background: #ffffff !important;
+  border: 2px solid #ffffff !important;
+  color: #1a237e !important;
+  transition: all 0.3s ease !important;
+}
+
+.hero1-section-area .vl-btn2:hover,
+.hero1-section-area .hero1-header .btn-area1 .vl-btn2:hover {
+  background: linear-gradient(135deg, #ffba00 0%, #ffd54f 100%) !important;
+  border-color: #ffba00 !important;
+  color: #1a237e !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(255, 186, 0, 0.4) !important;
+}
+
+/* Override the ::before and ::after pseudo-elements that cause dark overlay */
+.hero1-section-area .hero1-header .btn-area1 .vl-btn2::before,
+.hero1-section-area .hero1-header .btn-area1 .vl-btn2::after {
+  display: none !important;
+}
+
+/* Fix text readability - ensure dark text on light backgrounds */
+.about-header-area p,
+.about1-section-area p,
+.sp1 p,
+.sp2 p {
+  color: #333333 !important;
+}
+
+/* Fix topic list text color for better readability */
+.about-header-area ul li {
+  color: #222222 !important;
+}
+
+/* Fix timeline card text color for WCAG compliance */
+/* Green timeline cards */
+[style*="background-color: #e8f5e9"] span,
+[style*="backgroundColor: '#e8f5e9'"] span {
+  color: #1b5e20 !important;
+}
+
+/* Red timeline cards */
+[style*="background-color: #ffebee"] span,
+[style*="backgroundColor: '#ffebee'"] span {
+  color: #b71c1c !important;
+}
+
+/* Blue timeline cards */
+[style*="background-color: #e3f2fd"] span,
+[style*="backgroundColor: '#e3f2fd'"] span {
+  color: #0d47a1 !important;
+}
+
+/* Yellow timeline cards */
+[style*="background-color: #fff8e1"] span,
+[style*="backgroundColor: '#fff8e1'"] span {
+  color: #e65100 !important;
+}
+
+/* Fix pricing box buttons */
+.pricing-boxarea .vl-btn1 {
+  color: #ffffff !important;
+  background: var(--accp-gradient-1) !important;
+}
+
+/* Fix header buttons contrast */
+.header-area .vl-btn1 {
+  color: #ffffff !important;
+}
+
+.header-area .btn-area a[style*="transparent"] {
+  border: 2px solid #1a237e !important;
+  color: #1a237e !important;
+  background: #ffffff !important;
+}
+
+/* Improve paragraph readability globally */
+p {
+  color: #333333;
+}
+
+/* Fix light grey text issues */
+.heading2 p {
+  color: #555555 !important;
+}
+
+/* Ensure breadcrumb links are visible */
+.inner-page-header .heading1 a {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.inner-page-header .heading1 a span {
+  color: #ffba00 !important;
+}
+
+/* Fix schedule items text contrast */
+.schedule-content .schedule-title {
+  color: #222222 !important;
+}
+
+.schedule-content .schedule-time {
+  color: #1a237e !important;
+}
+
+/* Improve CTA section text visibility */
+.cta1-section-area p,
+.cta2-section-area p {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Fix focus states for keyboard navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #ffba00 !important;
+  outline-offset: 3px !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .vl-btn1 {
+    background: #1a237e !important;
+    border: 2px solid #ffffff !important;
+  }
+
+  .vl-btn2 {
+    border-width: 3px !important;
+  }
+
+  p,
+  span,
+  li {
+    color: #000000 !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== HERO SECTION STYLING ===== */
+/* Enhance hero image and card styling without changing layout */
+.hero1-section-area .header-images .img1 img {
+  border-radius: 16px;
+  box-shadow: var(--accp-shadow-lg);
+}
+
+.hero1-section-area .header-images .images-content-area {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: var(--accp-shadow-lg);
+}
+
+/* Gala Dinner Fixes */
+p.text-white-important,
+span.text-white-important,
+.text-white-important {
+  color: #ffffff !important;
+}
+
+.text-white-80 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.gala-info-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.gala-info-box:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== CLICK-BASED DROPDOWN MENU ===== */
+/* Disable hover-based dropdown menu - use click only */
+/* Hide dropdown on hover for items without dropdown-open class */
+.homepage1-body .header-area.homepage1 .main-menu ul > li:not(.dropdown-open):hover > ul.dropdown-padding,
+.header-area.homepage1 .main-menu ul > li:not(.dropdown-open):hover > ul.dropdown-padding,
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li:not(.dropdown-open):hover ul.dropdown-padding,
+.header-area.homepage1 .header-elements .main-menu ul li:not(.dropdown-open):hover ul.dropdown-padding {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  display: none !important;
+}
+
+/* CRITICAL: Force show dropdown when has .dropdown-open class - override ALL states */
+.homepage1-body .header-area.homepage1 .main-menu ul > li.dropdown-open ul.dropdown-padding,
+.header-area.homepage1 .main-menu ul > li.dropdown-open ul.dropdown-padding,
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li.dropdown-open ul.dropdown-padding,
+.header-area.homepage1 .header-elements .main-menu ul li.dropdown-open ul.dropdown-padding,
+.main-menu ul li.dropdown-open ul.dropdown-padding,
+li.dropdown-open ul.dropdown-padding,
+.dropdown-open > ul.dropdown-padding {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  position: absolute !important;
+  top: 50px !important;
+  z-index: 9999 !important;
+  background: #fff !important;
+  box-shadow: rgb(0 0 0 / 20%) 0px 20px 30px !important;
+  border-radius: 5px !important;
+  padding: 15px !important;
+  width: 225px !important;
+}
+
+/* Override the original :hover behavior completely */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li:hover ul.dropdown-padding {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* But if it has dropdown-open, always show - even when not hovering */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li.dropdown-open ul.dropdown-padding,
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li.dropdown-open:hover ul.dropdown-padding,
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li.dropdown-open:not(:hover) ul.dropdown-padding {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+/* Style the dropdown parent text when open */
+.homepage1-body .header-area.homepage1 .main-menu ul > li.dropdown-open > a,
+.header-area.homepage1 .main-menu ul > li.dropdown-open > a,
+.main-menu ul > li.dropdown-open > a {
+  color: #FFBA00 !important;
+}
+

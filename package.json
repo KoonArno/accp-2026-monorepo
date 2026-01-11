@@ -1,0 +1,24 @@
+{
+  "name": "accp-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev:web": "turbo run dev --filter=@accp/web",
+    "dev:backoffice": "turbo run dev --filter=@accp/backoffice",
+    "dev:api": "turbo run dev --filter=@accp/api",
+    "db:generate": "turbo run db:generate --filter=@accp/database",
+    "db:push": "turbo run db:push --filter=@accp/database",
+    "db:studio": "turbo run db:studio --filter=@accp/database"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "npm@10.2.0"
+}

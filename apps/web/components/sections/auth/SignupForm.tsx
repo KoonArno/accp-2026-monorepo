@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -34,7 +37,9 @@ export default function SignupForm() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [organization, setOrganization] = useState('');
+    const [phone, setPhone] = useState('');
     const [idCard, setIdCard] = useState('');
+    const [pharmacyLicenseId, setPharmacyLicenseId] = useState('');
     const [passportId, setPassportId] = useState('');
     const [country, setCountry] = useState('');
     const [agreeTerms, setAgreeTerms] = useState(false);
@@ -57,6 +62,11 @@ export default function SignupForm() {
                 alert(locale === 'th' ? 'กรุณากรอกข้อมูลให้ครบถ้วน' : 'Please fill all required fields');
                 setIsLoading(false);
                 return;
+            }
+            if (phone && !isValidPhoneNumber(phone)) {
+                 alert(locale === 'th' ? 'เบอร์โทรศัพท์ไม่ถูกต้อง' : 'Invalid phone number format');
+                 setIsLoading(false);
+                 return;
             }
             if (password !== confirmPassword) {
                 alert(locale === 'th' ? 'รหัสผ่านไม่ตรงกัน' : 'Passwords do not match');
@@ -86,31 +96,65 @@ export default function SignupForm() {
                 return;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // API Call
+            const response = await fetch('http://localhost:3002/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    phone: phone || undefined,
+                    password,
+                    accountType: activeTab,
+                    // Optional based on logic
+                    organization: organization || undefined,
+                    idCard: (activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') ? idCard : undefined,
+                    pharmacyLicenseId: (activeTab === 'thaiProfessional' && pharmacyLicenseId) ? pharmacyLicenseId : undefined,
+                    passportId: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? passportId : undefined,
+                    country: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? country : undefined,
+                    // Pending file upload feature
+                    verificationDocUrl: undefined 
+                }),
+            });
 
-            const userData = {
-                firstName, lastName, email,
-                country: activeTab === 'thaiStudent' || activeTab === 'thaiProfessional' ? 'Thailand' : country,
-                idCard: (activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') ? idCard : undefined,
-                isThai: activeTab === 'thaiStudent' || activeTab === 'thaiProfessional',
-                delegateType: activeTab === 'thaiStudent' ? 'thai_student' as const
-                    : activeTab === 'internationalStudent' ? 'international_student' as const
-                        : activeTab === 'thaiProfessional' ? 'thai_pharmacist' as const
-                            : 'international_pharmacist' as const
-            };
+            const data = await response.json();
 
+            if (!response.ok) {
+                alert(data.error || 'Registration failed');
+                setIsLoading(false);
+                return;
+            }
+
+            // Success handling
             const isStudent = activeTab === 'thaiStudent' || activeTab === 'internationalStudent';
             
             if (isStudent) {
-                // Don't login students yet, they need approval
+                // Show pending modal
                 setIsPending(true);
             } else {
-                login(userData);
+                // Auto login for professionals
+                login({
+                    firstName: data.user.firstName,
+                    lastName: data.user.lastName,
+                    email: data.user.email,
+                    // Map local state to AuthContext type
+                    delegateType: activeTab === 'thaiProfessional' ? 'thai_pharmacist' 
+                        : activeTab === 'internationalProfessional' ? 'international_pharmacist'
+                        : activeTab === 'thaiStudent' ? 'thai_student'
+                        : 'international_student',
+                    isThai: activeTab === 'thaiProfessional' || activeTab === 'thaiStudent',
+                    country: country || 'Thailand',
+                    idCard: idCard,
+                });
                 await new Promise(resolve => setTimeout(resolve, 100));
                 router.push(`/${locale}`);
             }
         } catch (error) {
             console.error('Signup error:', error);
+            alert('Something went wrong. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -134,7 +178,26 @@ export default function SignupForm() {
         outline: 'none'
     };
 
+    const phoneInputStyle = `
+        /* react-international-phone custom styles */
+        .react-international-phone-input-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .react-international-phone-country-selector-dropdown {
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .react-international-phone-input {
+            flex: 1;
+        }
+    `;
+
     return (
+        <>
+        <style dangerouslySetInnerHTML={{ __html: phoneInputStyle }} />
         <div style={{
             background: '#fff',
             borderRadius: '16px',
@@ -277,6 +340,19 @@ export default function SignupForm() {
                     </div>
                 )}
 
+                {/* Thai Professional: Pharmacy License ID (Optional) */}
+                {activeTab === 'thaiProfessional' && (
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                            {locale === 'th' ? 'หมายเลขใบอนุญาตประกอบวิชาชีพเภสัชกรรม (ถ้ามี)' : 'Pharmacy License Number (Optional)'}
+                        </label>
+                        <input type="text" value={pharmacyLicenseId}
+                            onChange={(e) => setPharmacyLicenseId(e.target.value)}
+                            placeholder={locale === 'th' ? 'ระบุเลขที่ใบอนุญาต' : 'Enter license number'}
+                            style={inputStyle} />
+                    </div>
+                )}
+
                 {/* International: Passport ID + Country */}
                 {(activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') && (
                     <>
@@ -318,6 +394,38 @@ export default function SignupForm() {
                     </label>
                     <input type="text" value={organization} onChange={(e) => setOrganization(e.target.value)}
                         placeholder={t('organization')} style={inputStyle} />
+                </div>
+
+                {/* Phone Number */}
+                <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                        {locale === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'}
+                    </label>
+                    <div style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '12px 14px',
+                        background: '#fff'
+                    }}>
+                        <PhoneInput
+                            defaultCountry="th"
+                            value={phone}
+                            onChange={(phone) => setPhone(phone)}
+                            inputStyle={{
+                                width: '100%',
+                                border: 'none',
+                                outline: 'none',
+                                fontSize: '15px',
+                                background: 'transparent'
+                            }}
+                            countrySelectorStyleProps={{
+                                buttonStyle: {
+                                    border: 'none',
+                                    background: 'transparent'
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Password Fields */}
@@ -423,5 +531,6 @@ export default function SignupForm() {
                 </p>
             </div>
         </div>
+        </>
     );
 }

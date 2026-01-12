@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./config/env"; // Must be first!
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 
@@ -6,6 +6,12 @@ const fastify = Fastify({ logger: true });
 
 // Register plugins
 fastify.register(cors, { origin: true });
+
+// Register routes
+import { authRoutes } from "./routes/auth/register.js";
+import loginRoutes from "./routes/auth/login.js";
+fastify.register(authRoutes, { prefix: "/auth" });
+fastify.register(loginRoutes, { prefix: "/auth" });
 
 // Health check
 fastify.get("/health", async () => ({

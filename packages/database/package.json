@@ -2,6 +2,7 @@
   "name": "@accp/database",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -18,6 +19,7 @@
     "postgres": "^3.4.5"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "drizzle-kit": "^0.30.1",
     "typescript": "^5.7.2"
   }

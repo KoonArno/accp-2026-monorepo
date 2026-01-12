@@ -30,29 +30,40 @@ export default function LoginForm() {
                 return;
             }
 
-            // TODO: Replace with actual API call to backend
-            // const response = await fetch('/api/auth/login', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ email, password })
-            // });
-            // const userData = await response.json();
+            // Real API Call
+            const response = await fetch('http://localhost:3002/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-            // Simulate API call (remove when backend is ready)
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const data = await response.json();
 
-            // Mock user data (replace with actual API response)
-            const mockUserData = {
-                firstName: 'User',
-                lastName: 'Name',
-                email: email,
-                country: 'Thailand',
-                isThai: true,
-                delegateType: 'thai_student' as const // Placeholder - Backend will return actual type
-            };
-
-            login(mockUserData);
-            await new Promise(resolve => setTimeout(resolve, 100));
+            if (!response.ok) {
+                // Handle specific errors
+                if (response.status === 401) {
+                    setError(locale === 'th' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : 'Invalid email or password');
+                } else if (response.status === 403) {
+                     setError(locale === 'th' ? 'บัญชีของคุณถูกระงับ กรุณาติดต่อเจ้าหน้าที่' : 'Account suspended. Please contact support.');
+                } else {
+                    setError(data.error || (locale === 'th' ? 'เข้าสู่ระบบไม่สำเร็จ' : 'Login failed'));
+                }
+                setIsLoading(false);
+                return;
+            }
+            
+            // Login Success
+            login({
+                firstName: data.user.firstName,
+                lastName: data.user.lastName,
+                email: data.user.email,
+                country: data.user.country,
+                isThai: data.user.isThai,
+                delegateType: data.user.delegateType,
+                idCard: data.user.idCard
+            });
+            
+            // Redirect
             router.push(`/${locale}`);
         } catch (err) {
             console.error('Login error:', err);

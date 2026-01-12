@@ -125,7 +125,12 @@ interface SidebarProps {
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
-    const { isAdmin } = useAuth();
+    const { isAdmin, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        window.location.href = '/login';
+    };
 
     const toggleSubmenu = (label: string) => {
         setExpandedMenus(prev =>
@@ -290,7 +295,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
             {/* Logout - Sticky at bottom */}
             <div className="p-4 border-t border-slate-700 bg-slate-800 mt-auto">
-                <button className="sidebar-link w-full text-red-400 hover:bg-red-900/30">
+                <button
+                    onClick={handleLogout}
+                    className="sidebar-link w-full text-red-400 hover:bg-red-900/30"
+                >
                     <IconLogout size={20} stroke={1.5} />
                     <span>Logout</span>
                 </button>

@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -16,19 +18,19 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            // For demo, simulate login
-            if (email === 'admin@example.com' && password === 'admin123') {
-                // Store token in localStorage (in production, use httpOnly cookies)
-                localStorage.setItem('token', 'demo-token');
-                localStorage.setItem('user', JSON.stringify({
-                    id: 1,
-                    email: 'admin@example.com',
-                    name: 'Admin User',
-                    role: 'admin',
-                }));
-                router.push('/');
+            const res = await fetch('http://localhost:3002/backoffice/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                login(data.user, data.token);
+                router.push('/'); // Go to Dashboard
             } else {
-                setError('Invalid email or password');
+                setError(data.error || 'Login failed');
             }
         } catch {
             setError('Login failed. Please try again.');
@@ -114,7 +116,7 @@ export default function LoginPage() {
                     <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                         <p className="text-xs text-gray-500 text-center mb-2">Demo Credentials:</p>
                         <p className="text-sm text-gray-700 text-center font-mono">
-                            admin@example.com / admin123
+                            admin@accp.org / admin123
                         </p>
                     </div>
                 </div>

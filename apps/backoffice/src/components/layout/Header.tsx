@@ -12,7 +12,7 @@ import {
     IconMenu2,
     IconBuilding,
 } from '@tabler/icons-react';
-import { useAuth, mockUsers } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
     title?: string;
@@ -22,9 +22,10 @@ interface HeaderProps {
 export function Header({ title, onMenuClick }: HeaderProps) {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showEventSelector, setShowEventSelector] = useState(false);
-    const [showUserSwitcher, setShowUserSwitcher] = useState(false);
 
-    const { user, isAdmin, currentEvent, setCurrentEvent, login } = useAuth();
+    const { user, isAdmin, currentEvent, setCurrentEvent, logout } = useAuth();
+
+    const displayName = user ? `${user.firstName} ${user.lastName}` : '';
 
     const roleColors: { [key: string]: string } = {
         admin: 'bg-red-100 text-red-800',
@@ -130,7 +131,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
                                 />
                             </div>
                             <div className="hidden md:flex flex-col items-start gap-0.5">
-                                <p className="text-sm font-semibold text-gray-700 leading-none">{user?.name}</p>
+                                <p className="text-sm font-semibold text-gray-700 leading-none">{displayName}</p>
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${roleColors[user?.role || 'admin']}`}>
                                     {user?.role}
                                 </span>
@@ -141,35 +142,9 @@ export function Header({ title, onMenuClick }: HeaderProps) {
                         {showProfileMenu && (
                             <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                                 <div className="px-4 py-2 border-b border-gray-100">
-                                    <p className="font-medium text-gray-800">{user?.name}</p>
+                                    <p className="font-medium text-gray-800">{displayName}</p>
                                     <p className="text-sm text-gray-500">{user?.email}</p>
                                 </div>
-
-                                {/* Demo: Switch User */}
-                                <button
-                                    onClick={() => setShowUserSwitcher(!showUserSwitcher)}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 flex items-center justify-between"
-                                >
-                                    <span>🔄 Switch User (Demo)</span>
-                                    <IconChevronDown size={14} />
-                                </button>
-
-                                {showUserSwitcher && (
-                                    <div className="border-t border-gray-100 bg-gray-50">
-                                        {mockUsers.map(u => (
-                                            <button
-                                                key={u.id}
-                                                onClick={() => { login(u); setShowProfileMenu(false); setShowUserSwitcher(false); }}
-                                                className={`w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${user?.id === u.id ? 'bg-blue-50' : ''}`}
-                                            >
-                                                <p className="font-medium">{u.name}</p>
-                                                <span className={`text-xs px-1.5 py-0.5 rounded ${roleColors[u.role]}`}>
-                                                    {u.role}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
 
                                 <a href="/profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-gray-700">
                                     <IconUser size={16} /> Profile
@@ -178,7 +153,10 @@ export function Header({ title, onMenuClick }: HeaderProps) {
                                     <IconSettings size={16} /> Settings
                                 </a>
                                 <hr className="my-2" />
-                                <button className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-red-600 w-full text-left">
+                                <button
+                                    onClick={() => { logout(); window.location.href = '/login'; }}
+                                    className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-red-600 w-full text-left"
+                                >
                                     <IconLogout size={16} /> Logout
                                 </button>
                             </div>

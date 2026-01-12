@@ -15,6 +15,13 @@
       "when": 1768221785419,
       "tag": "0001_wild_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768229006296,
+      "tag": "0002_nostalgic_vulture",
+      "breakpoints": true
     }
   ]
 }

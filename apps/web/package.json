@@ -14,9 +14,10 @@
     "@accp/types": "*",
     "aos": "^2.3.4",
     "bcryptjs": "^3.0.3",
+    "drizzle-kit": "^0.31.8",
     "gsap": "^3.12.5",
     "libphonenumber-js": "^1.12.34",
-    "next": "14.2.15",
+    "next": "^14.2.35",
     "next-intl": "^4.7.0",
     "react": "^18",
     "react-countup": "^6.5.3",
@@ -41,7 +42,7 @@
     "@types/react-slick": "^0.23.13",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.15",
+    "eslint-config-next": "^14.2.35",
     "typescript": "^5"
   }
 }

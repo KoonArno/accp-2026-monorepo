@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // User roles
 export type UserRole = 'admin' | 'organizer' | 'reviewer' | 'staff' | 'verifier';
@@ -15,78 +15,67 @@ export interface AssignedEvent {
 // User interface
 export interface User {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     role: UserRole;
-    assignedEvents: AssignedEvent[]; // Events this user can access (empty for admin = all)
+    assignedEvents: AssignedEvent[];
 }
 
 // Auth context type
 interface AuthContextType {
     user: User | null;
+    token: string | null;
     isAdmin: boolean;
+    isLoading: boolean;
     canAccessEvent: (eventId: number) => boolean;
     getAccessibleEventIds: () => number[];
     currentEvent: AssignedEvent | null;
     setCurrentEvent: (event: AssignedEvent | null) => void;
-    login: (user: User) => void;
+    login: (user: User, token: string) => void;
     logout: () => void;
+    hasAccess: (page: string) => boolean;
 }
 
-// Mock users for demo
-export const mockUsers: User[] = [
-    {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@conferencehub.com',
-        role: 'admin',
-        assignedEvents: [], // Admin sees all events
-    },
-    {
-        id: 2,
-        name: 'สมชาย ใจดี',
-        email: 'somchai@hospital.com',
-        role: 'organizer',
-        assignedEvents: [
-            { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' }
-        ],
-    },
-    {
-        id: 3,
-        name: 'Dr. Wichai Tanaka',
-        email: 'wichai@university.edu',
-        role: 'reviewer',
-        assignedEvents: [
-            { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' }
-        ],
-    },
-    {
-        id: 4,
-        name: 'สุภาพร รักสวย',
-        email: 'supaporn@gmail.com',
-        role: 'staff',
-        assignedEvents: [
-            { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' },
-            { id: 2, code: 'MIS2026', name: 'Medical Innovation Summit' }
-        ],
-    },
-    {
-        id: 5,
-        name: 'นัฐพร ศรีสุข',
-        email: 'nattaporn@edu.th',
-        role: 'verifier',
-        assignedEvents: [
-            { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' }
-        ],
-    },
-];
+// Role-based page access
+const rolePageAccess: Record<UserRole, string[]> = {
+    admin: ['*'], // All pages
+    organizer: ['/', '/events', '/reports'],
+    reviewer: ['/', '/abstracts'],
+    staff: ['/', '/checkin'],
+    verifier: ['/', '/verification'],
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    // Default to admin for demo (in real app, this would come from login)
-    const [user, setUser] = useState<User | null>(mockUsers[0]);
+    const [user, setUser] = useState<User | null>(null);
+    const [token, setToken] = useState<string | null>(null);
     const [currentEvent, setCurrentEvent] = useState<AssignedEvent | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Load user from localStorage on mount
+    useEffect(() => {
+        const storedToken = localStorage.getItem('backoffice_token');
+        const storedUser = localStorage.getItem('backoffice_user');
+
+        if (storedToken && storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+                setToken(storedToken);
+
+                // Auto-select first event for non-admin
+                if (parsedUser.role !== 'admin' && parsedUser.assignedEvents?.length > 0) {
+                    setCurrentEvent(parsedUser.assignedEvents[0]);
+                }
+            } catch {
+                localStorage.removeItem('backoffice_token');
+                localStorage.removeItem('backoffice_user');
+            }
+        }
+        setIsLoading(false);
+    }, []);
 
     const isAdmin = user?.role === 'admin';
 
@@ -98,13 +87,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const getAccessibleEventIds = (): number[] => {
         if (!user) return [];
-        if (isAdmin) return []; // Empty means all events
+        if (isAdmin) return [];
         return user.assignedEvents.map(e => e.id);
     };
 
-    const login = (newUser: User) => {
+    const hasAccess = (page: string): boolean => {
+        if (!user) return false;
+        const allowedPages = rolePageAccess[user.role];
+        if (allowedPages.includes('*')) return true;
+        return allowedPages.some(p => page.startsWith(p));
+    };
+
+    const login = (newUser: User, newToken: string) => {
         setUser(newUser);
-        // Auto-select first event for non-admin users
+        setToken(newToken);
+        localStorage.setItem('backoffice_token', newToken);
+        localStorage.setItem('backoffice_user', JSON.stringify(newUser));
+
         if (newUser.role !== 'admin' && newUser.assignedEvents.length > 0) {
             setCurrentEvent(newUser.assignedEvents[0]);
         } else {
@@ -114,19 +113,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = () => {
         setUser(null);
+        setToken(null);
         setCurrentEvent(null);
+        localStorage.removeItem('backoffice_token');
+        localStorage.removeItem('backoffice_user');
     };
 
     return (
         <AuthContext.Provider value={{
             user,
+            token,
             isAdmin,
+            isLoading,
             canAccessEvent,
             getAccessibleEventIds,
             currentEvent,
             setCurrentEvent,
             login,
             logout,
+            hasAccess,
         }}>
             {children}
         </AuthContext.Provider>

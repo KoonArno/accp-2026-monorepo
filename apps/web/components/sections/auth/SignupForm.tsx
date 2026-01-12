@@ -44,7 +44,42 @@ export default function SignupForm() {
     const [country, setCountry] = useState('');
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [studentDocument, setStudentDocument] = useState<File | null>(null);
+    const [uploadedDocUrl, setUploadedDocUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [isPending, setIsPending] = useState(false);
+
+    // Handle file upload to Google Drive
+    const handleFileUpload = async (file: File) => {
+        setStudentDocument(file);
+        setIsUploading(true);
+        setUploadedDocUrl(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('http://localhost:3002/upload/verify-doc', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || (locale === 'th' ? 'อัปโหลดไฟล์ไม่สำเร็จ' : 'Failed to upload file'));
+                setStudentDocument(null);
+                return;
+            }
+
+            setUploadedDocUrl(data.url);
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert(locale === 'th' ? 'เกิดข้อผิดพลาดในการอัปโหลด' : 'Upload error occurred');
+            setStudentDocument(null);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const validateThaiId = (id: string): boolean => {
         if (id.length !== 13 || !/^\d{13}$/.test(id)) return false;
@@ -96,6 +131,14 @@ export default function SignupForm() {
                 return;
             }
 
+            // Validate student document for students
+            const isStudent = activeTab === 'thaiStudent' || activeTab === 'internationalStudent';
+            if (isStudent && !uploadedDocUrl) {
+                alert(locale === 'th' ? 'กรุณาอัปโหลดเอกสารยืนยันความเป็นนักศึกษา' : 'Please upload student verification document');
+                setIsLoading(false);
+                return;
+            }
+
             // API Call
             const response = await fetch('http://localhost:3002/auth/register', {
                 method: 'POST',
@@ -115,8 +158,8 @@ export default function SignupForm() {
                     pharmacyLicenseId: (activeTab === 'thaiProfessional' && pharmacyLicenseId) ? pharmacyLicenseId : undefined,
                     passportId: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? passportId : undefined,
                     country: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? country : undefined,
-                    // Pending file upload feature
-                    verificationDocUrl: undefined 
+                    // Student verification document URL from Google Drive
+                    verificationDocUrl: uploadedDocUrl || undefined 
                 }),
             });
 
@@ -128,9 +171,7 @@ export default function SignupForm() {
                 return;
             }
 
-            // Success handling
-            const isStudent = activeTab === 'thaiStudent' || activeTab === 'internationalStudent';
-            
+            // Success handling (reuse isStudent from above)
             if (isStudent) {
                 // Show pending modal
                 setIsPending(true);
@@ -456,38 +497,43 @@ export default function SignupForm() {
                             id="student-doc-input"
                             type="file" 
                             accept=".pdf,.jpg,.jpeg,.png" 
-                            onChange={(e) => setStudentDocument(e.target.files?.[0] || null)}
-                            required 
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file);
+                            }}
+                            disabled={isUploading}
                             style={{ display: 'none' }} 
                         />
                         <button
                             type="button"
                             onClick={() => document.getElementById('student-doc-input')?.click()}
+                            disabled={isUploading}
                             style={{
                                 width: '100%',
                                 padding: '12px 14px',
                                 fontSize: '15px',
-                                border: '2px solid #1a237e',
+                                border: uploadedDocUrl ? '2px solid #4caf50' : '2px solid #1a237e',
                                 borderRadius: '8px',
-                                background: '#f5f5ff',
-                                color: '#1a237e',
-                                cursor: 'pointer',
+                                background: uploadedDocUrl ? '#e8f5e9' : '#f5f5ff',
+                                color: uploadedDocUrl ? '#2e7d32' : '#1a237e',
+                                cursor: isUploading ? 'not-allowed' : 'pointer',
                                 fontWeight: '500',
-                                transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#1a237e';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#f5f5ff';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#1a237e';
+                                transition: 'all 0.2s ease',
+                                opacity: isUploading ? 0.7 : 1
                             }}
                         >
-                            {studentDocument ? studentDocument.name : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')}
+                            {isUploading 
+                                ? (locale === 'th' ? '⏳ กำลังอัปโหลด...' : '⏳ Uploading...')
+                                : uploadedDocUrl 
+                                    ? (locale === 'th' ? '✅ อัปโหลดสำเร็จ: ' : '✅ Uploaded: ') + (studentDocument?.name || 'Document')
+                                    : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')
+                            }
                         </button>
-                        <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                            {locale === 'th' ? 'อัพโหลดใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Upload student certificate or related document (PDF, JPG, PNG)'}
+                        <p style={{ fontSize: '12px', color: uploadedDocUrl ? '#4caf50' : '#888', marginTop: '4px' }}>
+                            {uploadedDocUrl 
+                                ? (locale === 'th' ? 'ไฟล์ถูกอัปโหลดเรียบร้อยแล้ว' : 'File uploaded successfully')
+                                : (locale === 'th' ? 'อัพโหลดใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Upload student certificate or related document (PDF, JPG, PNG)')
+                            }
                         </p>
                     </div>
                 )}

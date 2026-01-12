@@ -1,17 +1,26 @@
 import "./config/env"; // Must be first!
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 
 const fastify = Fastify({ logger: true });
 
 // Register plugins
 fastify.register(cors, { origin: true });
+fastify.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+});
 
 // Register routes
 import { authRoutes } from "./routes/auth/register.js";
 import loginRoutes from "./routes/auth/login.js";
+import { uploadRoutes } from "./routes/upload/index.js";
+
 fastify.register(authRoutes, { prefix: "/auth" });
 fastify.register(loginRoutes, { prefix: "/auth" });
+fastify.register(uploadRoutes, { prefix: "/upload" });
 
 // Health check
 fastify.get("/health", async () => ({

@@ -12,7 +12,7 @@ interface AuthGuardProps {
 const publicPaths = ['/login'];
 
 export function AuthGuard({ children }: AuthGuardProps) {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, hasAccess } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -25,10 +25,21 @@ export function AuthGuard({ children }: AuthGuardProps) {
                 router.replace('/login');
             } else if (user && isPublicPath) {
                 // Already logged in but on login page
-                router.replace('/');
+                if (user.role === 'verifier') {
+                    router.replace('/verification');
+                } else {
+                    router.replace('/');
+                }
+            } else if (user && !hasAccess(pathname)) {
+                // Logged in but no access to this page
+                if (user.role === 'verifier') {
+                    router.replace('/verification');
+                } else {
+                    router.replace('/'); // Or 403 page
+                }
             }
         }
-    }, [user, isLoading, pathname, router]);
+    }, [user, isLoading, pathname, router, hasAccess]);
 
     // Show loading state
     if (isLoading) {

@@ -28,7 +28,12 @@ export default function LoginPage() {
 
             if (data.success) {
                 login(data.user, data.token);
-                router.push('/'); // Go to Dashboard
+                // Role-based redirection
+                if (data.user.role === 'verifier') {
+                    router.push('/verification');
+                } else {
+                    router.push('/'); // Go to Dashboard
+                }
             } else {
                 setError(data.error || 'Login failed');
             }
@@ -117,6 +122,8 @@ export default function LoginPage() {
                         <p className="text-xs text-gray-500 text-center mb-2">Demo Credentials:</p>
                         <p className="text-sm text-gray-700 text-center font-mono">
                             admin@accp.org / admin123
+                            <br />
+                            verifier-accp@accp.ac.th / verifier123
                         </p>
                     </div>
                 </div>

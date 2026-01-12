@@ -43,7 +43,7 @@ const rolePageAccess: Record<UserRole, string[]> = {
     organizer: ['/', '/events', '/reports'],
     reviewer: ['/', '/abstracts'],
     staff: ['/', '/checkin'],
-    verifier: ['/', '/verification'],
+    verifier: ['/verification'],
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -13,7 +13,7 @@ monorepo/
 ├── packages/
 │   ├── database/         # Shared database schema (Drizzle ORM)
 │   └── types/            # Shared TypeScript types
-├── docker-compose.yml    # PostgreSQL + pgAdmin
+├── docker-compose.yml    # PostgreSQL
 ├── turbo.json            # Turborepo configuration
 └── package.json          # Root workspace
 ```
@@ -54,7 +54,7 @@ cp .env.example .env
 ### 3. Start Database (Docker)
 
 ```bash
-# Start PostgreSQL และ pgAdmin
+# Start PostgreSQL
 docker compose up -d
 
 # ตรวจสอบ status
@@ -97,10 +97,9 @@ npm run dev:api          # localhost:3002
 
 ## 🐳 Docker Services
 
-| Service        | URL                   | Credentials                               |
-| -------------- | --------------------- | ----------------------------------------- |
-| **PostgreSQL** | localhost:5432        | user: `accp_user`, pass: `accp_password`  |
-| **pgAdmin**    | http://localhost:5050 | email: `admin@accp.com`, pass: `admin123` |
+| Service        | URL            | Credentials                              |
+| -------------- | -------------- | ---------------------------------------- |
+| **PostgreSQL** | localhost:5432 | user: `accp_user`, pass: `accp_password` |
 
 ### Docker Commands
 
@@ -118,17 +117,6 @@ docker compose logs -f postgres
 docker compose down -v
 docker compose up -d
 ```
-
-### เชื่อมต่อ Database ใน pgAdmin
-
-1. เปิด http://localhost:5050
-2. Login ด้วย `admin@accp.com` / `admin123`
-3. Add New Server:
-   - **Name**: ACCP Database
-   - **Host**: `postgres` (ไม่ใช่ localhost)
-   - **Port**: 5432
-   - **Username**: accp_user
-   - **Password**: accp_password
 
 ## 📂 Packages
 

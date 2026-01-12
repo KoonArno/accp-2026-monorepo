@@ -2,7 +2,11 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link'
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
-import { Swiper, SwiperSlide } from "swiper/react"
+import { Swiper as SwiperReact, SwiperSlide as SwiperSlideReact } from "swiper/react"
+
+// Cast to any to fix "cannot be used as a JSX component" build error
+const Swiper = SwiperReact as any;
+const SwiperSlide = SwiperSlideReact as any;
 
 const swiperOptions = {
     modules: [Autoplay, Pagination, Navigation],

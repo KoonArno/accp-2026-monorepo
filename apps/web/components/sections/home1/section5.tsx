@@ -4,7 +4,10 @@ import ModalVideo from 'react-modal-video'
 import "@/node_modules/react-modal-video/css/modal-video.css"
 import Link from 'next/link'
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
-import { Swiper, SwiperSlide } from "swiper/react"
+import { Swiper as SwiperReact, SwiperSlide as SwiperSlideReact } from "swiper/react"
+
+const Swiper = SwiperReact as any;
+const SwiperSlide = SwiperSlideReact as any;
 const swiperOptions = {
 	modules: [Autoplay, Pagination, Navigation],
 	slidesPerView: 1,

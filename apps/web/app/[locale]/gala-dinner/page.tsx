@@ -12,6 +12,17 @@ export default function GalaDinner() {
 
     return (
         <>
+            <style jsx>{`
+                .about1-section-area[style*="background"] .about-header-area p {
+                    color: #ffffff !important;
+                }
+                .about1-section-area[style*="background"] .gala-info-box span {
+                    color: rgba(255, 255, 255, 0.8) !important;
+                }
+                .about1-section-area[style*="background"] .gala-info-box p {
+                    color: #ffffff !important;
+                }
+            `}</style>
             <Layout headerStyle={1} footerStyle={1}>
                 <div>
                     {/* Hero Header */}
@@ -51,7 +62,7 @@ export default function GalaDinner() {
                                         <h2 style={{ color: 'white', fontSize: '38px', lineHeight: '1.3', marginBottom: '20px' }}>
                                             {t('celebrationTitle')}
                                         </h2>
-                                        <p style={{ fontSize: '17px', color: '#ffffff !important', lineHeight: '1.8', marginBottom: '30px' }}>
+                                        <p style={{ fontSize: '17px', color: 'white', lineHeight: '1.8', marginBottom: '30px' }}>
                                             {t('celebrationDesc')}
                                         </p>
                                         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -69,8 +80,8 @@ export default function GalaDinner() {
                                                     <i className="fa-regular fa-calendar" style={{ color: '#FFBA00', fontSize: '20px' }} />
                                                 </div>
                                                 <div>
-                                                    <span className="text-white-80" style={{ fontSize: '13px', display: 'block', marginBottom: '2px' }}>{tCommon('days')}</span>
-                                                    <p className="text-white-important" style={{ margin: 0, fontWeight: '600', fontSize: '16px' }}>July 10, 2026</p>
+                                                    <span style={{ fontSize: '13px', display: 'block', marginBottom: '2px', color: 'rgba(255, 255, 255, 0.8)' }}>{tCommon('days')}</span>
+                                                    <p style={{ margin: 0, fontWeight: '600', fontSize: '16px', color: '#ffffff' }}>July 10, 2026</p>
                                                 </div>
                                             </div>
 
@@ -88,8 +99,8 @@ export default function GalaDinner() {
                                                     <i className="fa-regular fa-clock" style={{ color: '#FFBA00', fontSize: '20px' }} />
                                                 </div>
                                                 <div>
-                                                    <span className="text-white-80" style={{ fontSize: '13px', display: 'block', marginBottom: '2px' }}>{tCommon('hours')}</span>
-                                                    <p className="text-white-important" style={{ margin: 0, fontWeight: '600', fontSize: '16px' }}>19:00 - 22:00</p>
+                                                    <span style={{ fontSize: '13px', display: 'block', marginBottom: '2px', color: 'rgba(255, 255, 255, 0.8)' }}>{tCommon('hours')}</span>
+                                                    <p style={{ margin: 0, fontWeight: '600', fontSize: '16px', color: '#ffffff' }}>19:00 - 22:00</p>
                                                 </div>
                                             </div>
                                         </div>

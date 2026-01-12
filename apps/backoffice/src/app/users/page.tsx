@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout';
 import {
     IconUserPlus,
@@ -11,6 +11,8 @@ import {
     IconX,
     IconCalendarEvent,
 } from '@tabler/icons-react';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // User roles
 const roles = [
@@ -21,24 +23,8 @@ const roles = [
     { id: 'verifier', label: 'Verifier', color: 'bg-orange-100 text-orange-800', description: 'Verify student identity documents' },
 ];
 
-// Available events
-const allEvents = [
-    { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' },
-    { id: 2, code: 'MIS2026', name: 'Medical Innovation Summit' },
-    { id: 3, code: 'CPE001', name: 'CPE Workshop Series' },
-    { id: 4, code: 'RS2026', name: 'Research Symposium 2026' },
-    { id: 5, code: 'DSW2026', name: 'Drug Safety Workshop' },
-];
+// Mock data removed
 
-// Mock user data with assigned events
-const mockUsers = [
-    { id: 1, name: 'Admin User', email: 'admin@conferencehub.com', role: 'admin', status: 'active', createdAt: '2026-01-01', assignedEventIds: [] as number[] },
-    { id: 2, name: 'สมชาย ใจดี', email: 'somchai@hospital.com', role: 'organizer', status: 'active', createdAt: '2026-01-05', assignedEventIds: [1] },
-    { id: 3, name: 'Dr. Wichai Tanaka', email: 'wichai@university.edu', role: 'reviewer', status: 'active', createdAt: '2026-01-06', assignedEventIds: [1] },
-    { id: 4, name: 'สุภาพร รักสวย', email: 'supaporn@gmail.com', role: 'staff', status: 'active', createdAt: '2026-01-07', assignedEventIds: [1, 2] },
-    { id: 5, name: 'นัฐพร ศรีสุข', email: 'nattaporn@edu.th', role: 'verifier', status: 'active', createdAt: '2026-01-08', assignedEventIds: [1] },
-    { id: 6, name: 'John Smith', email: 'john@stanford.edu', role: 'reviewer', status: 'inactive', createdAt: '2026-01-03', assignedEventIds: [2, 3] },
-];
 
 interface User {
     id: number;
@@ -51,6 +37,11 @@ interface User {
 }
 
 export default function UsersPage() {
+    const { token } = useAuth();
+    const [users, setUsers] = useState<User[]>([]);
+    const [events, setEvents] = useState<any[]>([]); // Using any for events to match API response flexibility
+    const [isLoading, setIsLoading] = useState(true);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -59,6 +50,42 @@ export default function UsersPage() {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [eventSearchTerm, setEventSearchTerm] = useState('');
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!token) return;
+            setIsLoading(true);
+            try {
+                // Fetch users
+                // Note: api.users.list returns { users: any[] }
+                const usersData = await api.users.list(token).catch(() => ({ users: [] }));
+
+                // Fetch events
+                // Note: api.events.list returns { events: any[] }
+                const eventsData = await api.events.list().catch(() => ({ events: [] }));
+
+                if (usersData?.users) {
+                    // Adapt API user to local User interface if needed
+                    // For now assuming compatible or basic mapping
+                    setUsers(usersData.users.map((u: any) => ({
+                        ...u,
+                        name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                        assignedEventIds: u.assignedEventIds || []
+                    })));
+                }
+
+                if (eventsData?.events) {
+                    setEvents(eventsData.events);
+                }
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [token]);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -69,7 +96,7 @@ export default function UsersPage() {
         assignedEventIds: [] as number[],
     });
 
-    const filteredUsers = mockUsers.filter((user) => {
+    const filteredUsers = users.filter((user) => {
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -77,7 +104,7 @@ export default function UsersPage() {
         return matchesSearch && matchesRole;
     });
 
-    const filteredEvents = allEvents.filter(e =>
+    const filteredEvents = events.filter(e =>
         e.code.toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
         e.name.toLowerCase().includes(eventSearchTerm.toLowerCase())
     );
@@ -87,32 +114,125 @@ export default function UsersPage() {
     };
 
     const getEventNames = (eventIds: number[]) => {
-        return eventIds.map(id => allEvents.find(e => e.id === id)?.code).filter(Boolean);
+        return eventIds.map(id => events.find(e => e.id === id)?.code).filter(Boolean);
     };
 
-    const handleCreate = () => {
-        setShowCreateModal(false);
-        setEventSearchTerm('');
-        setFormData({ name: '', email: '', password: '', role: 'staff', assignedEventIds: [] });
-        alert('User created successfully!');
+    const handleCreate = async () => {
+        if (!token) return;
+        try {
+            // Split name into first and last name
+            const nameParts = formData.name.trim().split(' ');
+            const firstName = nameParts[0] || '-';
+            const lastName = nameParts.slice(1).join(' ') || '-';
+
+            await api.users.create(token, {
+                email: formData.email,
+                password: formData.password,
+                role: formData.role,
+                firstName,
+                lastName,
+            });
+
+            setShowCreateModal(false);
+            setEventSearchTerm('');
+            setFormData({ name: '', email: '', password: '', role: 'staff', assignedEventIds: [] });
+            alert('User created successfully!'); // Optional: replace with toast
+
+            // Refresh list
+            const usersData = await api.users.list(token).catch(() => ({ users: [] }));
+            if (usersData?.users) {
+                setUsers(usersData.users.map((u: any) => ({
+                    ...u,
+                    name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    assignedEventIds: u.assignedEventIds || []
+                })));
+            }
+        } catch (error: any) {
+            console.error('Failed to create user:', error);
+            alert(`Failed to create user: ${error.message || 'Unknown error'}`);
+        }
     };
 
-    const handleEdit = () => {
-        setShowEditModal(false);
-        setSelectedUser(null);
-        alert('User updated successfully!');
+    const handleEdit = async () => {
+        if (!token || !selectedUser) return;
+        try {
+            // Prepare update data
+            const updates: any = {
+                firstName: formData.name.split(' ')[0] || formData.name,
+                lastName: formData.name.split(' ').slice(1).join(' ') || '-',
+                role: formData.role,
+                email: formData.email,
+            };
+            if (formData.password) {
+                updates.password = formData.password;
+            }
+
+            // 1. Update user details
+            await api.users.update(token, selectedUser.id, updates);
+
+            // 2. Update assignments if not admin
+            if (updates.role !== 'admin') {
+                await api.users.assignEvents(token, selectedUser.id, formData.assignedEventIds);
+            }
+
+            setShowEditModal(false);
+            setSelectedUser(null);
+            alert('User updated successfully!');
+
+            // Refresh list
+            const usersData = await api.users.list(token).catch(() => ({ users: [] }));
+            if (usersData?.users) {
+                setUsers(usersData.users.map((u: any) => ({
+                    ...u,
+                    name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    assignedEventIds: u.assignedEventIds || []
+                })));
+            }
+        } catch (error) {
+            console.error('Failed to update user:', error);
+            alert('Failed to update user');
+        }
     };
 
-    const handleDelete = () => {
-        setShowDeleteModal(false);
-        setSelectedUser(null);
-        alert('User deleted successfully!');
+    const handleDelete = async () => {
+        if (!token || !selectedUser) return;
+        try {
+            await api.users.delete(token, selectedUser.id);
+
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            alert('User deleted successfully!');
+
+            // Refresh list
+            setUsers(users.filter(u => u.id !== selectedUser.id));
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            alert('Failed to delete user');
+        }
     };
 
-    const handleAssign = () => {
-        setShowAssignModal(false);
-        setSelectedUser(null);
-        alert('Event assignments updated!');
+    const handleAssign = async () => {
+        if (!token || !selectedUser) return;
+        try {
+            await api.users.assignEvents(token, selectedUser.id, formData.assignedEventIds);
+
+            setShowAssignModal(false);
+            setSelectedUser(null);
+            alert('Event assignments updated!');
+
+            // Refresh list
+            const usersData = await api.users.list(token).catch(() => ({ users: [] }));
+            if (usersData?.users) {
+                setUsers(usersData.users.map((u: any) => ({
+                    ...u,
+                    name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    assignedEventIds: u.assignedEventIds || []
+                })));
+            }
+        } catch (error) {
+            console.error('Failed to assign events:', error);
+            alert('Failed to assign events');
+        }
     };
 
     const openEditModal = (user: User) => {
@@ -158,7 +278,7 @@ export default function UsersPage() {
                         onClick={() => setRoleFilter(roleFilter === role.id ? '' : role.id)}
                     >
                         <p className="text-2xl font-bold text-gray-800">
-                            {mockUsers.filter(u => u.role === role.id).length}
+                            {users.filter(u => u.role === role.id).length}
                         </p>
                         <p className="text-sm text-gray-500">{role.label}</p>
                     </div>
@@ -294,7 +414,7 @@ export default function UsersPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <p className="text-sm text-gray-500">
-                        Showing {filteredUsers.length} of {mockUsers.length} users
+                        Showing {filteredUsers.length} of {users.length} users
                     </p>
                 </div>
             </div>

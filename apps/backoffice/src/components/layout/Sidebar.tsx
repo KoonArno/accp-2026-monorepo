@@ -154,7 +154,22 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         // Admin sees everything
         if (isAdmin) return item;
 
-        // Non-admin restrictions
+        const role = (useAuth() as any).user?.role;
+
+        // Verifier specific restrictions
+        if (role === 'verifier') {
+            // Only show Verification related items
+            if (item.label === 'ATTENDEE MANAGEMENT') return item;
+            if (item.label === 'Registrations' && item.children) {
+                return {
+                    ...item,
+                    children: item.children.filter(child => child.href === '/verification')
+                };
+            }
+            return null;
+        }
+
+        // Non-admin restrictions (existing logic)
 
         // Hide System Administration category and its links
         if (item.label === 'SYSTEM ADMINISTRATION') return null;

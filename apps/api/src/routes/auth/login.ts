@@ -46,13 +46,20 @@ export default async function (fastify: FastifyInstance) {
         });
       }
 
-    //   // 4. Check status (optional - can block pending/rejected users here)
-    //   if (user.status === 'rejected') {
-    //     return reply.status(403).send({
-    //         success: false,
-    //         error: "Account rejected. Please contact support.",
-    //     });
-    //   }
+      // 4. Check account status
+      if (user.status === 'pending_approval') {
+        return reply.status(403).send({
+            success: false,
+            error: "ACCOUNT_PENDING",
+        });
+      }
+
+      if (user.status === 'rejected') {
+        return reply.status(403).send({
+            success: false,
+            error: "ACCOUNT_REJECTED",
+        });
+      }
 
       // 5. Map delegate type
       let delegateType = "";

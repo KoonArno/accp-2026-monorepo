@@ -16,6 +16,7 @@ export default function LoginForm() {
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPendingModal, setShowPendingModal] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,7 +45,13 @@ export default function LoginForm() {
                 if (response.status === 401) {
                     setError(locale === 'th' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : 'Invalid email or password');
                 } else if (response.status === 403) {
-                     setError(locale === 'th' ? 'บัญชีของคุณถูกระงับ กรุณาติดต่อเจ้าหน้าที่' : 'Account suspended. Please contact support.');
+                    if (data.error === 'ACCOUNT_PENDING') {
+                        setShowPendingModal(true);
+                    } else if (data.error === 'ACCOUNT_REJECTED') {
+                        setError(locale === 'th' ? 'บัญชีของคุณถูกปฏิเสธ กรุณาติดต่อเจ้าหน้าที่' : 'Your account has been rejected. Please contact support.');
+                    } else {
+                        setError(locale === 'th' ? 'บัญชีของคุณถูกระงับ กรุณาติดต่อเจ้าหน้าที่' : 'Account suspended. Please contact support.');
+                    }
                 } else {
                     setError(data.error || (locale === 'th' ? 'เข้าสู่ระบบไม่สำเร็จ' : 'Login failed'));
                 }
@@ -74,6 +81,65 @@ export default function LoginForm() {
     };
 
     return (
+        <>
+        {/* Pending Approval Modal */}
+        {showPendingModal && (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: '20px'
+            }}>
+                <div style={{
+                    background: '#fff',
+                    borderRadius: '16px',
+                    padding: '40px',
+                    width: '100%',
+                    maxWidth: '400px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.2)'
+                }}>
+                    <div style={{ marginBottom: '24px' }}>
+                        <img src="/assets/img/logo/accp_logo_main.png" alt="ACCP 2026"
+                            style={{ height: '80px', width: 'auto', margin: '0 auto' }} />
+                    </div>
+                    <div style={{ fontSize: '48px', marginBottom: '24px' }}>⏳</div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a', marginBottom: '16px' }}>
+                        {locale === 'th' ? 'กำลังตรวจสอบบัญชี' : 'Account Under Review'}
+                    </h3>
+                    <p style={{ color: '#666', fontSize: '16px', marginBottom: '32px', lineHeight: '1.6' }}>
+                        {locale === 'th' 
+                            ? 'บัญชีของท่านอยู่ระหว่างการตรวจสอบ โปรดลองอีกครั้งภายหลังจากได้รับอีเมลยืนยัน' 
+                            : 'Your account is under review. Please try again after receiving the confirmation email.'}
+                    </p>
+                    <button 
+                        onClick={() => setShowPendingModal(false)}
+                        style={{
+                            display: 'inline-block',
+                            padding: '12px 24px',
+                            background: '#1a237e',
+                            color: '#fff',
+                            borderRadius: '8px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '15px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            width: '100%'
+                        }}
+                    >
+                        {locale === 'th' ? 'ตกลง' : 'OK'}
+                    </button>
+                </div>
+            </div>
+        )}
         <div style={{
             background: '#fff',
             borderRadius: '16px',
@@ -221,5 +287,6 @@ export default function LoginForm() {
                 </p>
             </div>
         </div>
+        </>
     );
 }

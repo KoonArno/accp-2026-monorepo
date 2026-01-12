@@ -112,6 +112,9 @@ export async function authRoutes(fastify: FastifyInstance) {
         accountType === "thaiStudent" || accountType === "thaiProfessional"
           ? "Thailand"
           : country;
+      
+      // Auto-approve professionals
+      const initialStatus = (role === 'thpro' || role === 'interpro') ? 'active' : 'pending_approval';
 
       // 6. Insert user
       try {
@@ -130,7 +133,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             passportId: passportId || null,
             pharmacyLicenseId: pharmacyLicenseId || null,
             verificationDocUrl: verificationDocUrl || null,
-            status: "pending_approval", // Always pending initially, or adjust based on logic
+            status: initialStatus,
           })
           .returning();
 

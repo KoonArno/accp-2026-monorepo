@@ -182,11 +182,8 @@ export default function SignupForm() {
                     lastName: data.user.lastName,
                     email: data.user.email,
                     // Map local state to AuthContext type
-                    delegateType: activeTab === 'thaiProfessional' ? 'thai_pharmacist' 
-                        : activeTab === 'internationalProfessional' ? 'international_pharmacist'
-                        : activeTab === 'thaiStudent' ? 'thai_student'
-                        : 'international_student',
-                    isThai: activeTab === 'thaiProfessional' || activeTab === 'thaiStudent',
+                    delegateType: activeTab === 'thaiProfessional' ? 'thai_pharmacist' : 'international_pharmacist',
+                    isThai: activeTab === 'thaiProfessional',
                     country: country || 'Thailand',
                     idCard: idCard,
                 });
@@ -235,6 +232,8 @@ export default function SignupForm() {
             flex: 1;
         }
     `;
+
+    const PhoneInputAny = PhoneInput as any;
 
     return (
         <>
@@ -448,10 +447,11 @@ export default function SignupForm() {
                         padding: '12px 14px',
                         background: '#fff'
                     }}>
-                        <PhoneInput
+                        {/* @ts-ignore */}
+                        <PhoneInputAny
                             defaultCountry="th"
                             value={phone}
-                            onChange={(phone) => setPhone(phone)}
+                            onChange={(phone: string) => setPhone(phone)}
                             inputStyle={{
                                 width: '100%',
                                 border: 'none',

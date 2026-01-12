@@ -1,0 +1,92 @@
+import { google } from "googleapis";
+import { Readable } from "stream";
+
+// Create authenticated Drive client using OAuth2
+function getDriveClient() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error("Missing Google OAuth2 credentials (CLIENT_ID, CLIENT_SECRET, or REFRESH_TOKEN)");
+  }
+
+  const oauth2Client = new google.auth.OAuth2(
+    clientId,
+    clientSecret,
+    "https://developers.google.com/oauthplayground" // Redirect URL
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken,
+  });
+
+  return google.drive({ version: "v3", auth: oauth2Client });
+}
+
+/**
+ * Upload a file to Google Drive and return shareable link
+ */
+export async function uploadToGoogleDrive(
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string
+): Promise<string> {
+  const drive = getDriveClient();
+  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+  if (!folderId) {
+    throw new Error("GOOGLE_DRIVE_FOLDER_ID environment variable not set");
+  }
+
+  // Generate unique filename with timestamp
+  const timestamp = Date.now();
+  const uniqueFileName = `${timestamp}_${fileName}`;
+
+  // Upload file
+  const response = await drive.files.create({
+    requestBody: {
+      name: uniqueFileName,
+      parents: [folderId],
+    },
+    media: {
+      mimeType,
+      body: Readable.from(fileBuffer),
+    },
+    fields: "id, webViewLink",
+  });
+
+  const fileId = response.data.id;
+
+  if (!fileId) {
+    throw new Error("Failed to upload file to Google Drive");
+  }
+
+  // Set permission to "anyone with link can view"
+  await drive.permissions.create({
+    fileId,
+    requestBody: {
+      role: "reader",
+      type: "anyone",
+    },
+  });
+
+  // Return the web view link
+  return response.data.webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
+}
+
+/**
+ * Delete a file from Google Drive by ID
+ */
+export async function deleteFromGoogleDrive(fileId: string): Promise<void> {
+  const drive = getDriveClient();
+  await drive.files.delete({ fileId });
+}
+
+/**
+ * Extract file ID from Google Drive URL
+ */
+export function extractFileIdFromUrl(url: string): string | null {
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}

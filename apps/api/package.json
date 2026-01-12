@@ -13,8 +13,12 @@
     "@accp/types": "*",
     "@fastify/cors": "^10.0.2",
     "@fastify/jwt": "^9.0.2",
+    "@fastify/multipart": "^9.3.0",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.0",
+    "googleapis": "^170.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

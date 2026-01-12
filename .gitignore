@@ -11,6 +11,10 @@ build/
 .env.local
 .env.*.local
 
+# Google Service Account (sensitive)
+service-account.json
+**/service-account.json
+
 # Turbo
 .turbo/
 

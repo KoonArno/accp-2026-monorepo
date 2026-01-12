@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -34,12 +37,49 @@ export default function SignupForm() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [organization, setOrganization] = useState('');
+    const [phone, setPhone] = useState('');
     const [idCard, setIdCard] = useState('');
+    const [pharmacyLicenseId, setPharmacyLicenseId] = useState('');
     const [passportId, setPassportId] = useState('');
     const [country, setCountry] = useState('');
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [studentDocument, setStudentDocument] = useState<File | null>(null);
+    const [uploadedDocUrl, setUploadedDocUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [isPending, setIsPending] = useState(false);
+
+    // Handle file upload to Google Drive
+    const handleFileUpload = async (file: File) => {
+        setStudentDocument(file);
+        setIsUploading(true);
+        setUploadedDocUrl(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('http://localhost:3002/upload/verify-doc', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || (locale === 'th' ? 'อัปโหลดไฟล์ไม่สำเร็จ' : 'Failed to upload file'));
+                setStudentDocument(null);
+                return;
+            }
+
+            setUploadedDocUrl(data.url);
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert(locale === 'th' ? 'เกิดข้อผิดพลาดในการอัปโหลด' : 'Upload error occurred');
+            setStudentDocument(null);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const validateThaiId = (id: string): boolean => {
         if (id.length !== 13 || !/^\d{13}$/.test(id)) return false;
@@ -57,6 +97,11 @@ export default function SignupForm() {
                 alert(locale === 'th' ? 'กรุณากรอกข้อมูลให้ครบถ้วน' : 'Please fill all required fields');
                 setIsLoading(false);
                 return;
+            }
+            if (phone && !isValidPhoneNumber(phone)) {
+                 alert(locale === 'th' ? 'เบอร์โทรศัพท์ไม่ถูกต้อง' : 'Invalid phone number format');
+                 setIsLoading(false);
+                 return;
             }
             if (password !== confirmPassword) {
                 alert(locale === 'th' ? 'รหัสผ่านไม่ตรงกัน' : 'Passwords do not match');
@@ -86,31 +131,68 @@ export default function SignupForm() {
                 return;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const userData = {
-                firstName, lastName, email,
-                country: activeTab === 'thaiStudent' || activeTab === 'thaiProfessional' ? 'Thailand' : country,
-                idCard: (activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') ? idCard : undefined,
-                isThai: activeTab === 'thaiStudent' || activeTab === 'thaiProfessional',
-                delegateType: activeTab === 'thaiStudent' ? 'thai_student' as const
-                    : activeTab === 'internationalStudent' ? 'international_student' as const
-                        : activeTab === 'thaiProfessional' ? 'thai_pharmacist' as const
-                            : 'international_pharmacist' as const
-            };
-
+            // Validate student document for students
             const isStudent = activeTab === 'thaiStudent' || activeTab === 'internationalStudent';
-            
+            if (isStudent && !uploadedDocUrl) {
+                alert(locale === 'th' ? 'กรุณาอัปโหลดเอกสารยืนยันความเป็นนักศึกษา' : 'Please upload student verification document');
+                setIsLoading(false);
+                return;
+            }
+
+            // API Call
+            const response = await fetch('http://localhost:3002/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    phone: phone || undefined,
+                    password,
+                    accountType: activeTab,
+                    // Optional based on logic
+                    organization: organization || undefined,
+                    idCard: (activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') ? idCard : undefined,
+                    pharmacyLicenseId: (activeTab === 'thaiProfessional' && pharmacyLicenseId) ? pharmacyLicenseId : undefined,
+                    passportId: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? passportId : undefined,
+                    country: (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') ? country : undefined,
+                    // Student verification document URL from Google Drive
+                    verificationDocUrl: uploadedDocUrl || undefined 
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Registration failed');
+                setIsLoading(false);
+                return;
+            }
+
+            // Success handling (reuse isStudent from above)
             if (isStudent) {
-                // Don't login students yet, they need approval
+                // Show pending modal
                 setIsPending(true);
             } else {
-                login(userData);
+                // Auto login for professionals
+                login({
+                    firstName: data.user.firstName,
+                    lastName: data.user.lastName,
+                    email: data.user.email,
+                    // Map local state to AuthContext type
+                    delegateType: activeTab === 'thaiProfessional' ? 'thai_pharmacist' : 'international_pharmacist',
+                    isThai: activeTab === 'thaiProfessional',
+                    country: country || 'Thailand',
+                    idCard: idCard,
+                });
                 await new Promise(resolve => setTimeout(resolve, 100));
                 router.push(`/${locale}`);
             }
         } catch (error) {
             console.error('Signup error:', error);
+            alert('Something went wrong. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -134,7 +216,28 @@ export default function SignupForm() {
         outline: 'none'
     };
 
+    const phoneInputStyle = `
+        /* react-international-phone custom styles */
+        .react-international-phone-input-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .react-international-phone-country-selector-dropdown {
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .react-international-phone-input {
+            flex: 1;
+        }
+    `;
+
+    const PhoneInputAny = PhoneInput as any;
+
     return (
+        <>
+        <style dangerouslySetInnerHTML={{ __html: phoneInputStyle }} />
         <div style={{
             background: '#fff',
             borderRadius: '16px',
@@ -277,6 +380,19 @@ export default function SignupForm() {
                     </div>
                 )}
 
+                {/* Thai Professional: Pharmacy License ID (Optional) */}
+                {activeTab === 'thaiProfessional' && (
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                            {locale === 'th' ? 'หมายเลขใบอนุญาตประกอบวิชาชีพเภสัชกรรม (ถ้ามี)' : 'Pharmacy License Number (Optional)'}
+                        </label>
+                        <input type="text" value={pharmacyLicenseId}
+                            onChange={(e) => setPharmacyLicenseId(e.target.value)}
+                            placeholder={locale === 'th' ? 'ระบุเลขที่ใบอนุญาต' : 'Enter license number'}
+                            style={inputStyle} />
+                    </div>
+                )}
+
                 {/* International: Passport ID + Country */}
                 {(activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') && (
                     <>
@@ -320,6 +436,39 @@ export default function SignupForm() {
                         placeholder={t('organization')} style={inputStyle} />
                 </div>
 
+                {/* Phone Number */}
+                <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                        {locale === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'}
+                    </label>
+                    <div style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '12px 14px',
+                        background: '#fff'
+                    }}>
+                        {/* @ts-ignore */}
+                        <PhoneInputAny
+                            defaultCountry="th"
+                            value={phone}
+                            onChange={(phone: string) => setPhone(phone)}
+                            inputStyle={{
+                                width: '100%',
+                                border: 'none',
+                                outline: 'none',
+                                fontSize: '15px',
+                                background: 'transparent'
+                            }}
+                            countrySelectorStyleProps={{
+                                buttonStyle: {
+                                    border: 'none',
+                                    background: 'transparent'
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+
                 {/* Password Fields */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                     <div>
@@ -348,38 +497,43 @@ export default function SignupForm() {
                             id="student-doc-input"
                             type="file" 
                             accept=".pdf,.jpg,.jpeg,.png" 
-                            onChange={(e) => setStudentDocument(e.target.files?.[0] || null)}
-                            required 
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file);
+                            }}
+                            disabled={isUploading}
                             style={{ display: 'none' }} 
                         />
                         <button
                             type="button"
                             onClick={() => document.getElementById('student-doc-input')?.click()}
+                            disabled={isUploading}
                             style={{
                                 width: '100%',
                                 padding: '12px 14px',
                                 fontSize: '15px',
-                                border: '2px solid #1a237e',
+                                border: uploadedDocUrl ? '2px solid #4caf50' : '2px solid #1a237e',
                                 borderRadius: '8px',
-                                background: '#f5f5ff',
-                                color: '#1a237e',
-                                cursor: 'pointer',
+                                background: uploadedDocUrl ? '#e8f5e9' : '#f5f5ff',
+                                color: uploadedDocUrl ? '#2e7d32' : '#1a237e',
+                                cursor: isUploading ? 'not-allowed' : 'pointer',
                                 fontWeight: '500',
-                                transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#1a237e';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#f5f5ff';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#1a237e';
+                                transition: 'all 0.2s ease',
+                                opacity: isUploading ? 0.7 : 1
                             }}
                         >
-                            {studentDocument ? studentDocument.name : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')}
+                            {isUploading 
+                                ? (locale === 'th' ? '⏳ กำลังอัปโหลด...' : '⏳ Uploading...')
+                                : uploadedDocUrl 
+                                    ? (locale === 'th' ? '✅ อัปโหลดสำเร็จ: ' : '✅ Uploaded: ') + (studentDocument?.name || 'Document')
+                                    : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')
+                            }
                         </button>
-                        <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                            {locale === 'th' ? 'อัพโหลดใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Upload student certificate or related document (PDF, JPG, PNG)'}
+                        <p style={{ fontSize: '12px', color: uploadedDocUrl ? '#4caf50' : '#888', marginTop: '4px' }}>
+                            {uploadedDocUrl 
+                                ? (locale === 'th' ? 'ไฟล์ถูกอัปโหลดเรียบร้อยแล้ว' : 'File uploaded successfully')
+                                : (locale === 'th' ? 'อัพโหลดใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Upload student certificate or related document (PDF, JPG, PNG)')
+                            }
                         </p>
                     </div>
                 )}
@@ -423,5 +577,6 @@ export default function SignupForm() {
                 </p>
             </div>
         </div>
+        </>
     );
 }

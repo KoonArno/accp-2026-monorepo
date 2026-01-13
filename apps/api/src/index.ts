@@ -23,12 +23,14 @@ import loginRoutes from "./routes/auth/login.js";
 import { uploadRoutes } from "./routes/upload/index.js";
 import backofficeLoginRoutes from "./routes/backoffice/login.js";
 import backofficeUsersRoutes from "./routes/backoffice/users.js";
+import backofficeVerificationsRoutes from "./routes/backoffice/verifications.js";
 
 fastify.register(authRoutes, { prefix: "/auth" });
 fastify.register(loginRoutes, { prefix: "/auth" });
 fastify.register(uploadRoutes, { prefix: "/upload" });
 fastify.register(backofficeLoginRoutes, { prefix: "/backoffice" });
 fastify.register(backofficeUsersRoutes, { prefix: "/api/backoffice/users" });
+fastify.register(backofficeVerificationsRoutes, { prefix: "/api/backoffice/verifications" });
 
 // Health check
 fastify.get("/health", async () => ({

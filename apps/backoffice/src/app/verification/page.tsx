@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     IconId,
     IconClock,
@@ -14,79 +16,6 @@ import {
     IconPhoto,
 } from '@tabler/icons-react';
 
-// Mock verification requests
-const mockVerifications = [
-    {
-        id: 'VER-001',
-        name: 'นัฐพร ศรีสุข',
-        email: 'nattaporn@student.com',
-        university: 'Chulalongkorn University',
-        studentId: '6532123456',
-        role: 'thai-student',
-        documentType: 'Student ID Card',
-        documentUrl: '/images/small/small-1.jpg',
-        registrationCode: 'REG-002',
-        status: 'pending',
-        submittedAt: '2026-01-09 10:30',
-    },
-    {
-        id: 'VER-002',
-        name: 'John Smith',
-        email: 'john.smith@stanford.edu',
-        university: 'Stanford University',
-        studentId: 'STU2024001',
-        role: 'intl-student',
-        documentType: 'University Enrollment Letter',
-        documentUrl: '/images/small/small-2.jpg',
-        registrationCode: 'REG-003',
-        status: 'pending',
-        submittedAt: '2026-01-09 09:15',
-    },
-    {
-        id: 'VER-003',
-        name: 'ปิยะพงษ์ สุวรรณี',
-        email: 'piyapong@student.com',
-        university: 'Mahidol University',
-        studentId: '6543210987',
-        role: 'thai-student',
-        documentType: 'Student ID Card',
-        documentUrl: '/images/small/small-3.jpg',
-        registrationCode: 'REG-007',
-        status: 'approved',
-        submittedAt: '2026-01-08 14:20',
-        verifiedAt: '2026-01-08 15:00',
-        verifiedBy: 'Admin User',
-    },
-    {
-        id: 'VER-004',
-        name: 'Sarah Johnson',
-        email: 's.johnson@mit.edu',
-        university: 'MIT',
-        studentId: 'MIT2024567',
-        role: 'intl-student',
-        documentType: 'Student ID Card',
-        documentUrl: '/images/small/small-4.jpg',
-        registrationCode: 'REG-010',
-        status: 'rejected',
-        submittedAt: '2026-01-07 11:00',
-        verifiedAt: '2026-01-07 13:30',
-        verifiedBy: 'Admin User',
-        rejectionReason: 'Document expired',
-    },
-    {
-        id: 'VER-005',
-        name: 'มานี รักเรียน',
-        email: 'manee@student.com',
-        university: 'Kasetsart University',
-        studentId: '6512345678',
-        role: 'thai-student',
-        documentType: 'Enrollment Certificate',
-        documentUrl: '/images/small/small-5.jpg',
-        registrationCode: 'REG-015',
-        status: 'pending',
-        submittedAt: '2026-01-09 08:00',
-    },
-];
 
 const statusColors: { [key: string]: string } = {
     pending: 'badge-warning',
@@ -116,7 +45,16 @@ interface Verification {
     rejectionReason?: string;
 }
 
+// Helper to get proxy URL for Google Drive files
+function getProxyUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    return `${apiUrl}/upload/proxy?url=${encodeURIComponent(url)}`;
+}
+
 export default function VerificationPage() {
+    const { token } = useAuth();
+    const [verifications, setVerifications] = useState<Verification[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
@@ -124,8 +62,30 @@ export default function VerificationPage() {
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredVerifications = mockVerifications.filter((v) => {
+    // Fetch verifications
+    const fetchVerifications = async () => {
+        if (!token) return;
+        setIsLoading(true);
+        try {
+            const data = await api.verifications.list(token);
+            setVerifications(data.verifications);
+        } catch (error) {
+            console.error('Failed to fetch verifications:', error);
+            alert('Failed to load verification requests.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (token) {
+            fetchVerifications();
+        }
+    }, [token]);
+
+    const filteredVerifications = verifications.filter((v) => {
         const matchesSearch =
             v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             v.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,23 +98,39 @@ export default function VerificationPage() {
     });
 
     const stats = {
-        total: mockVerifications.length,
-        pending: mockVerifications.filter(v => v.status === 'pending').length,
-        approved: mockVerifications.filter(v => v.status === 'approved').length,
-        rejected: mockVerifications.filter(v => v.status === 'rejected').length,
+        total: verifications.length,
+        pending: verifications.filter(v => v.status === 'pending').length,
+        approved: verifications.filter(v => v.status === 'approved').length,
+        rejected: verifications.filter(v => v.status === 'rejected').length,
     };
 
-    const handleApprove = () => {
-        setShowApproveModal(false);
-        setSelectedVerification(null);
-        alert('Student verification approved! Registration ticket updated to student rate.');
+    const handleApprove = async () => {
+        if (!selectedVerification || !token) return;
+        try {
+            await api.verifications.approve(token, selectedVerification.id);
+            alert('Student verification approved!');
+            fetchVerifications(); // Refresh list
+            setShowApproveModal(false);
+            setSelectedVerification(null);
+        } catch (error) {
+            console.error('Approval failed:', error);
+            alert('Failed to approve verification.');
+        }
     };
 
-    const handleReject = () => {
-        setShowRejectModal(false);
-        setSelectedVerification(null);
-        setRejectionReason('');
-        alert('Verification rejected. User will be notified to resubmit documents.');
+    const handleReject = async () => {
+        if (!selectedVerification || !token || !rejectionReason) return;
+        try {
+            await api.verifications.reject(token, selectedVerification.id, rejectionReason);
+            alert('Verification rejected.');
+            fetchVerifications(); // Refresh list
+            setShowRejectModal(false);
+            setSelectedVerification(null);
+            setRejectionReason('');
+        } catch (error) {
+            console.error('Rejection failed:', error);
+            alert('Failed to reject verification.');
+        }
     };
 
     return (
@@ -241,90 +217,116 @@ export default function VerificationPage() {
                     </select>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Student Info</th>
-                                <th>University</th>
-                                <th>Document</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredVerifications.map((v) => (
-                                <tr key={v.id} className="animate-fade-in">
-                                    <td className="font-mono text-sm text-gray-600">{v.id}</td>
-                                    <td>
-                                        <div>
-                                            <p className="font-medium text-gray-800">{v.name}</p>
-                                            <p className="text-sm text-gray-500">{v.email}</p>
-                                            <span className={`badge text-xs mt-1 ${roleLabels[v.role]?.className}`}>
-                                                {roleLabels[v.role]?.label}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p className="text-gray-800">{v.university}</p>
-                                        <p className="text-sm text-gray-500">ID: {v.studentId}</p>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-2">
-                                            <IconFileText size={16} className="text-gray-400" />
-                                            <span className="text-sm">{v.documentType}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${statusColors[v.status]}`}>
-                                            {v.status.charAt(0).toUpperCase() + v.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td className="text-gray-500 text-sm">{v.submittedAt}</td>
-                                    <td>
-                                        <div className="flex gap-1 justify-center">
-                                            <button
-                                                className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                title="View Document"
-                                                onClick={() => { setSelectedVerification(v); setShowViewModal(true); }}
-                                            >
-                                                <IconEye size={18} />
-                                            </button>
-                                            {v.status === 'pending' && (
-                                                <>
-                                                    <button
-                                                        className="p-1.5 hover:bg-green-100 rounded text-green-600"
-                                                        title="Approve"
-                                                        onClick={() => { setSelectedVerification(v); setShowApproveModal(true); }}
-                                                    >
-                                                        <IconCheck size={18} />
-                                                    </button>
-                                                    <button
-                                                        className="p-1.5 hover:bg-red-100 rounded text-red-600"
-                                                        title="Reject"
-                                                        onClick={() => { setSelectedVerification(v); setShowRejectModal(true); }}
-                                                    >
-                                                        <IconX size={18} />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {/* Loading State */}
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-3 text-gray-500">Loading verifications...</span>
+                    </div>
+                ) : (
+                    <>
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student Info</th>
+                                        <th>University</th>
+                                        <th>Document</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th className="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredVerifications.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-center py-8 text-gray-500">
+                                                No verification requests found
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredVerifications.map((v) => (
+                                            <tr key={v.id} className="animate-fade-in">
+                                                <td className="font-mono text-sm text-gray-600">{v.id}</td>
+                                                <td>
+                                                    <div>
+                                                        <p className="font-medium text-gray-800">{v.name}</p>
+                                                        <p className="text-sm text-gray-500">{v.email}</p>
+                                                        <span className={`badge text-xs mt-1 ${roleLabels[v.role]?.className}`}>
+                                                            {roleLabels[v.role]?.label}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <p className="text-gray-800">{v.university}</p>
+                                                    <p className="text-sm text-gray-500">ID: {v.studentId}</p>
+                                                </td>
+                                                <td>
+                                                    <div className="flex items-center gap-2">
+                                                        <IconFileText size={16} className="text-gray-400" />
+                                                        <span className="text-sm">{v.documentType}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`badge ${statusColors[v.status]}`}>
+                                                        {v.status.charAt(0).toUpperCase() + v.status.slice(1)}
+                                                    </span>
+                                                </td>
+                                                <td className="text-gray-500 text-sm">
+                                                    {new Date(v.submittedAt).toLocaleDateString('th-TH', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </td>
+                                                <td>
+                                                    <div className="flex gap-1 justify-center">
+                                                        <button
+                                                            className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                            title="View Document"
+                                                            onClick={() => { setSelectedVerification(v); setShowViewModal(true); }}
+                                                        >
+                                                            <IconEye size={18} />
+                                                        </button>
+                                                        {v.status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    className="p-1.5 hover:bg-green-100 rounded text-green-600"
+                                                                    title="Approve"
+                                                                    onClick={() => { setSelectedVerification(v); setShowApproveModal(true); }}
+                                                                >
+                                                                    <IconCheck size={18} />
+                                                                </button>
+                                                                <button
+                                                                    className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                                                                    title="Reject"
+                                                                    onClick={() => { setSelectedVerification(v); setShowRejectModal(true); }}
+                                                                >
+                                                                    <IconX size={18} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                {/* Pagination */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-500">
-                        Showing {filteredVerifications.length} of {mockVerifications.length} requests
-                    </p>
-                </div>
+                        {/* Pagination */}
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-sm text-gray-500">
+                                Showing {filteredVerifications.length} of {verifications.length} requests
+                            </p>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* View Modal */}
@@ -375,7 +377,7 @@ export default function VerificationPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Submitted</p>
-                                    <p>{selectedVerification.submittedAt}</p>
+                                    <p>{new Date(selectedVerification.submittedAt).toLocaleString('th-TH')}</p>
                                 </div>
                             </div>
 
@@ -384,13 +386,35 @@ export default function VerificationPage() {
                                     <IconPhoto size={18} /> Uploaded Document
                                 </h5>
                                 <p className="text-sm text-gray-500 mb-2">{selectedVerification.documentType}</p>
-                                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                                    <img
-                                        src={selectedVerification.documentUrl}
-                                        alt="Document"
-                                        className="w-full h-64 object-contain"
-                                    />
+                                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white p-8 text-center">
+                                    {selectedVerification.documentUrl ? (
+                                        <object
+                                            data={getProxyUrl(selectedVerification.documentUrl)}
+                                            className="w-full h-96 object-contain"
+                                            type="image/jpeg"
+                                        >
+                                            <iframe
+                                                src={getProxyUrl(selectedVerification.documentUrl)}
+                                                className="w-full h-96"
+                                                title="Document Preview"
+                                            />
+                                        </object>
+                                    ) : (
+                                        <div className="w-full h-64 flex items-center justify-center text-gray-400">
+                                            No document uploaded
+                                        </div>
+                                    )}
                                 </div>
+                                {selectedVerification.documentUrl && (
+                                    <a
+                                        href={selectedVerification.documentUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-3 inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    >
+                                        <IconEye size={16} /> Open in New Tab
+                                    </a>
+                                )}
                             </div>
 
                             {selectedVerification.status === 'rejected' && selectedVerification.rejectionReason && (
@@ -485,12 +509,12 @@ export default function VerificationPage() {
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                 >
                                     <option value="">Select reason...</option>
-                                    <option value="expired">Document expired</option>
-                                    <option value="unclear">Document not readable/unclear</option>
-                                    <option value="mismatch">Name does not match registration</option>
-                                    <option value="invalid">Invalid document type</option>
-                                    <option value="fake">Suspected fraudulent document</option>
-                                    <option value="other">Other</option>
+                                    <option value="Document expired">Document expired</option>
+                                    <option value="Document not readable/unclear">Document not readable/unclear</option>
+                                    <option value="Name does not match registration">Name does not match registration</option>
+                                    <option value="Invalid document type">Invalid document type</option>
+                                    <option value="Suspected fraudulent document">Suspected fraudulent document</option>
+                                    <option value="Other">Other</option>
                                 </select>
 
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
@@ -499,7 +523,11 @@ export default function VerificationPage() {
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
                             <button onClick={() => setShowRejectModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleReject} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                            <button 
+                                onClick={handleReject} 
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                disabled={!rejectionReason}
+                            >
                                 Reject Verification
                             </button>
                         </div>

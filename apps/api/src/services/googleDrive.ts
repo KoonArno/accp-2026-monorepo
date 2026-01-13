@@ -102,3 +102,27 @@ export function extractFileIdFromUrl(url: string): string | null {
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   return match ? match[1] : null;
 }
+
+/**
+ * Get file stream from Google Drive
+ */
+export async function getFileStream(fileId: string): Promise<{ stream: Readable; mimeType: string }> {
+  const drive = getDriveClient();
+
+  // Get file metadata for MIME type
+  const metadata = await drive.files.get({
+    fileId,
+    fields: "mimeType",
+  });
+
+  const response = await drive.files.get(
+    { fileId, alt: "media" },
+    { responseType: "stream" }
+  );
+
+  return {
+    stream: response.data as Readable,
+    mimeType: metadata.data.mimeType || "application/octet-stream",
+  };
+}
+

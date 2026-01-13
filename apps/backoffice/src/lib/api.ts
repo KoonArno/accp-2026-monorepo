@@ -101,4 +101,27 @@ export const api = {
         }
       ),
   },
+
+  verifications: {
+    list: (token: string) =>
+      fetchAPI<{ verifications: any[] }>("/api/backoffice/verifications", { token }),
+    approve: (token: string, id: string) =>
+      fetchAPI<{ success: boolean; user: any }>(
+        `/api/backoffice/verifications/${id}/approve`,
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+          token,
+        }
+      ),
+    reject: (token: string, id: string, reason: string) =>
+      fetchAPI<{ success: boolean; user: any }>(
+        `/api/backoffice/verifications/${id}/reject`,
+        {
+          method: "POST",
+          body: JSON.stringify({ reason }),
+          token,
+        }
+      ),
+  },
 };

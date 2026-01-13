@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
+import { 
+    HEADER_COLORS, 
+    getLanguageButtonStyle, 
+    languageSwitcherContainerStyle, 
+    getMenuLinkColor, 
+    getMenuLinkWeight, 
+    authButtonStyles 
+} from './headerStyles';
 
 export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSearch, handleSearch, headerBgWhite }: any) {
     const t = useTranslations('common');
@@ -177,44 +185,16 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
 
                                     <div className="btn-area" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         {/* Language Switcher */}
-                                        <div className="d-none d-lg-flex" style={{ alignItems: 'center', gap: '4px' }}>
+                                        <div className="d-none d-lg-flex" style={languageSwitcherContainerStyle}>
                                             <Link
                                                 href={`/th${getPathWithoutLocale()}`}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    background: locale === 'th' ? '#FFBA00' : '#E0E0E0',
-                                                    color: locale === 'th' ? '#fff' : '#000',
-                                                    textDecoration: 'none',
-                                                    fontSize: '13px',
-                                                    fontWeight: '600',
-                                                    transition: 'all 0.3s ease',
-                                                    border: 'none',
-                                                    cursor: 'pointer'
-                                                }}
+                                                style={getLanguageButtonStyle(locale === 'th', headerBgWhite)}
                                             >
                                                 TH
                                             </Link>
                                             <Link
                                                 href={`/en${getPathWithoutLocale()}`}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    background: locale === 'en' ? '#FFBA00' : '#E0E0E0',
-                                                    color: locale === 'en' ? '#fff' : '#000',
-                                                    textDecoration: 'none',
-                                                    fontSize: '13px',
-                                                    fontWeight: '600',
-                                                    transition: 'all 0.3s ease',
-                                                    border: 'none',
-                                                    cursor: 'pointer'
-                                                }}
+                                                style={getLanguageButtonStyle(locale === 'en', headerBgWhite)}
                                             >
                                                 EN
                                             </Link>
@@ -224,23 +204,11 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                             <UserProfileDropdown />
                                         ) : (
                                             <>
-                                                <Link href={`/${locale}/login`} className="vl-btn1" style={{
-                                                    background: 'transparent',
-                                                    border: '2px solid #fff',
-                                                    color: '#fff',
-                                                    padding: '10px 20px',
-                                                    fontSize: '13px'
-                                                }}>
+                                                <Link href={`/${locale}/login`} className="vl-btn1" style={authButtonStyles.login}>
                                                     <i className="fa-solid fa-right-to-bracket" style={{ marginRight: '6px' }} />
                                                     {t('login')}
                                                 </Link>
-                                                <Link href={`/${locale}/signup`} className="vl-btn1" style={{
-                                                    background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)',
-                                                    border: 'none',
-                                                    color: '#fff',
-                                                    padding: '10px 20px',
-                                                    fontSize: '13px'
-                                                }}>
+                                                <Link href={`/${locale}/signup`} className="vl-btn1" style={authButtonStyles.signup}>
                                                     <i className="fa-solid fa-user-plus" style={{ marginRight: '6px' }} />
                                                     {t('signUp')}
                                                 </Link>

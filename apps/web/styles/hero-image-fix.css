@@ -1,0 +1,39 @@
+/* Hero Image Fix */
+.hero1-section-area .header-images .img1 {
+    position: absolute !important;
+    top: -400px !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 900px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 0 !important;
+    pointer-events: none;
+}
+
+.hero1-section-area .header-images .img1 img {
+    object-fit: contain !important;
+    object-position: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    mix-blend-mode: lighten; /* Removes black artifacts */
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .hero1-section-area .header-images .img1 {
+        position: relative !important;
+        top: 0 !important;
+        height: 600px !important;
+        margin-top: 50px !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero1-section-area .header-images .img1 {
+        height: 400px !important;
+        margin-top: 30px !important;
+    }
+}

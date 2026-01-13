@@ -1,10 +1,14 @@
 'use client'
 import { useState } from 'react'
-import ModalVideo from 'react-modal-video'
+import dynamic from 'next/dynamic'
 import "@/node_modules/react-modal-video/css/modal-video.css"
 import Link from 'next/link'
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
-import { Swiper, SwiperSlide } from "swiper/react"
+import { Swiper as SwiperOriginal, SwiperSlide as SwiperSlideOriginal } from "swiper/react"
+
+const ModalVideo = dynamic(() => import('react-modal-video') as any, { ssr: false }) as any;
+const Swiper = SwiperOriginal as any;
+const SwiperSlide = SwiperSlideOriginal as any;
 const swiperOptions = {
 	modules: [Autoplay, Pagination, Navigation],
 	slidesPerView: 1,
@@ -198,7 +202,7 @@ export default function Section5() {
 									</div>
 								</SwiperSlide>
 							</Swiper>
-							
+
 
 							<div className="owl-nav">
 								<button type="button" role="presentation" className="owl-prev h1p">

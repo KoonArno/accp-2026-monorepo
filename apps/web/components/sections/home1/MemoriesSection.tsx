@@ -2,7 +2,10 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link'
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
-import { Swiper, SwiperSlide } from "swiper/react"
+import { Swiper as SwiperOriginal, SwiperSlide as SwiperSlideOriginal } from "swiper/react"
+
+const Swiper = SwiperOriginal as any;
+const SwiperSlide = SwiperSlideOriginal as any;
 
 const swiperOptions = {
     modules: [Autoplay, Pagination, Navigation],
@@ -55,24 +58,28 @@ export default function MemoriesSection() {
                     </div>
                     <div className="row">
                         <div className="col-lg-12 memory-slider-area">
+                            {/* @ts-ignore */}
                             <Swiper {...swiperOptions} className="owl-carousel">
-                                {[...memories, ...memories].map((memory, index) => (
-                                    <SwiperSlide key={index} className="memory-boxarea">
-                                        <div className="img1 image-anime">
-                                            <img src={`/assets/img/all-images/memory/${memory.img}.png`} alt="" />
-                                        </div>
-                                        <div className="content-area">
-                                            <img src="/assets/img/icons/logo1.svg" alt="" className="logo1 keyframe5" />
-                                            <div className="arrow">
-                                                <Link href="/memories"><i className="fa-solid fa-arrow-right" /></Link>
+                                {[...memories, ...memories].map((memory, index) => {
+                                    // @ts-ignore
+                                    return (
+                                        <SwiperSlide key={index} className="memory-boxarea">
+                                            <div className="img1 image-anime">
+                                                <img src={`/assets/img/all-images/memory/${memory.img}.png`} alt="" />
                                             </div>
-                                            <div className="space18" />
-                                            <p>{t('memories.event')} {memory.year}</p>
-                                            <div className="space12" />
-                                            <Link href="/memories">{t('memories.eventConferences')}</Link>
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
+                                            <div className="content-area">
+                                                <img src="/assets/img/icons/logo1.svg" alt="" className="logo1 keyframe5" />
+                                                <div className="arrow">
+                                                    <Link href="/memories"><i className="fa-solid fa-arrow-right" /></Link>
+                                                </div>
+                                                <div className="space18" />
+                                                <p>{t('memories.event')} {memory.year}</p>
+                                                <div className="space12" />
+                                                <Link href="/memories">{t('memories.eventConferences')}</Link>
+                                            </div>
+                                        </SwiperSlide>
+                                    )
+                                })}
                             </Swiper>
 
                             <div className="owl-nav">
@@ -86,7 +93,7 @@ export default function MemoriesSection() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
         </>
     )
 }

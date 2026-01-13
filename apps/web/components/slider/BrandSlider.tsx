@@ -1,5 +1,7 @@
 'use client'
-import { Swiper, SwiperSlide } from "swiper/react"
+import { Swiper as SwiperOriginal, SwiperSlide as SwiperSlideOriginal } from "swiper/react"
+const Swiper = SwiperOriginal as any;
+const SwiperSlide = SwiperSlideOriginal as any;
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
 
 const swiperOptions = {

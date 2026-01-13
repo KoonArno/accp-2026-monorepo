@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/layout';
 import { api } from '@/lib/api';
 import {
@@ -10,18 +10,13 @@ import {
     IconLayoutGrid,
     IconTicket,
     IconPhoto,
-    IconCheck,
     IconArrowLeft,
-    IconArrowRight,
+    IconCheck,
     IconPlus,
-    IconPencil,
     IconTrash,
     IconX,
     IconLoader2,
 } from '@tabler/icons-react';
-
-// Step types
-type Step = 1 | 2 | 3 | 4;
 
 // Types
 interface SessionData {
@@ -33,15 +28,23 @@ interface SessionData {
     startTime: string;
     endTime: string;
     maxCapacity: number;
+    isNew?: boolean;
 }
 
 interface TicketData {
     id?: number;
     name: string;
-    description: string;
     category: 'primary' | 'addon';
     price: string;
     quota: number;
+    isNew?: boolean;
+}
+
+interface VenueImage {
+    id?: number;
+    imageUrl: string;
+    caption: string;
+    isNew?: boolean;
 }
 
 interface EventFormData {
@@ -56,10 +59,21 @@ interface EventFormData {
     maxCapacity: number;
     conferenceCode: string;
     cpeCredits: string;
-    status: 'draft' | 'published';
+    status: 'draft' | 'published' | 'cancelled' | 'completed';
 }
 
-// Helper function to format datetime for display
+// Helper to convert ISO date to datetime-local format
+const toDateTimeLocal = (isoString: string): string => {
+    if (!isoString) return '';
+    try {
+        const date = new Date(isoString);
+        return date.toISOString().slice(0, 16);
+    } catch {
+        return '';
+    }
+};
+
+// Helper function to format datetime
 const formatDateTime = (dateTimeStr: string): string => {
     if (!dateTimeStr) return '-';
     try {
@@ -76,30 +90,17 @@ const formatDateTime = (dateTimeStr: string): string => {
     }
 };
 
-// Helper function to format time only
-const formatTime = (dateTimeStr: string): string => {
-    if (!dateTimeStr) return '-';
-    try {
-        const date = new Date(dateTimeStr);
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-        });
-    } catch {
-        return dateTimeStr;
-    }
-};
-
-export default function CreateEventPage() {
+export default function EditEventPage() {
     const router = useRouter();
-    const [currentStep, setCurrentStep] = useState<Step>(1);
-    const [showSessionForm, setShowSessionForm] = useState(false);
-    const [showTicketModal, setShowTicketModal] = useState(false);
+    const params = useParams();
+    const eventId = params.id as string;
+
+    const [activeTab, setActiveTab] = useState<'details' | 'sessions' | 'tickets' | 'venue'>('details');
+    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
-    // Event form data
+    // Form data
     const [formData, setFormData] = useState<EventFormData>({
         eventCode: '',
         eventName: '',
@@ -115,11 +116,16 @@ export default function CreateEventPage() {
         status: 'draft',
     });
 
-    // Sessions and Tickets
+    // Sessions, Tickets, Images
     const [sessions, setSessions] = useState<SessionData[]>([]);
     const [tickets, setTickets] = useState<TicketData[]>([]);
+    const [venueImages, setVenueImages] = useState<VenueImage[]>([]);
 
-    // Session form data
+    // Modals
+    const [showSessionForm, setShowSessionForm] = useState(false);
+    const [showTicketModal, setShowTicketModal] = useState(false);
+
+    // Session form
     const [sessionForm, setSessionForm] = useState<SessionData>({
         sessionCode: '',
         sessionName: '',
@@ -130,115 +136,169 @@ export default function CreateEventPage() {
         maxCapacity: 50,
     });
 
-    // Ticket form data
+    // Ticket form
     const [ticketForm, setTicketForm] = useState<TicketData>({
         name: '',
-        description: '',
         category: 'primary',
         price: '',
         quota: 100,
     });
 
-    // Generate a unique event code
-    const generateEventCode = () => {
-        const prefix = 'EVT';
-        const year = new Date().getFullYear();
-        const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const newCode = `${prefix}${year}-${randomPart}`;
-        setFormData(prev => ({ ...prev, eventCode: newCode }));
-    };
-
-    const steps = [
-        { id: 1, icon: IconCalendarEvent, label: 'Event Details' },
-        { id: 2, icon: IconLayoutGrid, label: 'Sessions' },
-        { id: 3, icon: IconTicket, label: 'Tickets' },
-        { id: 4, icon: IconPhoto, label: 'Venue/Images' },
-    ];
-
-    // Check if Sessions step should be shown (only for multi_session events)
     const shouldShowSessions = formData.eventType === 'multi_session';
 
-    const goToStep = (step: Step) => {
-        if (step >= 1 && step <= 4) {
-            // Skip step 2 if single room
-            if (!shouldShowSessions && step === 2) {
-                return;
+    // Fetch existing event data
+    useEffect(() => {
+        const fetchEvent = async () => {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem('backoffice_token') || '';
+                const response = await api.backofficeEvents.get(token, parseInt(eventId));
+                const event = response.event;
+
+                setFormData({
+                    eventCode: event.eventCode || '',
+                    eventName: event.eventName || '',
+                    description: event.description || '',
+                    eventType: event.eventType || 'single_room',
+                    location: event.location || '',
+                    mapUrl: event.mapUrl || '',
+                    startDate: toDateTimeLocal(event.startDate),
+                    endDate: toDateTimeLocal(event.endDate),
+                    maxCapacity: event.maxCapacity || 100,
+                    conferenceCode: event.conferenceCode || '',
+                    cpeCredits: event.cpeCredits || '',
+                    status: event.status || 'draft',
+                });
+
+                // Load sessions
+                if (response.sessions) {
+                    setSessions(response.sessions.map((s: any) => ({
+                        id: s.id,
+                        sessionCode: s.sessionCode,
+                        sessionName: s.sessionName,
+                        description: s.description || '',
+                        room: s.room || '',
+                        startTime: toDateTimeLocal(s.startTime),
+                        endTime: toDateTimeLocal(s.endTime),
+                        maxCapacity: s.maxCapacity || 50,
+                    })));
+                }
+
+                // Load tickets
+                if (response.tickets) {
+                    setTickets(response.tickets.map((t: any) => ({
+                        id: t.id,
+                        name: t.name,
+                        category: t.category,
+                        price: t.price,
+                        quota: t.quota,
+                    })));
+                }
+
+                // Load venue images
+                if (response.venueImages) {
+                    setVenueImages(response.venueImages.map((img: any) => ({
+                        id: img.id,
+                        imageUrl: img.imageUrl,
+                        caption: img.caption || '',
+                    })));
+                }
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch event');
+            } finally {
+                setIsLoading(false);
             }
-            setCurrentStep(step);
-        }
-    };
+        };
 
-    // Navigate to next step, skipping Sessions if single room
-    const goToNextStep = () => {
-        if (currentStep === 1) {
-            setCurrentStep(shouldShowSessions ? 2 : 3);
-        } else if (currentStep === 2) {
-            setCurrentStep(3);
-        } else if (currentStep === 3) {
-            setCurrentStep(4);
+        if (eventId) {
+            fetchEvent();
         }
-    };
-
-    // Navigate to previous step, skipping Sessions if single room
-    const goToPreviousStep = () => {
-        if (currentStep === 4) {
-            setCurrentStep(3);
-        } else if (currentStep === 3) {
-            setCurrentStep(shouldShowSessions ? 2 : 1);
-        } else if (currentStep === 2) {
-            setCurrentStep(1);
-        }
-    };
+    }, [eventId]);
 
     // Add session
-    const handleAddSession = () => {
+    const handleAddSession = async () => {
         if (!sessionForm.sessionCode || !sessionForm.sessionName) return;
-        setSessions(prev => [...prev, { ...sessionForm, id: Date.now() }]);
-        setSessionForm({
-            sessionCode: '',
-            sessionName: '',
-            description: '',
-            room: '',
-            startTime: '',
-            endTime: '',
-            maxCapacity: 50,
-        });
-        setShowSessionForm(false);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const response = await api.backofficeEvents.createSession(token, parseInt(eventId), {
+                sessionCode: sessionForm.sessionCode,
+                sessionName: sessionForm.sessionName,
+                description: sessionForm.description || undefined,
+                room: sessionForm.room || undefined,
+                startTime: new Date(sessionForm.startTime).toISOString(),
+                endTime: new Date(sessionForm.endTime).toISOString(),
+                maxCapacity: sessionForm.maxCapacity,
+            });
+            setSessions(prev => [...prev, { ...response.session, startTime: toDateTimeLocal(response.session.startTime), endTime: toDateTimeLocal(response.session.endTime) }]);
+            setSessionForm({ sessionCode: '', sessionName: '', description: '', room: '', startTime: '', endTime: '', maxCapacity: 50 });
+            setShowSessionForm(false);
+        } catch (err: any) {
+            alert(err.message || 'Failed to add session');
+        }
     };
 
     // Delete session
-    const handleDeleteSession = (id: number) => {
-        setSessions(prev => prev.filter(s => s.id !== id));
+    const handleDeleteSession = async (id: number) => {
+        if (!confirm('Delete this session?')) return;
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.backofficeEvents.deleteSession(token, parseInt(eventId), id);
+            setSessions(prev => prev.filter(s => s.id !== id));
+        } catch (err: any) {
+            alert(err.message || 'Failed to delete session');
+        }
     };
 
     // Add ticket
-    const handleAddTicket = () => {
+    const handleAddTicket = async () => {
         if (!ticketForm.name || !ticketForm.price) return;
-        setTickets(prev => [...prev, { ...ticketForm, id: Date.now() }]);
-        setTicketForm({
-            name: '',
-            description: '',
-            category: 'primary',
-            price: '',
-            quota: 100,
-        });
-        setShowTicketModal(false);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const response = await api.backofficeEvents.createTicket(token, parseInt(eventId), {
+                name: ticketForm.name,
+                category: ticketForm.category,
+                price: ticketForm.price,
+                quota: ticketForm.quota,
+            });
+            setTickets(prev => [...prev, response.ticket]);
+            setTicketForm({ name: '', category: 'primary', price: '', quota: 100 });
+            setShowTicketModal(false);
+        } catch (err: any) {
+            alert(err.message || 'Failed to add ticket');
+        }
     };
 
     // Delete ticket
-    const handleDeleteTicket = (id: number) => {
-        setTickets(prev => prev.filter(t => t.id !== id));
+    const handleDeleteTicket = async (id: number) => {
+        if (!confirm('Delete this ticket?')) return;
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.backofficeEvents.deleteTicket(token, parseInt(eventId), id);
+            setTickets(prev => prev.filter(t => t.id !== id));
+        } catch (err: any) {
+            alert(err.message || 'Failed to delete ticket');
+        }
     };
 
-    // Submit form
-    const handleFinish = async () => {
+    // Delete venue image
+    const handleDeleteImage = async (id: number) => {
+        if (!confirm('Delete this image?')) return;
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.backofficeEvents.deleteImage(token, parseInt(eventId), id);
+            setVenueImages(prev => prev.filter(img => img.id !== id));
+        } catch (err: any) {
+            alert(err.message || 'Failed to delete image');
+        }
+    };
+
+    // Save event details
+    const handleSaveDetails = async () => {
         setError('');
         setIsSubmitting(true);
 
         try {
             const token = localStorage.getItem('backoffice_token') || '';
-
-            // Create event
             const eventData = {
                 eventCode: formData.eventCode,
                 eventName: formData.eventName,
@@ -254,44 +314,35 @@ export default function CreateEventPage() {
                 status: formData.status,
             };
 
-            const { event } = await api.backofficeEvents.create(token, eventData);
-
-            // Create sessions
-            if (shouldShowSessions && sessions.length > 0) {
-                for (const session of sessions) {
-                    await api.backofficeEvents.createSession(token, event.id, {
-                        sessionCode: session.sessionCode,
-                        sessionName: session.sessionName,
-                        description: session.description || undefined,
-                        room: session.room || undefined,
-                        startTime: new Date(session.startTime).toISOString(),
-                        endTime: new Date(session.endTime).toISOString(),
-                        maxCapacity: session.maxCapacity,
-                    });
-                }
-            }
-
-            // Create tickets
-            for (const ticket of tickets) {
-                await api.backofficeEvents.createTicket(token, event.id, {
-                    name: ticket.name,
-                    category: ticket.category,
-                    price: ticket.price,
-                    quota: ticket.quota,
-                });
-            }
-
-            alert('Event created successfully!');
-            router.push('/events');
+            await api.backofficeEvents.update(token, parseInt(eventId), eventData);
+            alert('Event details saved!');
         } catch (err: any) {
-            setError(err.message || 'Failed to create event');
+            setError(err.message || 'Failed to save event');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    if (isLoading) {
+        return (
+            <AdminLayout title="Edit Event">
+                <div className="flex items-center justify-center py-12">
+                    <IconLoader2 size={32} className="animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-500">Loading event...</span>
+                </div>
+            </AdminLayout>
+        );
+    }
+
+    const tabs = [
+        { id: 'details', label: 'Event Details', icon: IconCalendarEvent },
+        ...(shouldShowSessions ? [{ id: 'sessions', label: 'Sessions', icon: IconLayoutGrid }] : []),
+        { id: 'tickets', label: 'Tickets', icon: IconTicket },
+        { id: 'venue', label: 'Venue/Images', icon: IconPhoto },
+    ];
+
     return (
-        <AdminLayout title="Create New Event">
+        <AdminLayout title={`Edit Event`}>
             {/* Back Button */}
             <div className="mb-4">
                 <Link href="/events" className="btn-secondary inline-flex items-center gap-2">
@@ -299,94 +350,80 @@ export default function CreateEventPage() {
                 </Link>
             </div>
 
-            {/* Step Progress Wizard */}
-            <div className="card mb-6">
-                <div className="relative py-4">
-                    {/* Progress Line */}
-                    <div className="absolute h-1 bg-gray-200 left-[10%] right-[10%] top-[32px] z-0" />
-                    <div
-                        className="absolute h-1 bg-green-500 left-[10%] top-[32px] z-[1] transition-all duration-300"
-                        style={{
-                            width: shouldShowSessions
-                                ? `${((currentStep - 1) / 3) * 80}%`
-                                : `${(([1, 3, 4].indexOf(currentStep) || 0) / 2) * 80}%`
-                        }}
-                    />
-
-                    <div className="flex justify-between relative z-[2]">
-                        {steps
-                            .filter((step) => shouldShowSessions || step.id !== 2)
-                            .map((step) => {
-                                const Icon = step.icon;
-                                // Calculate if step is completed based on actual step order
-                                const isCompleted = step.id < currentStep;
-                                const isCurrent = step.id === currentStep;
-                                return (
-                                    <div
-                                        key={step.id}
-                                        className={`text-center flex-1 cursor-pointer`}
-                                        onClick={() => step.id <= currentStep && goToStep(step.id as Step)}
-                                    >
-                                        <div
-                                            className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2 transition-all
-                      ${isCompleted ? 'bg-green-500 text-white' :
-                                                    isCurrent ? 'bg-blue-600 text-white' :
-                                                        'bg-gray-200 text-gray-500'}`}
-                                        >
-                                            {isCompleted ? <IconCheck size={24} /> : <Icon size={24} stroke={1.5} />}
-                                        </div>
-                                        <p className={`text-sm font-medium ${isCurrent ? 'text-blue-600' :
-                                            isCompleted ? 'text-green-600' : 'text-gray-500'
-                                            }`}>
-                                            {step.label}
-                                        </p>
-                                    </div>
-                                );
-                            })}
+            {/* Prominent Header Banner */}
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-6 mb-6 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                            <IconCalendarEvent size={32} />
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm font-medium mb-1">{formData.eventCode}</p>
+                            <h1 className="text-2xl font-bold">{formData.eventName || 'Untitled Event'}</h1>
+                            <p className="text-blue-200 text-sm mt-1">
+                                {formData.location || 'No location set'} • {formData.conferenceCode && `CPE: ${formData.conferenceCode}`}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${formData.status === 'published' ? 'bg-green-500' :
+                                formData.status === 'draft' ? 'bg-yellow-500' :
+                                    formData.status === 'cancelled' ? 'bg-red-500' : 'bg-gray-500'
+                            }`}>
+                            {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
+                        </span>
+                        <p className="text-blue-200 text-sm mt-2">
+                            {formData.startDate && new Date(formData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* Step 1: Event Details */}
-            {currentStep === 1 && (
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${activeTab === tab.id
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                }`}
+                        >
+                            <Icon size={18} />
+                            {tab.label}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {error && (
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
+                    {error}
+                </div>
+            )}
+
+            {/* Event Details Tab */}
+            {activeTab === 'details' && (
                 <div className="card">
-                    <div className="bg-blue-600 text-white px-6 py-4 rounded-t-xl -m-6 mb-6 flex items-center gap-2">
-                        <IconCalendarEvent size={20} />
-                        <h3 className="text-lg font-semibold">Step 1: Event Details</h3>
-                    </div>
-
-                    {error && (
-                        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-                            {error}
-                        </div>
-                    )}
-
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Event Code *</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    className="input-field flex-1"
-                                    placeholder="e.g., EVT2026-ABCD"
-                                    value={formData.eventCode}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, eventCode: e.target.value }))}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={generateEventCode}
-                                    className="btn-secondary whitespace-nowrap"
-                                >
-                                    Generate
-                                </button>
-                            </div>
+                            <input
+                                type="text"
+                                className="input-field"
+                                value={formData.eventCode}
+                                onChange={(e) => setFormData(prev => ({ ...prev, eventCode: e.target.value }))}
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
                             <select
                                 className="input-field"
                                 value={formData.eventType}
-                                onChange={(e) => setFormData(prev => ({ ...prev, eventType: e.target.value as 'single_room' | 'multi_session' }))}
+                                onChange={(e) => setFormData(prev => ({ ...prev, eventType: e.target.value as any }))}
                             >
                                 <option value="single_room">Single Room</option>
                                 <option value="multi_session">Multi Session</option>
@@ -399,7 +436,6 @@ export default function CreateEventPage() {
                         <input
                             type="text"
                             className="input-field"
-                            placeholder="Enter event name"
                             value={formData.eventName}
                             onChange={(e) => setFormData(prev => ({ ...prev, eventName: e.target.value }))}
                         />
@@ -409,7 +445,6 @@ export default function CreateEventPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea
                             className="input-field h-24"
-                            placeholder="Event description..."
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                         />
@@ -438,11 +473,10 @@ export default function CreateEventPage() {
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Location Name</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="e.g., Bangkok Convention Center"
                                 value={formData.location}
                                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                             />
@@ -452,7 +486,6 @@ export default function CreateEventPage() {
                             <input
                                 type="url"
                                 className="input-field"
-                                placeholder="https://maps.google.com/..."
                                 value={formData.mapUrl}
                                 onChange={(e) => setFormData(prev => ({ ...prev, mapUrl: e.target.value }))}
                             />
@@ -466,12 +499,11 @@ export default function CreateEventPage() {
                                 type="number"
                                 className="input-field"
                                 value={formData.maxCapacity}
-                                min={1}
                                 onChange={(e) => setFormData(prev => ({ ...prev, maxCapacity: parseInt(e.target.value) || 100 }))}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Conference Code</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Conference Code (CPE)</label>
                             <input
                                 type="text"
                                 className="input-field"
@@ -485,44 +517,49 @@ export default function CreateEventPage() {
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="e.g., 6.00"
                                 value={formData.cpeCredits}
                                 onChange={(e) => setFormData(prev => ({ ...prev, cpeCredits: e.target.value }))}
                             />
                         </div>
                     </div>
+
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select
-                            className="input-field"
+                            className="input-field w-48"
                             value={formData.status}
-                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'published' }))}
+                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
                         >
                             <option value="draft">Draft</option>
                             <option value="published">Published</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="completed">Completed</option>
                         </select>
                     </div>
 
                     <hr className="my-6" />
 
                     <div className="flex justify-end">
-                        <button onClick={goToNextStep} className="btn-primary text-lg px-6 py-3 flex items-center gap-2">
-                            Save & Continue <IconArrowRight size={20} />
+                        <button
+                            onClick={handleSaveDetails}
+                            disabled={isSubmitting}
+                            className="btn-primary flex items-center gap-2"
+                        >
+                            {isSubmitting ? <IconLoader2 size={18} className="animate-spin" /> : <IconCheck size={18} />}
+                            Save Changes
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Step 2: Sessions */}
-            {currentStep === 2 && (
+            {/* Sessions Tab */}
+            {activeTab === 'sessions' && shouldShowSessions && (
                 <div className="card">
-                    <div className="bg-purple-600 text-white px-6 py-4 rounded-t-xl -m-6 mb-6 flex items-center gap-2">
-                        <IconLayoutGrid size={20} />
-                        <h3 className="text-lg font-semibold">Step 2: Sessions</h3>
-                    </div>
-
-                    <div className="bg-blue-50 text-blue-700 p-4 rounded-lg mb-4 flex items-center gap-2">
-                        <IconLayoutGrid size={18} /> Add sessions for your multi-session event
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">Sessions</h3>
+                        <button onClick={() => setShowSessionForm(true)} className="btn-primary flex items-center gap-2">
+                            <IconPlus size={18} /> Add Session
+                        </button>
                     </div>
 
                     {/* Add Session Form */}
@@ -545,7 +582,6 @@ export default function CreateEventPage() {
                                     <input
                                         type="text"
                                         className="input-field"
-                                        placeholder="Session name"
                                         value={sessionForm.sessionName}
                                         onChange={(e) => setSessionForm(prev => ({ ...prev, sessionName: e.target.value }))}
                                     />
@@ -557,7 +593,6 @@ export default function CreateEventPage() {
                                     <input
                                         type="text"
                                         className="input-field"
-                                        placeholder="Grand Hall"
                                         value={sessionForm.room}
                                         onChange={(e) => setSessionForm(prev => ({ ...prev, room: e.target.value }))}
                                     />
@@ -599,12 +634,6 @@ export default function CreateEventPage() {
                         </div>
                     )}
 
-                    {!showSessionForm && (
-                        <button onClick={() => setShowSessionForm(true)} className="btn-secondary mb-4 flex items-center gap-2">
-                            <IconPlus size={18} /> Add Session
-                        </button>
-                    )}
-
                     {/* Sessions Table */}
                     {sessions.length > 0 ? (
                         <div className="overflow-x-auto">
@@ -623,14 +652,9 @@ export default function CreateEventPage() {
                                     {sessions.map((session) => (
                                         <tr key={session.id}>
                                             <td className="font-mono text-sm">{session.sessionCode}</td>
-                                            <td>
-                                                <p className="font-medium">{session.sessionName}</p>
-                                                <p className="text-sm text-gray-500">{session.description}</p>
-                                            </td>
-                                            <td>{session.room}</td>
-                                            <td className="text-sm">
-                                                {formatDateTime(session.startTime)}<br />to {formatTime(session.endTime)}
-                                            </td>
+                                            <td>{session.sessionName}</td>
+                                            <td>{session.room || '-'}</td>
+                                            <td className="text-sm">{formatDateTime(session.startTime)}</td>
                                             <td>{session.maxCapacity}</td>
                                             <td>
                                                 <button
@@ -647,40 +671,22 @@ export default function CreateEventPage() {
                         </div>
                     ) : (
                         <div className="text-center py-8 text-gray-500">
-                            No sessions added yet. Click "Add Session" to create one.
+                            No sessions yet. Click "Add Session" to create one.
                         </div>
                     )}
-
-                    <hr className="my-6" />
-
-                    <div className="flex justify-between">
-                        <button onClick={goToPreviousStep} className="btn-secondary flex items-center gap-2">
-                            <IconArrowLeft size={18} /> Back to Event Details
-                        </button>
-                        <button onClick={goToNextStep} className="btn-primary text-lg px-6 py-3 flex items-center gap-2">
-                            Continue <IconArrowRight size={20} />
-                        </button>
-                    </div>
                 </div>
             )}
 
-            {/* Step 3: Tickets */}
-            {currentStep === 3 && (
+            {/* Tickets Tab */}
+            {activeTab === 'tickets' && (
                 <div className="card">
-                    <div className="bg-yellow-500 text-white px-6 py-4 rounded-t-xl -m-6 mb-6 flex items-center gap-2">
-                        <IconTicket size={20} />
-                        <h3 className="text-lg font-semibold">Step 3: Tickets</h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">Ticket Types</h3>
+                        <button onClick={() => setShowTicketModal(true)} className="btn-primary flex items-center gap-2">
+                            <IconPlus size={18} /> Add Ticket
+                        </button>
                     </div>
 
-                    <div className="bg-blue-50 text-blue-700 p-4 rounded-lg mb-4 flex items-center gap-2">
-                        <IconTicket size={18} /> Add ticket types for your event (e.g., Early Bird, Member, Public)
-                    </div>
-
-                    <button onClick={() => setShowTicketModal(true)} className="btn-secondary mb-4 flex items-center gap-2">
-                        <IconPlus size={18} /> Add Ticket Type
-                    </button>
-
-                    {/* Tickets Table */}
                     {tickets.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="data-table">
@@ -696,10 +702,7 @@ export default function CreateEventPage() {
                                 <tbody>
                                     {tickets.map((ticket) => (
                                         <tr key={ticket.id}>
-                                            <td>
-                                                <p className="font-medium">{ticket.name}</p>
-                                                <p className="text-sm text-gray-500">{ticket.description}</p>
-                                            </td>
+                                            <td className="font-medium">{ticket.name}</td>
                                             <td>
                                                 <span className={`badge ${ticket.category === 'primary' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
                                                     {ticket.category === 'primary' ? 'Primary' : 'Add-on'}
@@ -722,86 +725,46 @@ export default function CreateEventPage() {
                         </div>
                     ) : (
                         <div className="text-center py-8 text-gray-500">
-                            No tickets added yet. Click "Add Ticket Type" to create one.
+                            No tickets yet. Click "Add Ticket" to create one.
                         </div>
                     )}
-
-                    <hr className="my-6" />
-
-                    <div className="flex justify-between">
-                        <button onClick={goToPreviousStep} className="btn-secondary flex items-center gap-2">
-                            <IconArrowLeft size={18} /> {shouldShowSessions ? 'Back to Sessions' : 'Back to Event Details'}
-                        </button>
-                        <button onClick={goToNextStep} className="btn-primary text-lg px-6 py-3 flex items-center gap-2">
-                            Continue <IconArrowRight size={20} />
-                        </button>
-                    </div>
                 </div>
             )}
 
-            {/* Step 4: Venue/Images */}
-            {currentStep === 4 && (
+            {/* Venue/Images Tab */}
+            {activeTab === 'venue' && (
                 <div className="card">
-                    <div className="bg-green-600 text-white px-6 py-4 rounded-t-xl -m-6 mb-6 flex items-center gap-2">
-                        <IconPhoto size={20} />
-                        <h3 className="text-lg font-semibold">Step 4: Venue/Images</h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">Venue Images</h3>
                     </div>
 
                     <div className="bg-blue-50 text-blue-700 p-4 rounded-lg mb-4 flex items-center gap-2">
-                        <IconPhoto size={18} /> Upload images of the venue (max 10 images)
+                        <IconPhoto size={18} /> Upload images of the venue
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Upload Venue Images</label>
-                        <input type="file" className="input-field" multiple accept="image/*" />
-                    </div>
-
-                    {/* Image Grid */}
-                    <div className="grid grid-cols-4 gap-4 mb-6">
-                        <div className="border border-gray-200 rounded-lg overflow-hidden">
-                            <div className="h-32 bg-gray-100 flex items-center justify-center">
-                                <IconPhoto size={40} className="text-gray-400" />
-                            </div>
-                            <div className="p-2 text-center">
-                                <button className="text-red-600 hover:bg-red-100 p-1 rounded text-sm flex items-center gap-1 mx-auto">
-                                    <IconTrash size={14} /> Remove
-                                </button>
-                            </div>
+                    {venueImages.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-4">
+                            {venueImages.map((img) => (
+                                <div key={img.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="h-32 bg-gray-100 flex items-center justify-center">
+                                        <img src={img.imageUrl} alt={img.caption} className="h-full w-full object-cover" />
+                                    </div>
+                                    <div className="p-2 text-center">
+                                        <button
+                                            onClick={() => handleDeleteImage(img.id!)}
+                                            className="text-red-600 hover:bg-red-100 p-1 rounded text-sm flex items-center gap-1 mx-auto"
+                                        >
+                                            <IconTrash size={14} /> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <div className="border border-gray-200 rounded-lg overflow-hidden">
-                            <div className="h-32 bg-gray-100 flex items-center justify-center">
-                                <IconPhoto size={40} className="text-gray-400" />
-                            </div>
-                            <div className="p-2 text-center">
-                                <button className="text-red-600 hover:bg-red-100 p-1 rounded text-sm flex items-center gap-1 mx-auto">
-                                    <IconTrash size={14} /> Remove
-                                </button>
-                            </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
+                            No venue images yet.
                         </div>
-                    </div>
-
-                    <hr className="my-6" />
-
-                    <div className="flex justify-between">
-                        <button onClick={goToPreviousStep} className="btn-secondary flex items-center gap-2">
-                            <IconArrowLeft size={18} /> Back to Tickets
-                        </button>
-                        <button
-                            onClick={handleFinish}
-                            disabled={isSubmitting}
-                            className="bg-green-600 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <IconLoader2 size={20} className="animate-spin" /> Creating...
-                                </>
-                            ) : (
-                                <>
-                                    <IconCheck size={20} /> Finish
-                                </>
-                            )}
-                        </button>
-                    </div>
+                    )}
                 </div>
             )}
 
@@ -811,71 +774,60 @@ export default function CreateEventPage() {
                     <div className="bg-white rounded-2xl max-w-md w-full">
                         <div className="p-6 border-b border-gray-100">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
-                                    <IconTicket size={20} /> Add Ticket Type
-                                </h3>
+                                <h3 className="text-lg font-semibold">Add Ticket Type</h3>
                                 <button onClick={() => setShowTicketModal(false)} className="text-gray-400 hover:text-gray-600">
                                     <IconX size={20} />
                                 </button>
                             </div>
                         </div>
-                        <div className="p-6">
-                            <div className="mb-4">
+                        <div className="p-6 space-y-4">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Ticket Name *</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="e.g., Early Bird - Member"
+                                    placeholder="e.g., Early Bird"
                                     value={ticketForm.name}
                                     onChange={(e) => setTicketForm(prev => ({ ...prev, name: e.target.value }))}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select
+                                    className="input-field"
+                                    value={ticketForm.category}
+                                    onChange={(e) => setTicketForm(prev => ({ ...prev, category: e.target.value as 'primary' | 'addon' }))}
+                                >
+                                    <option value="primary">Primary</option>
+                                    <option value="addon">Add-on</option>
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <select
-                                        className="input-field"
-                                        value={ticketForm.category}
-                                        onChange={(e) => setTicketForm(prev => ({ ...prev, category: e.target.value as 'primary' | 'addon' }))}
-                                    >
-                                        <option value="primary">Primary</option>
-                                        <option value="addon">Add-on</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (฿)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
                                     <input
                                         type="text"
                                         className="input-field"
-                                        placeholder="3500"
+                                        placeholder="0.00"
                                         value={ticketForm.price}
                                         onChange={(e) => setTicketForm(prev => ({ ...prev, price: e.target.value }))}
                                     />
                                 </div>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Quota</label>
-                                <input
-                                    type="number"
-                                    className="input-field"
-                                    value={ticketForm.quota}
-                                    onChange={(e) => setTicketForm(prev => ({ ...prev, quota: parseInt(e.target.value) || 100 }))}
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    className="input-field h-20"
-                                    placeholder="Ticket description..."
-                                    value={ticketForm.description}
-                                    onChange={(e) => setTicketForm(prev => ({ ...prev, description: e.target.value }))}
-                                />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
+                                    <input
+                                        type="number"
+                                        className="input-field"
+                                        value={ticketForm.quota}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, quota: parseInt(e.target.value) || 100 }))}
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
                             <button onClick={() => setShowTicketModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleAddTicket} className="btn-primary">
-                                Add Ticket
+                            <button onClick={handleAddTicket} className="btn-primary flex items-center gap-2">
+                                <IconCheck size={18} /> Add Ticket
                             </button>
                         </div>
                     </div>

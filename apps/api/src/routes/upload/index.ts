@@ -129,4 +129,22 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  /**
+   * POST /upload
+   * Generic upload (defaults to speakers for now)
+   */
+  fastify.post("/", async (request, reply) => {
+    try {
+      // Defaulting to "speakers" as generic upload type for this route
+      const result = await handleFileUpload(request, "speakers");
+      return reply.status(result.status).send(result);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({
+        success: false,
+        error: "Failed to upload file. Please try again.",
+      });
+    }
+  });
 }

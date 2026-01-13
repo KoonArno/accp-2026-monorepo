@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AdminLayout } from '@/components/layout';
 import { api } from '@/lib/api';
 import {
@@ -15,6 +15,9 @@ import {
     IconBrandLinkedin,
     IconWorld,
     IconLoader2,
+    IconPhoto,
+    IconCalendarEvent,
+    IconUpload,
 } from '@tabler/icons-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -39,45 +42,111 @@ interface Speaker {
     // actually schema: firstName, lastName, ...
 }
 
+interface Event {
+    id: number;
+    eventCode: string;
+    eventName: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
 export default function SpeakersPage() {
     const { isAdmin, user } = useAuth();
     const [speakers, setSpeakers] = useState<Speaker[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // For now we don't have direct event-speaker filtering in this view without extra API calls
-    // But we can filter by text locally after fetching all speakers
+    const [eventFilter, setEventFilter] = useState<number | null>(null);
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedSpeaker, setSelectedSpeaker] = useState<Speaker | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
-        title: '', // maps to position
+        title: '',
         organization: '',
         email: '',
         bio: '',
-        topics: '', // currently not in DB schema for speaker, strictly speaking (it's in event_speakers relation)
+        photoUrl: '',
+        selectedEventIds: [] as number[],
     });
 
     useEffect(() => {
         fetchSpeakers();
-    }, []);
+        fetchEvents();
+    }, [eventFilter]);
+
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const res = await api.backofficeEvents.list(token);
+            setEvents(res.events || []);
+        } catch (error) {
+            console.error('Failed to fetch events:', error);
+        }
+    };
+
+    const [speakerEventMap, setSpeakerEventMap] = useState<{ [speakerId: number]: number[] }>({});
 
     const fetchSpeakers = async () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
-            const res = await api.speakers.list(token);
-            setSpeakers(res.speakers);
+            const query = eventFilter ? `?eventId=${eventFilter}` : '';
+            const res = await fetch(`${API_URL}/api/backoffice/speakers${query}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            setSpeakers(data.speakers || []);
+
+            // Build speaker -> eventIds map
+            const map: { [speakerId: number]: number[] } = {};
+            (data.eventSpeakers || []).forEach((es: any) => {
+                if (!map[es.speakerId]) map[es.speakerId] = [];
+                map[es.speakerId].push(es.eventId);
+            });
+            setSpeakerEventMap(map);
         } catch (error) {
             console.error('Failed to fetch speakers:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleImageUpload = async (file: File) => {
+        setIsUploading(true);
+        try {
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', file);
+            formDataUpload.append('folder', 'speakers');
+
+            const token = localStorage.getItem('backoffice_token') || '';
+            const response = await fetch(`${API_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formDataUpload,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setFormData({ ...formData, photoUrl: data.url || data.fileUrl });
+            } else {
+                alert('Failed to upload image');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to upload image');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -90,7 +159,7 @@ export default function SpeakersPage() {
     });
 
     const resetForm = () => {
-        setFormData({ firstName: '', lastName: '', title: '', organization: '', email: '', bio: '', topics: '' });
+        setFormData({ firstName: '', lastName: '', title: '', organization: '', email: '', bio: '', photoUrl: '', selectedEventIds: [] });
     };
 
     const openEditModal = (speaker: Speaker) => {
@@ -102,7 +171,8 @@ export default function SpeakersPage() {
             organization: speaker.organization || '',
             email: speaker.email || '',
             bio: speaker.bio || '',
-            topics: '', // topics are not stored on speaker level in our simple schema yet
+            photoUrl: speaker.photoUrl || '',
+            selectedEventIds: speakerEventMap[speaker.id] || [],
         });
         setShowEditModal(true);
     };
@@ -118,9 +188,22 @@ export default function SpeakersPage() {
                 organization: formData.organization,
                 position: formData.title,
                 bio: formData.bio,
-                // topics not supported in basic create for now
+                photoUrl: formData.photoUrl,
             };
-            await api.speakers.create(token, payload);
+            const result = await api.speakers.create(token, payload);
+
+            // Assign speaker to events if any selected
+            if (result?.speaker?.id && formData.selectedEventIds.length > 0) {
+                await fetch(`${API_URL}/api/backoffice/speakers/${result.speaker.id}/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ eventIds: formData.selectedEventIds }),
+                });
+            }
+
             await fetchSpeakers();
             setShowCreateModal(false);
             resetForm();
@@ -144,8 +227,20 @@ export default function SpeakersPage() {
                 organization: formData.organization,
                 position: formData.title,
                 bio: formData.bio,
+                photoUrl: formData.photoUrl,
             };
             await api.speakers.update(token, selectedSpeaker.id, payload);
+
+            // Update speaker event assignments
+            await fetch(`${API_URL}/api/backoffice/speakers/${selectedSpeaker.id}/events`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ eventIds: formData.selectedEventIds }),
+            });
+
             await fetchSpeakers();
             setShowEditModal(false);
             setSelectedSpeaker(null);
@@ -203,6 +298,21 @@ export default function SpeakersPage() {
                             className="input-field pl-10"
                         />
                     </div>
+                    <div className="relative">
+                        <IconCalendarEvent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <select
+                            value={eventFilter || ''}
+                            onChange={(e) => setEventFilter(e.target.value ? parseInt(e.target.value) : null)}
+                            className="input-field pl-10 pr-8 min-w-[200px]"
+                        >
+                            <option value="">All Events</option>
+                            {events.map(event => (
+                                <option key={event.id} value={event.id}>
+                                    {event.eventCode} - {event.eventName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Loading State */}
@@ -240,6 +350,23 @@ export default function SpeakersPage() {
                                 <div className="mt-4">
                                     <p className="text-sm text-gray-600 line-clamp-2">{speaker.bio}</p>
                                 </div>
+                                {/* Event badges */}
+                                {speakerEventMap[speaker.id]?.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-1">
+                                        {speakerEventMap[speaker.id].map(eventId => {
+                                            const event = events.find(e => e.id === eventId);
+                                            return event ? (
+                                                <span
+                                                    key={eventId}
+                                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full"
+                                                >
+                                                    <IconCalendarEvent size={12} />
+                                                    {event.eventCode}
+                                                </span>
+                                            ) : null;
+                                        })}
+                                    </div>
+                                )}
                                 <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                                     <div className="flex gap-2">
                                         {/* Social links placeholders */}
@@ -349,6 +476,95 @@ export default function SpeakersPage() {
                                     value={formData.bio}
                                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                 />
+                            </div>
+
+                            {/* Image Upload */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <IconPhoto size={16} className="inline mr-1" /> Photo
+                                </label>
+                                <div className="flex items-center gap-4">
+                                    {formData.photoUrl ? (
+                                        <div className="relative">
+                                            <img
+                                                src={formData.photoUrl}
+                                                alt="Speaker"
+                                                className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, photoUrl: '' })}
+                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                                            >
+                                                <IconX size={14} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                            <IconPhoto size={24} />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) handleImageUpload(file);
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            className="btn-secondary flex items-center gap-2 text-sm"
+                                        >
+                                            {isUploading ? (
+                                                <><IconLoader2 size={16} className="animate-spin" /> Uploading...</>
+                                            ) : (
+                                                <><IconUpload size={16} /> Upload Photo</>
+                                            )}
+                                        </button>
+                                        <p className="text-xs text-gray-400 mt-1">Max 5MB, JPG/PNG</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Event Assignment */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <IconCalendarEvent size={16} className="inline mr-1" /> Assign to Events
+                                </label>
+                                <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                                    {events.length === 0 ? (
+                                        <p className="p-3 text-sm text-gray-400">No events available</p>
+                                    ) : (
+                                        events.map(event => (
+                                            <label key={event.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.selectedEventIds.includes(event.id)}
+                                                    onChange={() => {
+                                                        const ids = formData.selectedEventIds.includes(event.id)
+                                                            ? formData.selectedEventIds.filter(id => id !== event.id)
+                                                            : [...formData.selectedEventIds, event.id];
+                                                        setFormData({ ...formData, selectedEventIds: ids });
+                                                    }}
+                                                    className="w-4 h-4 text-blue-600 rounded"
+                                                />
+                                                <div>
+                                                    <p className="font-medium text-sm">{event.eventCode}</p>
+                                                    <p className="text-xs text-gray-500">{event.eventName}</p>
+                                                </div>
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Selected: {formData.selectedEventIds.length} event(s)
+                                </p>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">

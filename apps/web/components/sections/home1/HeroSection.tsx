@@ -41,6 +41,65 @@ export default function HeroSection() {
 
     return (
         <>
+            <style dangerouslySetInnerHTML={{ __html: `
+                /* Mobile Responsive Fixes */
+                @media (max-width: 991px) {
+                    .hero1-section-area {
+                        min-height: 100vh; /* Full screen height */
+                        padding-top: 100px;
+                        display: flex;
+                        align-items: center;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .bg1 {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: -1;
+                    }
+
+                    .header-bg1 {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        object-position: 70% center; /* Show Wat Arun more clearly on mobile */
+                    }
+
+                    .hero1-header {
+                        margin-left: 0 !important;
+                        margin-top: 0 !important;
+                        text-align: center;
+                        padding: 0 15px;
+                    }
+
+                    /* Adjust Headline Sizes */
+                    .hero1-header h1 {
+                        font-size: 48px !important;
+                    }
+                    
+                    .hero1-header h2 {
+                        font-size: 24px !important;
+                        margin-bottom: 20px !important;
+                    }
+                    
+                    .hero1-header p {
+                        font-size: 16px !important;
+                        margin-bottom: 24px !important;
+                    }
+
+                    /* Center Buttons */
+                    .btn-area1 {
+                        display: flex;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                        gap: 15px;
+                    }
+                }
+            `}} />
             <div className="hero1-section-area">
                 <div className="bg1">
                     <img src="/assets/img/bg/Bghome.png" alt="" className="header-bg1" />

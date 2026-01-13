@@ -31,15 +31,7 @@ export default function AbstractSubmissionGuideline() {
                             <div className="col-lg-10 m-auto">
 
                                 {/* Main Content Area */}
-                                <div style={{
-                                    backgroundColor: 'white',
-                                    padding: '60px',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 2px 20px rgba(0,0,0,0.06)',
-                                    fontSize: '18px',
-                                    lineHeight: '2',
-                                    color: '#2c3e50'
-                                }}>
+                                <div className="abstract-box">
 
                                     {/* 1. General Information */}
                                     <div style={{ marginBottom: '50px' }}>
@@ -54,34 +46,20 @@ export default function AbstractSubmissionGuideline() {
                                             {t('generalInformation')}
                                         </h2>
 
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '17px' }}>
-                                            <tbody>
-                                                <tr>
-                                                    <td style={{ padding: '15px 20px', backgroundColor: '#f8f9fa', fontWeight: '600', width: '30%', borderBottom: '1px solid #e9ecef' }}>
-                                                        {t('presentationType')}
-                                                    </td>
-                                                    <td style={{ padding: '15px 20px', borderBottom: '1px solid #e9ecef' }}>
-                                                        {t('posterPresentation')} / {t('oralPresentation')}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td style={{ padding: '15px 20px', backgroundColor: '#f8f9fa', fontWeight: '600', borderBottom: '1px solid #e9ecef' }}>
-                                                        {t('language')}
-                                                    </td>
-                                                    <td style={{ padding: '15px 20px', borderBottom: '1px solid #e9ecef' }}>
-                                                        {t('english')}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td style={{ padding: '15px 20px', backgroundColor: '#f8f9fa', fontWeight: '600' }}>
-                                                        {t('submissionMethod')}
-                                                    </td>
-                                                    <td style={{ padding: '15px 20px' }}>
-                                                        {t('onlineSubmissionSystem')}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        <div className="info-table-container">
+                                            <div className="info-row">
+                                                <div className="info-label">{t('presentationType')}</div>
+                                                <div className="info-value">{t('posterPresentation')} / {t('oralPresentation')}</div>
+                                            </div>
+                                            <div className="info-row">
+                                                <div className="info-label">{t('language')}</div>
+                                                <div className="info-value">{t('english')}</div>
+                                            </div>
+                                            <div className="info-row">
+                                                <div className="info-label">{t('submissionMethod')}</div>
+                                                <div className="info-value">{t('onlineSubmissionSystem')}</div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* ABSTRACT TOPICS */}
@@ -97,14 +75,7 @@ export default function AbstractSubmissionGuideline() {
                                             {t('abstractTopicsTitle')}
                                         </h2>
 
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(2, 1fr)',
-                                            gap: '0',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '8px',
-                                            overflow: 'hidden'
-                                        }}>
+                                        <div className="topics-grid-container">
                                             {[
                                                 t('topic1'),
                                                 t('topic2'),
@@ -113,13 +84,7 @@ export default function AbstractSubmissionGuideline() {
                                                 t('topic5'),
                                                 t('topic6')
                                             ].map((topic, index) => (
-                                                <div key={index} style={{
-                                                    padding: '18px 25px',
-                                                    backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
-                                                    borderBottom: index < 4 ? '1px solid #e9ecef' : 'none',
-                                                    borderRight: index % 2 === 0 ? '1px solid #e9ecef' : 'none',
-                                                    fontSize: '17px'
-                                                }}>
+                                                <div key={index} className={`topic-item ${index % 2 === 0 ? 'grey' : ''}`}>
                                                     <span style={{ color: '#c9a227', marginRight: '10px', fontWeight: '600' }}>•</span>
                                                     {topic}
                                                 </div>
@@ -154,15 +119,11 @@ export default function AbstractSubmissionGuideline() {
                                                 { num: '2.6', title: t('structure26'), desc: t('structure26Desc') },
                                                 { num: '2.7', title: t('structure27'), desc: t('structure27Desc') }
                                             ].map((item, index) => (
-                                                <div key={index} style={{
-                                                    padding: '20px 25px',
-                                                    backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
-                                                    borderBottom: index < 6 ? '1px solid #e9ecef' : 'none'
-                                                }}>
-                                                    <div style={{ fontSize: '17px' }}>
-                                                        <span style={{ color: '#1a5276', fontWeight: '700', marginRight: '10px' }}>{item.num}</span>
-                                                        <span style={{ fontWeight: '600' }}>{item.title}</span>
-                                                        {item.desc && <span style={{ color: '#555' }}> — {item.desc}</span>}
+                                                <div key={index} className={`structure-item ${index % 2 === 0 ? 'even' : ''}`}>
+                                                    <div className="structure-header">
+                                                        <span className="structure-num">{item.num}</span>
+                                                        <span className="structure-title">{item.title}</span>
+                                                        {item.desc && <span className="structure-desc"> — {item.desc}</span>}
                                                     </div>
                                                     {item.items && (
                                                         <ul style={{ margin: '12px 0 0 35px', color: '#555', fontSize: '16px' }}>
@@ -215,13 +176,8 @@ export default function AbstractSubmissionGuideline() {
                                             {t('formattingRequirements')}
                                         </h2>
 
-                                        <div style={{
-                                            backgroundColor: '#f8f9fa',
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '8px',
-                                            padding: '30px 35px'
-                                        }}>
-                                            <ul style={{ margin: 0, paddingLeft: '25px', fontSize: '17px', lineHeight: '2.2' }}>
+                                        <div className="formatting-box">
+                                            <ul className="formatting-list">
                                                 <li style={{ marginBottom: '10px' }}>{t('formatFont')}</li>
                                                 <li style={{ marginBottom: '10px' }}>{t('formatFontSize')}</li>
                                                 <li style={{ marginBottom: '10px' }}>{t('formatLineSpacing')}</li>

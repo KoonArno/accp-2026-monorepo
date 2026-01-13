@@ -42,16 +42,18 @@ export default function HeroSection() {
     return (
         <>
             <div className="hero1-section-area">
-                <div className="bg1">
-                    <img src="/assets/img/bg/Bghome.png" alt="" className="header-bg1" />
-                </div>
+
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-6">
-                            <div className="hero1-header heading1" style={{ marginLeft: '50px', marginTop: '-60px' }}>
-                                <h1 className="text-anime-style-3" style={heroStyles.mainTitle}>
-                                    <span style={heroStyles.titleWhite}>ACCP </span>
-                                    <span style={heroStyles.titleGold}>2026</span>
+                            <div className="hero1-header heading1">
+                                <h5 data-aos="fade-left" data-aos-duration={800}>
+                                    {t('hero.subtitle')}
+                                </h5>
+                                <div className="space16" />
+                                <h1 className="text-anime-style-3">
+                                    ACCP <span className="gold-text">2026</span> <br className="d-lg-block d-none" />
+                                    {t('hero.location')}
                                 </h1>
                                 <h2 style={heroStyles.subtitle}>
                                     {t('hero.location')}
@@ -66,11 +68,7 @@ export default function HeroSection() {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-lg-5">
-                            <div className="header-images">
-                                {/* Image removed as requested */}
-                            </div>
-                        </div>
+
                         <div className="col-lg-1">
                             <Countdown />
                         </div>

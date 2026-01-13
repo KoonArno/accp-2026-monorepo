@@ -270,44 +270,66 @@ export default function Payment() {
 						<div className="row">
 							{/* Left Column - Payment Methods */}
 							<div className="col-lg-8">
+								<div style={{ marginBottom: '20px' }}>
+									<Link
+										href={`/${locale}/checkout`}
+										style={{
+											display: 'inline-flex',
+											alignItems: 'center',
+											color: '#666',
+											textDecoration: 'none',
+											fontSize: '15px',
+											fontWeight: '500',
+											transition: 'color 0.2s'
+										}}
+										onMouseEnter={(e) => e.currentTarget.style.color = '#00C853'}
+										onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
+									>
+										<i className="fa-solid fa-arrow-left" style={{ marginRight: '8px' }} />
+										{t('backToCheckout')}
+									</Link>
+								</div>
+
 								{/* Payment Method Selection */}
 								<div style={{ marginBottom: '30px' }}>
 									<h3 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '600' }}>
 										{t('selectPaymentMethod')}
 									</h3>
-									<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+									<div className="checkout-grid-2" style={{ gap: '30px' }}>
 										<div
 											onClick={() => setPaymentMethod('qr')}
+											className="payment-method-card"
 											style={{
-												padding: '25px',
 												border: paymentMethod === 'qr' ? '3px solid #00C853' : '2px solid #ddd',
-												borderRadius: '12px',
-												cursor: 'pointer',
 												backgroundColor: paymentMethod === 'qr' ? '#f0f9f6' : '#fff',
-												textAlign: 'center',
-												transition: 'all 0.3s ease'
 											}}
 										>
-											<div style={{ fontSize: '50px', marginBottom: '15px' }}>📱</div>
-											<h4 style={{ margin: '0 0 8px 0', fontWeight: '600' }}>{t('qrPayment')}</h4>
-											<p style={{ color: '#666', fontSize: '14px', margin: 0 }}>{t('qrPaymentDesc')}</p>
+											<div className="payment-method-icon">📱</div>
+											<h4 className="payment-method-title">{t('qrPayment')}</h4>
+											<p className="payment-method-desc">{t('qrPaymentDesc')}</p>
+											{paymentMethod === 'qr' && (
+												<div className="payment-selected-badge">
+													<i className="fa-solid fa-check" /> Selected
+												</div>
+											)}
 										</div>
 
 										<div
 											onClick={() => setPaymentMethod('card')}
+											className="payment-method-card"
 											style={{
-												padding: '25px',
 												border: paymentMethod === 'card' ? '3px solid #00C853' : '2px solid #ddd',
-												borderRadius: '12px',
-												cursor: 'pointer',
 												backgroundColor: paymentMethod === 'card' ? '#f0f9f6' : '#fff',
-												textAlign: 'center',
-												transition: 'all 0.3s ease'
 											}}
 										>
-											<div style={{ fontSize: '50px', marginBottom: '15px' }}>💳</div>
-											<h4 style={{ margin: '0 0 8px 0', fontWeight: '600' }}>{t('cardPayment')}</h4>
-											<p style={{ color: '#666', fontSize: '14px', margin: 0 }}>{t('cardPaymentDesc')}</p>
+											<div className="payment-method-icon">💳</div>
+											<h4 className="payment-method-title">{t('cardPayment')}</h4>
+											<p className="payment-method-desc">{t('cardPaymentDesc')}</p>
+											{paymentMethod === 'card' && (
+												<div className="payment-selected-badge">
+													<i className="fa-solid fa-check" /> Selected
+												</div>
+											)}
 										</div>
 									</div>
 								</div>

@@ -299,9 +299,20 @@ select:focus {
     }
 }
 
-/* Fix mobile header overlapping text */
+/* Fix mobile header - fixed position so it stays at top when scrolling */
 @media (max-width: 991px) {
     .mobile-header.mobile-haeder1 {
-        position: relative !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 999 !important;
+        background: var(--ztc-bg-bg-2) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Add padding to body to prevent content from going under fixed navbar */
+    body {
+        padding-top: 80px !important;
     }
 }

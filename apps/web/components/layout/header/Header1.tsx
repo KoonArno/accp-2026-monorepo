@@ -220,27 +220,27 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                         </div>
                     </div>
                 </div>
+            </header>
 
-                {/* Mobile Header */}
-                <div className="mobile-header mobile-haeder1 d-block d-lg-none">
-                    <div className="container-fluid">
-                        <div className="col-12">
-                            <div className="mobile-header-elements">
-                                <div className="mobile-logo">
-                                    <Link href={`/${locale}`}>
-                                        <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
-                                    </Link>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div className="mobile-nav-icon dots-menu" onClick={handleMobileMenu}>
-                                        <i className="fa-solid fa-bars" />
-                                    </div>
+            {/* Mobile Header - Outside of header tag for proper fixed positioning */}
+            <div className="mobile-header mobile-haeder1 d-block d-lg-none">
+                <div className="container-fluid">
+                    <div className="col-12">
+                        <div className="mobile-header-elements">
+                            <div className="mobile-logo">
+                                <Link href={`/${locale}`}>
+                                    <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
+                                </Link>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="mobile-nav-icon dots-menu" onClick={handleMobileMenu}>
+                                    <i className="fa-solid fa-bars" />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
         </>
     )
 }

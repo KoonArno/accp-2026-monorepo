@@ -5,6 +5,7 @@ import { users } from "@accp/database/schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { uploadToGoogleDrive } from "../../services/googleDrive.js";
+import { sendPendingApprovalEmail } from "../../services/emailService.js";
 
 const roleMapping = {
   thaiStudent: "thstd",
@@ -201,6 +202,17 @@ export async function authRoutes(fastify: FastifyInstance) {
           status: initialStatus,
         })
         .returning();
+
+      // 8. Send auto-reply email for students (pending approval)
+      if (role === "thstd" || role === "interstd") {
+        try {
+          await sendPendingApprovalEmail(email, firstName, lastName);
+          fastify.log.info(`Pending approval email sent to ${email}`);
+        } catch (emailError) {
+          // Log error but don't fail registration
+          fastify.log.error({ err: emailError }, "Failed to send pending approval email");
+        }
+      }
 
       return reply.status(201).send({
         success: true,

@@ -1,0 +1,43 @@
+/* Header Menu Alignment Fix */
+.header-area.homepage1 .header-elements {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+}
+
+.header-area.homepage1 .site-logo {
+    flex-shrink: 0 !important;
+}
+
+.header-area.homepage1 .main-menu {
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.header-area.homepage1 .main-menu ul {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 15px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.header-area.homepage1 .main-menu ul > li {
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+.header-area.homepage1 .main-menu ul > li > a {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+}
+
+.header-area.homepage1 .btn-area {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}

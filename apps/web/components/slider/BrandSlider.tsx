@@ -4,6 +4,9 @@ const Swiper = SwiperOriginal as any;
 const SwiperSlide = SwiperSlideOriginal as any;
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
 
+const Swiper = SwiperReact as any;
+const SwiperSlide = SwiperSlideReact as any;
+
 const swiperOptions = {
 	modules: [Autoplay, Pagination, Navigation],
 	slidesPerView: 4,

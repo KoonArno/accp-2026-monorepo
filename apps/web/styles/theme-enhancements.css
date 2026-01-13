@@ -527,11 +527,18 @@ body {
 }
 
 /* Fix text readability - ensure dark text on light backgrounds */
-.about-header-area p,
-.about1-section-area p,
-.sp1 p,
-.sp2 p {
+/* Exclude paragraphs with explicit white color for dark backgrounds (e.g., gala dinner) */
+.about-header-area p:not([style*="color: white"]):not([style*="color: #ffffff"]):not([style*="color:#ffffff"]):not([style*="color:white"]),
+.about1-section-area:not([style*="background"]) p,
+.sp1:not([style*="background"]) p,
+.sp2:not([style*="background"]) p {
   color: #333333 !important;
+}
+
+/* Ensure white text on dark backgrounds in about sections */
+.about1-section-area[style*="background"] .about-header-area p[style*="color: white"],
+.about1-section-area[style*="background"] .about-header-area p[style*="color:#ffffff"] {
+  color: #ffffff !important;
 }
 
 /* Fix topic list text color for better readability */

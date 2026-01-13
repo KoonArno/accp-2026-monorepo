@@ -52,7 +52,7 @@ export async function sendPendingApprovalEmail(
           <p style="margin: 10px 0 0 0;">Our team will review your submitted documents and verify your student status.</p>
         </div>
         <p>You will receive another email once your account has been approved.</p>
-        <p>This process typically takes <strong>1-3 business days</strong>.</p>
+        <p>This process typically takes <strong>5-7 business days</strong>.</p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;"/>
         <p style="color: #6b7280; font-size: 14px;">
           If you have any questions, please contact us at <a href="mailto:support@accp.com">support@accp.com</a>

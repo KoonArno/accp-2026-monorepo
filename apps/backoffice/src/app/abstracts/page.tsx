@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout';
+import { api } from '@/lib/api';
 import {
     IconFileText,
     IconClock,
@@ -10,137 +11,106 @@ import {
     IconSearch,
     IconEye,
     IconDownload,
+    IconLoader2,
 } from '@tabler/icons-react';
-
-// Mock abstract data
-const mockAbstracts = [
-    {
-        id: 'ABS-001',
-        title: 'Impact of Clinical Pharmacist Intervention on Medication Adherence in Diabetic Patients',
-        author: 'Dr. Somchai Jaidee',
-        affiliation: 'Department of Clinical Pharmacy',
-        email: 'somchai@hospital.com',
-        event: 'ACCP Annual Conference 2026',
-        topic: 'Clinical Pharmacy',
-        status: 'pending',
-        submittedAt: '2026-01-05',
-        content: 'This study examines the impact of clinical pharmacist intervention on medication adherence in diabetic patients. A randomized controlled trial was conducted with 200 participants over 6 months.'
-    },
-    {
-        id: 'ABS-002',
-        title: 'Machine Learning Approach for Drug-Drug Interaction Prediction',
-        author: 'Nattaporn Srisuk',
-        affiliation: 'Faculty of Pharmaceutical Sciences',
-        email: 'nattaporn@university.edu',
-        event: 'ACCP Annual Conference 2026',
-        topic: 'Technology',
-        status: 'approved',
-        submittedAt: '2026-01-03',
-        content: 'We present a novel machine learning model for predicting drug-drug interactions based on molecular structure analysis and patient data.'
-    },
-    {
-        id: 'ABS-003',
-        title: 'Novel Teaching Methods for Pharmacy Students: A Comparative Study',
-        author: 'Dr. Wichai Tanaka',
-        affiliation: 'Medical Education Center',
-        email: 'wichai@education.org',
-        event: 'Medical Innovation Summit',
-        topic: 'Education',
-        status: 'approved',
-        submittedAt: '2025-12-28',
-        content: 'This comparative study evaluates the effectiveness of problem-based learning versus traditional lecture methods in pharmacy education.'
-    },
-    {
-        id: 'ABS-004',
-        title: 'Antimicrobial Resistance Patterns in Hospital Settings: A 5-Year Review',
-        author: 'Supaporn Chai',
-        affiliation: 'Infectious Disease Unit',
-        email: 'supaporn@hospital.com',
-        event: 'ACCP Annual Conference 2026',
-        topic: 'Research',
-        status: 'rejected',
-        submittedAt: '2026-01-01',
-        content: 'A retrospective analysis of antimicrobial resistance patterns in a tertiary care hospital over 5 years.'
-    },
-    {
-        id: 'ABS-005',
-        title: 'Cost-Effectiveness Analysis of Biologic Therapies in Rheumatoid Arthritis',
-        author: 'Piyapong Suwannee',
-        affiliation: 'Pharmacoeconomics Department',
-        email: 'piyapong@research.org',
-        event: 'ACCP Annual Conference 2026',
-        topic: 'Research',
-        status: 'pending',
-        submittedAt: '2026-01-06',
-        content: 'Pharmacoeconomic evaluation comparing biologic therapies for rheumatoid arthritis treatment in Thai healthcare setting.'
-    },
-];
 
 const statusColors: { [key: string]: string } = {
     pending: 'badge-warning',
-    approved: 'badge-success',
+    accepted: 'badge-success',
     rejected: 'badge-error',
     under_review: 'badge-info',
 };
 
+// Map backend categories to colors if needed, or use generic
 const topicColors: { [key: string]: string } = {
-    'Clinical Pharmacy': 'bg-blue-100 text-blue-800',
-    'Technology': 'bg-purple-100 text-purple-800',
-    'Education': 'bg-green-100 text-green-800',
-    'Research': 'bg-gray-100 text-gray-800',
+    'Research': 'bg-blue-100 text-blue-800',
+    'Case Report': 'bg-purple-100 text-purple-800',
+    'Review': 'bg-green-100 text-green-800',
+    'Other': 'bg-gray-100 text-gray-800',
 };
 
 interface Abstract {
-    id: string;
+    id: number;
     title: string;
-    author: string;
-    affiliation: string;
-    email: string;
-    event: string;
-    topic: string;
+    category: string;
+    presentationType: string | null;
     status: string;
-    submittedAt: string;
-    content: string;
+    createdAt: string;
+    author: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        institution: string | null;
+    };
+    event: {
+        name: string;
+        code: string;
+    };
 }
 
 export default function AbstractsPage() {
+    const [abstracts, setAbstracts] = useState<Abstract[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
-    const [topicFilter, setTopicFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
     const [selectedAbstract, setSelectedAbstract] = useState<Abstract | null>(null);
     const [showViewModal, setShowViewModal] = useState(false);
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [reviewComment, setReviewComment] = useState('');
 
-    const filteredAbstracts = mockAbstracts.filter((abs) => {
-        const matchesSearch =
-            abs.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            abs.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            abs.id.toLowerCase().includes(searchTerm.toLowerCase());
+    useEffect(() => {
+        fetchAbstracts();
+    }, [page, searchTerm, statusFilter]);
 
-        const matchesStatus = !statusFilter || abs.status === statusFilter;
-        const matchesTopic = !topicFilter || abs.topic === topicFilter;
+    const fetchAbstracts = async () => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const params: any = { page, limit: 10 };
+            if (statusFilter) params.status = statusFilter;
+            if (searchTerm) params.search = searchTerm;
 
-        return matchesSearch && matchesStatus && matchesTopic;
-    });
-
-    const stats = {
-        total: mockAbstracts.length,
-        pending: mockAbstracts.filter(a => a.status === 'pending').length,
-        approved: mockAbstracts.filter(a => a.status === 'approved').length,
-        rejected: mockAbstracts.filter(a => a.status === 'rejected').length,
+            const res = await api.abstracts.list(token, new URLSearchParams(params).toString());
+            setAbstracts(res.abstracts);
+            setTotalCount(res.pagination.total);
+            setTotalPages(res.pagination.totalPages);
+        } catch (error) {
+            console.error('Failed to fetch abstracts:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleApprove = () => {
-        setShowApproveModal(false);
-        setSelectedAbstract(null);
-        alert('Abstract approved successfully!');
-    };
+    const handleUpdateStatus = async (status: string, comment?: string) => {
+        if (!selectedAbstract) return;
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.abstracts.updateStatus(token, selectedAbstract.id, status, comment);
 
-    const handleReject = () => {
-        setShowRejectModal(false);
-        setSelectedAbstract(null);
-        alert('Abstract rejected.');
+            // Refresh list
+            fetchAbstracts();
+
+            // Close modals
+            setShowApproveModal(false);
+            setShowRejectModal(false);
+            setShowViewModal(false);
+            setSelectedAbstract(null);
+            setReviewComment('');
+
+            alert(`Abstract ${status === 'accepted' ? 'approved' : status} successfully!`);
+        } catch (error) {
+            console.error(error);
+            alert(`Failed to ${status} abstract`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -153,41 +123,8 @@ export default function AbstractsPage() {
                             <IconFileText size={24} stroke={1.5} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+                            <p className="text-2xl font-bold text-gray-800">{isLoading ? '-' : totalCount}</p>
                             <p className="text-sm text-gray-500">Total Submissions</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600">
-                            <IconClock size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-                            <p className="text-sm text-gray-500">Pending Review</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                            <IconCheck size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
-                            <p className="text-sm text-gray-500">Approved</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
-                            <IconX size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
-                            <p className="text-sm text-gray-500">Rejected</p>
                         </div>
                     </div>
                 </div>
@@ -210,113 +147,123 @@ export default function AbstractsPage() {
                             type="text"
                             placeholder="Search by title, author, or ID..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                             className="input-field pl-10"
                         />
                     </div>
 
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="input-field w-auto"
                     >
                         <option value="">All Status</option>
                         <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
+                        <option value="accepted">Accepted</option>
                         <option value="rejected">Rejected</option>
-                    </select>
-
-                    <select
-                        value={topicFilter}
-                        onChange={(e) => setTopicFilter(e.target.value)}
-                        className="input-field w-auto"
-                    >
-                        <option value="">All Topics</option>
-                        <option value="Clinical Pharmacy">Clinical Pharmacy</option>
-                        <option value="Research">Research</option>
-                        <option value="Education">Education</option>
-                        <option value="Technology">Technology</option>
                     </select>
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th className="min-w-[300px]">Title & Author</th>
-                                <th>Topic</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredAbstracts.map((abs) => (
-                                <tr key={abs.id} className="animate-fade-in">
-                                    <td className="font-mono text-sm text-gray-600">{abs.id}</td>
-                                    <td>
-                                        <h5 className="font-medium text-gray-800 mb-1">{abs.title}</h5>
-                                        <p className="text-sm text-gray-500">{abs.author}, {abs.affiliation}</p>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${topicColors[abs.topic] || 'bg-gray-100 text-gray-800'}`}>
-                                            {abs.topic}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${statusColors[abs.status]}`}>
-                                            {abs.status.charAt(0).toUpperCase() + abs.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td className="text-gray-500 text-sm">{abs.submittedAt}</td>
-                                    <td className="text-center">
-                                        <div className="flex gap-1 justify-center">
-                                            <button
-                                                className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                title="View"
-                                                onClick={() => { setSelectedAbstract(abs); setShowViewModal(true); }}
-                                            >
-                                                <IconEye size={18} />
-                                            </button>
-                                            {abs.status === 'pending' && (
-                                                <>
-                                                    <button
-                                                        className="p-1.5 hover:bg-green-100 rounded text-green-600"
-                                                        title="Approve"
-                                                        onClick={() => { setSelectedAbstract(abs); setShowApproveModal(true); }}
-                                                    >
-                                                        <IconCheck size={18} />
-                                                    </button>
-                                                    <button
-                                                        className="p-1.5 hover:bg-red-100 rounded text-red-600"
-                                                        title="Reject"
-                                                        onClick={() => { setSelectedAbstract(abs); setShowRejectModal(true); }}
-                                                    >
-                                                        <IconX size={18} />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
+                {isLoading ? (
+                    <div className="flex justify-center py-12">
+                        <IconLoader2 size={32} className="animate-spin text-blue-600" />
+                    </div>
+                ) : abstracts.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        No abstracts found.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th className="min-w-[300px]">Title & Author</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th className="text-center">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {abstracts.map((abs) => (
+                                    <tr key={abs.id} className="animate-fade-in">
+                                        <td className="font-mono text-sm text-gray-600">ABS-{abs.id}</td>
+                                        <td>
+                                            <h5 className="font-medium text-gray-800 mb-1">{abs.title}</h5>
+                                            <p className="text-sm text-gray-500">{abs.author.firstName} {abs.author.lastName}, {abs.author.institution}</p>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${topicColors[abs.category] || 'bg-gray-100 text-gray-800'}`}>
+                                                {abs.category}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${statusColors[abs.status] || 'bg-gray-100'}`}>
+                                                {abs.status.charAt(0).toUpperCase() + abs.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="text-sm text-gray-500">
+                                                {new Date(abs.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="flex gap-1 justify-center">
+                                                <button
+                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                    title="View"
+                                                    onClick={() => { setSelectedAbstract(abs); setShowViewModal(true); }}
+                                                >
+                                                    <IconEye size={18} />
+                                                </button>
+                                                {abs.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            className="p-1.5 hover:bg-green-100 rounded text-green-600"
+                                                            title="Approve"
+                                                            onClick={() => { setSelectedAbstract(abs); setShowApproveModal(true); }}
+                                                        >
+                                                            <IconCheck size={18} />
+                                                        </button>
+                                                        <button
+                                                            className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                                                            title="Reject"
+                                                            onClick={() => { setSelectedAbstract(abs); setShowRejectModal(true); }}
+                                                        >
+                                                            <IconX size={18} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <p className="text-sm text-gray-500">
-                        Showing {filteredAbstracts.length} of {mockAbstracts.length} abstracts
+                        Showing {abstracts.length} of {totalCount} abstracts
                     </p>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page <= 1}
+                            onClick={() => setPage(p => p - 1)}
+                        >
                             Previous
                         </button>
-                        <button className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">1</button>
-                        <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                        <span className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">{page}</span>
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                        >
                             Next
                         </button>
                     </div>
@@ -337,23 +284,34 @@ export default function AbstractsPage() {
                         </div>
                         <div className="p-6">
                             <div className="flex gap-2 mb-4">
-                                <span className="badge bg-gray-100 text-gray-700">{selectedAbstract.id}</span>
+                                <span className="badge bg-gray-100 text-gray-700">ABS-{selectedAbstract.id}</span>
                                 <span className={`badge ${statusColors[selectedAbstract.status]}`}>
                                     {selectedAbstract.status.charAt(0).toUpperCase() + selectedAbstract.status.slice(1)}
                                 </span>
                             </div>
                             <h4 className="text-xl font-semibold text-gray-800 mb-2">{selectedAbstract.title}</h4>
-                            <p className="text-gray-600 mb-4"><strong>{selectedAbstract.author}</strong>, {selectedAbstract.affiliation}</p>
+                            <p className="text-gray-600 mb-4"><strong>{selectedAbstract.author.firstName} {selectedAbstract.author.lastName}</strong>, {selectedAbstract.author.institution}</p>
 
-                            <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
-                                <div><strong>Event:</strong> {selectedAbstract.event}</div>
-                                <div><strong>Topic:</strong> {selectedAbstract.topic}</div>
-                                <div><strong>Submitted:</strong> {selectedAbstract.submittedAt}</div>
+                            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                                <div><strong>Event:</strong> {selectedAbstract.event.name}</div>
+                                <div><strong>Category:</strong> {selectedAbstract.category}</div>
+                                <div><strong>Submitted:</strong> {new Date(selectedAbstract.createdAt).toLocaleString()}</div>
+                                <div><strong>Presentation:</strong> {selectedAbstract.presentationType || 'Not assigned'}</div>
                             </div>
 
+                            {/* Content would be fetched separately or we assume it's small enough to list. 
+                                NB: The list API usually returns fields. If content is large, might need separate GET.
+                                For now, assuming list schema didn't select content. 
+                                If we need content, we'd need a detail API endpoint or update list to include it.
+                                Let's assume for MVP we list it, but list query above included everything. 
+                                WAIT, list query in abstracts.ts included `title`, `category`, etc. but NOT `content`.
+                                So `selectedAbstract.content` will be undefined here unless we fetch it.
+                                MVP: Just show "Content viewing not implemented yet" or update API.
+                                I'll leave a placeholder.
+                            */}
                             <div className="bg-gray-50 p-4 rounded-lg">
-                                <h5 className="font-semibold mb-2">Abstract:</h5>
-                                <p className="text-gray-600">{selectedAbstract.content}</p>
+                                <h5 className="font-semibold mb-2">Abstract Content:</h5>
+                                <p className="text-gray-600 italic">Content loading not implemented in list view for performance.</p>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
@@ -389,28 +347,27 @@ export default function AbstractsPage() {
                             </h3>
                         </div>
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <IconCheck size={32} className="text-green-600" />
-                            </div>
-                            <p className="mb-2">Approve this abstract for presentation?</p>
+                            <p className="mb-2">Approve this abstract?</p>
                             <p className="font-semibold text-gray-800">{selectedAbstract.title.substring(0, 50)}...</p>
 
                             <div className="mt-4 text-left">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Presentation Type</label>
-                                <select className="input-field">
-                                    <option>Oral Presentation</option>
-                                    <option>Poster Presentation</option>
-                                </select>
-                            </div>
-
-                            <div className="mt-4 text-left">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Comments (optional)</label>
-                                <textarea className="input-field h-20" placeholder="Reviewer comments..."></textarea>
+                                <textarea
+                                    className="input-field h-20"
+                                    placeholder="Reviewer comments..."
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                ></textarea>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-                            <button onClick={() => setShowApproveModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleApprove} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                            <button onClick={() => setShowApproveModal(false)} className="btn-secondary" disabled={isSubmitting}>Cancel</button>
+                            <button
+                                onClick={() => handleUpdateStatus('accepted', reviewComment)}
+                                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting && <IconLoader2 size={18} className="animate-spin" />}
                                 Approve
                             </button>
                         </div>
@@ -428,32 +385,27 @@ export default function AbstractsPage() {
                             </h3>
                         </div>
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <IconX size={32} className="text-red-600" />
-                            </div>
                             <p className="mb-2">Reject this abstract?</p>
                             <p className="font-semibold text-gray-800">{selectedAbstract.title.substring(0, 50)}...</p>
 
                             <div className="mt-4 text-left">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason <span className="text-red-500">*</span></label>
-                                <select className="input-field">
-                                    <option value="">Select reason...</option>
-                                    <option>Out of scope</option>
-                                    <option>Quality concerns</option>
-                                    <option>Duplicate submission</option>
-                                    <option>Incomplete information</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-
-                            <div className="mt-4 text-left">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Additional Comments</label>
-                                <textarea className="input-field h-20" placeholder="Provide feedback to the author..."></textarea>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Reason / Comments</label>
+                                <textarea
+                                    className="input-field h-20"
+                                    placeholder="Provide feedback to the author..."
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                ></textarea>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-                            <button onClick={() => setShowRejectModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleReject} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                            <button onClick={() => setShowRejectModal(false)} className="btn-secondary" disabled={isSubmitting}>Cancel</button>
+                            <button
+                                onClick={() => handleUpdateStatus('rejected', reviewComment)}
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting && <IconLoader2 size={18} className="animate-spin" />}
                                 Reject
                             </button>
                         </div>

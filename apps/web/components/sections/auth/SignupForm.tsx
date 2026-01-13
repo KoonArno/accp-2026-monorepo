@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+import { Hourglass } from 'react-loader-spinner';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -234,6 +235,7 @@ export default function SignupForm() {
     `;
 
     const PhoneInputAny = PhoneInput as any;
+    const HourglassAny = Hourglass as any;
 
     return (
         <>
@@ -247,6 +249,37 @@ export default function SignupForm() {
                 margin: '0 auto',
                 position: 'relative'
             }}>
+                {/* Loading Overlay */}
+                {isLoading && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(255,255,255,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        <HourglassAny
+                            visible={true}
+                            height="80"
+                            width="80"
+                            ariaLabel="hourglass-loading"
+                            wrapperStyle={{}}
+                            wrapperClass=""
+                            colors={['#1a237e', '#72a1ed']}
+                        />
+                        <div style={{ color: '#1a237e', fontSize: '18px', fontWeight: '600' }}>
+                            {locale === 'th' ? 'กำลังดำเนินการ...' : 'Processing...'}
+                        </div>
+                    </div>
+                )}
+
                 {/* Modal Overlay */}
                 {isPending && (
                     <div style={{
@@ -314,7 +347,7 @@ export default function SignupForm() {
 
                 {/* Title */}
                 <h2 style={{ fontSize: '26px', fontWeight: '700', color: '#1a1a1a', textAlign: 'center', marginBottom: '8px' }}>
-                    {step === 1 
+                    {step === 1
                         ? (locale === 'th' ? 'เลือกประเภทบัญชี' : 'Select Account Type')
                         : (locale === 'th' ? 'สร้างบัญชี' : 'Create Account')
                     }
@@ -377,7 +410,7 @@ export default function SignupForm() {
                                 </button>
                             ))}
                         </div>
-                        
+
                         {/* Login Link for Step 1 */}
                         <div style={{ textAlign: 'center', marginTop: '24px', borderTop: '1px solid #f0f0f0', paddingTop: '24px' }}>
                             <p style={{ fontSize: '14px', color: '#666' }}>
@@ -394,39 +427,39 @@ export default function SignupForm() {
                 {step === 2 && (
                     <form onSubmit={handleSubmit} className="step-content">
                         {/* Selected Type Indicator / Back Button */}
-                        <div style={{ 
-                            marginBottom: '24px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between', 
-                            background: '#f8f9fa', 
-                            padding: '16px', 
+                        <div style={{
+                            marginBottom: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: '#f8f9fa',
+                            padding: '16px',
                             borderRadius: '12px',
                             border: '1px solid #eef0f2'
                         }}>
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                 <div style={{
-                                     fontSize: '20px',
-                                     color: activeTab.includes('Student') ? '#1a237e' : '#00695c'
-                                 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                    fontSize: '20px',
+                                    color: activeTab.includes('Student') ? '#1a237e' : '#00695c'
+                                }}>
                                     {activeTab.includes('Student') ? '🎓' : '⚕️'}
-                                 </div>
-                                 <div>
+                                </div>
+                                <div>
                                     <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: '600', letterSpacing: '0.5px' }}>
                                         {locale === 'th' ? 'ประเภทบัญชี' : 'Account Type'}
                                     </div>
                                     <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>
-                                        {locale === 'th' 
-                                            ? tabs.find(t => t.id === activeTab)?.labelTh 
+                                        {locale === 'th'
+                                            ? tabs.find(t => t.id === activeTab)?.labelTh
                                             : tabs.find(t => t.id === activeTab)?.label
                                         }
                                     </div>
-                                 </div>
-                             </div>
-                             <button 
-                                type="button" 
-                                onClick={() => setStep(1)} 
-                                style={{ 
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setStep(1)}
+                                style={{
                                     padding: '6px 12px',
                                     fontSize: '13px',
                                     color: '#1a237e',
@@ -437,263 +470,264 @@ export default function SignupForm() {
                                     cursor: 'pointer',
                                     transition: 'all 0.2s'
                                 }}
-                             >
+                            >
                                 {locale === 'th' ? 'เปลี่ยน' : 'Change'}
-                             </button>
+                            </button>
                         </div>
-                    {/* Name Fields */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {t('firstName')} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                                placeholder={t('firstName')} required style={inputStyle} />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {t('lastName')} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
-                                placeholder={t('lastName')} required style={inputStyle} />
-                        </div>
-                    </div>
-
-                    {/* Thai Student/Professional: ID Card */}
-                    {(activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') && (
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {locale === 'th' ? 'เลขบัตรประชาชน' : 'Thai ID Card'} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input type="text" value={idCard}
-                                onChange={(e) => setIdCard(e.target.value.replace(/\D/g, '').slice(0, 13))}
-                                placeholder={locale === 'th' ? 'เลข 13 หลัก' : '13-digit number'}
-                                maxLength={13} required style={inputStyle} />
-                            <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                                {locale === 'th' ? 'ยืนยันสัญชาติไทยเพื่อรับราคาพิเศษ' : 'Verify Thai nationality for THB pricing'}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Thai Professional: Pharmacy License ID (Optional) */}
-                    {activeTab === 'thaiProfessional' && (
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {locale === 'th' ? 'หมายเลขใบอนุญาตประกอบวิชาชีพเภสัชกรรม (ถ้ามี)' : 'Pharmacy License Number (Optional)'}
-                            </label>
-                            <input type="text" value={pharmacyLicenseId}
-                                onChange={(e) => setPharmacyLicenseId(e.target.value)}
-                                placeholder={locale === 'th' ? 'ระบุเลขที่ใบอนุญาต' : 'Enter license number'}
-                                style={inputStyle} />
-                        </div>
-                    )}
-
-                    {/* International: Passport ID + Country */}
-                    {(activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') && (
-                        <>
-                            <div style={{ marginBottom: '16px' }}>
+                        {/* Name Fields */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                            <div>
                                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                    {locale === 'th' ? 'หมายเลขหนังสือเดินทาง' : 'Passport ID'} <span style={{ color: '#e53935' }}>*</span>
+                                    {t('firstName')} <span style={{ color: '#e53935' }}>*</span>
                                 </label>
-                                <input type="text" value={passportId}
-                                    onChange={(e) => setPassportId(e.target.value.toUpperCase())}
-                                    placeholder={locale === 'th' ? 'เช่น AB1234567' : 'e.g. AB1234567'}
-                                    required style={inputStyle} />
+                                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                                    placeholder={t('firstName')} required style={inputStyle} />
                             </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                    {t('lastName')} <span style={{ color: '#e53935' }}>*</span>
+                                </label>
+                                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
+                                    placeholder={t('lastName')} required style={inputStyle} />
+                            </div>
+                        </div>
+
+                        {/* Thai Student/Professional: ID Card */}
+                        {(activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') && (
                             <div style={{ marginBottom: '16px' }}>
                                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                    {locale === 'th' ? 'ประเทศ' : 'Country'} <span style={{ color: '#e53935' }}>*</span>
+                                    {locale === 'th' ? 'เลขบัตรประชาชน' : 'Thai ID Card'} <span style={{ color: '#e53935' }}>*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
-                                    placeholder={locale === 'th' ? 'กรอกชื่อประเทศ' : 'Enter country name'}
-                                    required
-                                    style={inputStyle}
+                                <input type="text" value={idCard}
+                                    onChange={(e) => setIdCard(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                                    placeholder={locale === 'th' ? 'เลข 13 หลัก' : '13-digit number'}
+                                    maxLength={13} required style={inputStyle} />
+                                <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                                    {locale === 'th' ? 'ยืนยันสัญชาติไทยเพื่อรับราคาพิเศษ' : 'Verify Thai nationality for THB pricing'}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Thai Professional: Pharmacy License ID (Optional) */}
+                        {activeTab === 'thaiProfessional' && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                    {locale === 'th' ? 'หมายเลขใบอนุญาตประกอบวิชาชีพเภสัชกรรม (ถ้ามี)' : 'Pharmacy License Number (Optional)'}
+                                </label>
+                                <input type="text" value={pharmacyLicenseId}
+                                    onChange={(e) => setPharmacyLicenseId(e.target.value)}
+                                    placeholder={locale === 'th' ? 'ระบุเลขที่ใบอนุญาต' : 'Enter license number'}
+                                    style={inputStyle} />
+                            </div>
+                        )}
+
+                        {/* International: Passport ID + Country */}
+                        {(activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') && (
+                            <>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                        {locale === 'th' ? 'หมายเลขหนังสือเดินทาง' : 'Passport ID'} <span style={{ color: '#e53935' }}>*</span>
+                                    </label>
+                                    <input type="text" value={passportId}
+                                        onChange={(e) => setPassportId(e.target.value.toUpperCase())}
+                                        placeholder={locale === 'th' ? 'เช่น AB1234567' : 'e.g. AB1234567'}
+                                        maxLength={9}
+                                        required style={inputStyle} />
+                                </div>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                        {locale === 'th' ? 'ประเทศ' : 'Country'} <span style={{ color: '#e53935' }}>*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={country}
+                                        onChange={(e) => setCountry(e.target.value)}
+                                        placeholder={locale === 'th' ? 'กรอกชื่อประเทศ' : 'Enter country name'}
+                                        required
+                                        style={inputStyle}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {/* Email */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                {t('email')} <span style={{ color: '#e53935' }}>*</span>
+                            </label>
+                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                                placeholder="email@example.com" required style={inputStyle} />
+                        </div>
+
+                        {/* Organization */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                {t('organization')}
+                            </label>
+                            <input type="text" value={organization} onChange={(e) => setOrganization(e.target.value)}
+                                placeholder={t('organization')} style={inputStyle} />
+                        </div>
+
+                        {/* Phone Number */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                {locale === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'}
+                            </label>
+                            <div style={{
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                padding: '12px 14px',
+                                background: '#fff'
+                            }}>
+                                {/* @ts-ignore */}
+                                <PhoneInputAny
+                                    defaultCountry="th"
+                                    value={phone}
+                                    onChange={(phone: string) => setPhone(phone)}
+                                    inputStyle={{
+                                        width: '100%',
+                                        border: 'none',
+                                        outline: 'none',
+                                        fontSize: '15px',
+                                        background: 'transparent'
+                                    }}
+                                    countrySelectorStyleProps={{
+                                        buttonStyle: {
+                                            border: 'none',
+                                            background: 'transparent'
+                                        }
+                                    }}
                                 />
                             </div>
-                        </>
-                    )}
-
-                    {/* Email */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                            {t('email')} <span style={{ color: '#e53935' }}>*</span>
-                        </label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                            placeholder="email@example.com" required style={inputStyle} />
-                    </div>
-
-                    {/* Organization */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                            {t('organization')}
-                        </label>
-                        <input type="text" value={organization} onChange={(e) => setOrganization(e.target.value)}
-                            placeholder={t('organization')} style={inputStyle} />
-                    </div>
-
-                    {/* Phone Number */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                            {locale === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'}
-                        </label>
-                        <div style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            padding: '12px 14px',
-                            background: '#fff'
-                        }}>
-                            {/* @ts-ignore */}
-                            <PhoneInputAny
-                                defaultCountry="th"
-                                value={phone}
-                                onChange={(phone: string) => setPhone(phone)}
-                                inputStyle={{
-                                    width: '100%',
-                                    border: 'none',
-                                    outline: 'none',
-                                    fontSize: '15px',
-                                    background: 'transparent'
-                                }}
-                                countrySelectorStyleProps={{
-                                    buttonStyle: {
-                                        border: 'none',
-                                        background: 'transparent'
-                                    }
-                                }}
-                            />
                         </div>
-                    </div>
 
-                    {/* Password Fields */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {t('password')} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••" required style={inputStyle} />
+                        {/* Password Fields */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                    {t('password')} <span style={{ color: '#e53935' }}>*</span>
+                                </label>
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••" required style={inputStyle} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                    {t('confirmPassword')} <span style={{ color: '#e53935' }}>*</span>
+                                </label>
+                                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••••" required style={inputStyle} />
+                            </div>
                         </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {t('confirmPassword')} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="••••••••" required style={inputStyle} />
-                        </div>
-                    </div>
 
-                    {/* Student Document Upload */}
-                    {(activeTab === 'thaiStudent' || activeTab === 'internationalStudent') && (
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
-                                {locale === 'th' ? 'เอกสารยืนยันความเป็นนักศึกษา (PDF, JPG, PNG)' : 'Student Verification Document (PDF, JPG, PNG)'} <span style={{ color: '#e53935' }}>*</span>
-                            </label>
-                            <input
-                                id="student-doc-input"
-                                type="file"
-                                accept=".pdf,.jpg,.jpeg,.png"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleFileSelect(file);
-                                    e.target.value = '';
-                                }}
-                                style={{ display: 'none' }}
-                            />
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => document.getElementById('student-doc-input')?.click()}
-                                    disabled={!!studentDocument}
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px 14px',
-                                        fontSize: '15px',
-                                        border: studentDocument ? '2px solid #4caf50' : '2px solid #1a237e',
-                                        borderRadius: '8px',
-                                        background: studentDocument ? '#e8f5e9' : '#f5f5ff',
-                                        color: studentDocument ? '#2e7d32' : '#1a237e',
-                                        cursor: studentDocument ? 'default' : 'pointer',
-                                        fontWeight: '500',
-                                        transition: 'all 0.2s ease',
-                                        opacity: studentDocument ? 0.9 : 1
+                        {/* Student Document Upload */}
+                        {(activeTab === 'thaiStudent' || activeTab === 'internationalStudent') && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
+                                    {locale === 'th' ? 'เอกสารยืนยันความเป็นนักศึกษา (PDF, JPG, PNG)' : 'Student Verification Document (PDF, JPG, PNG)'} <span style={{ color: '#e53935' }}>*</span>
+                                </label>
+                                <input
+                                    id="student-doc-input"
+                                    type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleFileSelect(file);
+                                        e.target.value = '';
                                     }}
-                                >
-                                    {studentDocument
-                                        ? '📄 ' + studentDocument.name
-                                        : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')
-                                    }
-                                </button>
-                                {studentDocument && (
+                                    style={{ display: 'none' }}
+                                />
+                                <div style={{ display: 'flex', gap: '8px' }}>
                                     <button
                                         type="button"
-                                        onClick={() => setStudentDocument(null)}
+                                        onClick={() => document.getElementById('student-doc-input')?.click()}
+                                        disabled={!!studentDocument}
                                         style={{
-                                            padding: '12px 16px',
+                                            flex: 1,
+                                            padding: '12px 14px',
                                             fontSize: '15px',
-                                            border: '2px solid #e53935',
+                                            border: studentDocument ? '2px solid #4caf50' : '2px solid #1a237e',
                                             borderRadius: '8px',
-                                            background: '#ffebee',
-                                            color: '#c62828',
-                                            cursor: 'pointer',
+                                            background: studentDocument ? '#e8f5e9' : '#f5f5ff',
+                                            color: studentDocument ? '#2e7d32' : '#1a237e',
+                                            cursor: studentDocument ? 'default' : 'pointer',
                                             fontWeight: '500',
-                                            transition: 'all 0.2s ease'
+                                            transition: 'all 0.2s ease',
+                                            opacity: studentDocument ? 0.9 : 1
                                         }}
-                                        title={locale === 'th' ? 'ลบไฟล์' : 'Remove file'}
                                     >
-                                        🗑️
+                                        {studentDocument
+                                            ? '📄 ' + studentDocument.name
+                                            : (locale === 'th' ? '📁 เลือกไฟล์' : '📁 Choose File')
+                                        }
                                     </button>
-                                )}
+                                    {studentDocument && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setStudentDocument(null)}
+                                            style={{
+                                                padding: '12px 16px',
+                                                fontSize: '15px',
+                                                border: '2px solid #e53935',
+                                                borderRadius: '8px',
+                                                background: '#ffebee',
+                                                color: '#c62828',
+                                                cursor: 'pointer',
+                                                fontWeight: '500',
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                            title={locale === 'th' ? 'ลบไฟล์' : 'Remove file'}
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
+                                </div>
+                                <p style={{ fontSize: '12px', color: studentDocument ? '#4caf50' : '#888', marginTop: '4px' }}>
+                                    {studentDocument
+                                        ? (locale === 'th' ? 'เลือกไฟล์แล้ว - จะอัปโหลดเมื่อกดสร้างบัญชี' : 'File selected - will upload when you create account')
+                                        : (locale === 'th' ? 'เลือกใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Select student certificate or related document (PDF, JPG, PNG)')
+                                    }
+                                </p>
                             </div>
-                            <p style={{ fontSize: '12px', color: studentDocument ? '#4caf50' : '#888', marginTop: '4px' }}>
-                                {studentDocument
-                                    ? (locale === 'th' ? 'เลือกไฟล์แล้ว - จะอัปโหลดเมื่อกดสร้างบัญชี' : 'File selected - will upload when you create account')
-                                    : (locale === 'th' ? 'เลือกใบรับรองนักศึกษา หรือเอกสารที่เกี่ยวข้อง (PDF, JPG, PNG)' : 'Select student certificate or related document (PDF, JPG, PNG)')
-                                }
+                        )}
+
+                        {/* Terms */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)}
+                                    required style={{ width: '18px', height: '18px', marginTop: '2px' }} />
+                                <span style={{ fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
+                                    {t('agreeTerms')} <Link href="/terms" style={{ color: '#1a237e' }}>{t('terms')}</Link> {t('and')} <Link href="/privacy" style={{ color: '#1a237e' }}>{t('privacy')}</Link>
+                                </span>
+                            </label>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button type="submit" disabled={isLoading}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                background: '#1a237e',
+                                border: 'none',
+                                borderRadius: '8px',
+                                color: '#fff',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                opacity: isLoading ? 0.7 : 1
+                            }}>
+                            {isLoading ? (locale === 'th' ? 'กำลังสร้างบัญชี...' : 'Creating...') : t('createAccount')}
+                        </button>
+                        {/* Login Link for Step 2 */}
+                        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                                {t('haveAccount')}{' '}
+                                <Link href={`/${locale}/login`} style={{ color: '#1a237e', fontWeight: '600', textDecoration: 'none' }}>
+                                    {t('signIn')}
+                                </Link>
                             </p>
                         </div>
-                    )}
-
-                    {/* Terms */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
-                            <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)}
-                                required style={{ width: '18px', height: '18px', marginTop: '2px' }} />
-                            <span style={{ fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
-                                {t('agreeTerms')} <Link href="/terms" style={{ color: '#1a237e' }}>{t('terms')}</Link> {t('and')} <Link href="/privacy" style={{ color: '#1a237e' }}>{t('privacy')}</Link>
-                            </span>
-                        </label>
-                    </div>
-
-                    {/* Submit Button */}
-                    <button type="submit" disabled={isLoading}
-                        style={{
-                            width: '100%',
-                            padding: '14px',
-                            background: '#1a237e',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            cursor: isLoading ? 'not-allowed' : 'pointer',
-                            opacity: isLoading ? 0.7 : 1
-                        }}>
-                        {isLoading ? (locale === 'th' ? 'กำลังสร้างบัญชี...' : 'Creating...') : t('createAccount')}
-                    </button>
-                {/* Login Link for Step 2 */}
-                <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                    <p style={{ fontSize: '14px', color: '#666' }}>
-                        {t('haveAccount')}{' '}
-                        <Link href={`/${locale}/login`} style={{ color: '#1a237e', fontWeight: '600', textDecoration: 'none' }}>
-                            {t('signIn')}
-                        </Link>
-                    </p>
-                </div>
-                </form>
-            )}
+                    </form>
+                )}
             </div>
         </>
     );

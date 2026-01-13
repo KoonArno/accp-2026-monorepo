@@ -24,6 +24,7 @@
     "react-countup": "^6.5.3",
     "react-dom": "19.2.3",
     "react-international-phone": "^4.6.1",
+    "react-loader-spinner": "^8.0.0",
     "react-modal-video": "^2.0.2",
     "react-phone-number-input": "^3.4.14",
     "react-slick": "^0.30.2",

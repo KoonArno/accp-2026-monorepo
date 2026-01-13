@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     IconCalendarEvent,
     IconCheck,
@@ -107,6 +108,7 @@ interface Event {
 }
 
 export default function EventsPage() {
+    const { canAccessEvent, isAdmin } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
@@ -121,8 +123,9 @@ export default function EventsPage() {
 
         const matchesStatus = !statusFilter || event.status === statusFilter;
         const matchesType = !typeFilter || event.type === typeFilter;
+        const matchesAccess = isAdmin || canAccessEvent(event.id);
 
-        return matchesSearch && matchesStatus && matchesType;
+        return matchesSearch && matchesStatus && matchesType && matchesAccess;
     });
 
     const stats = {

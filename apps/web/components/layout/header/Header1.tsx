@@ -5,13 +5,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
-import { 
-    HEADER_COLORS, 
-    getLanguageButtonStyle, 
-    languageSwitcherContainerStyle, 
-    getMenuLinkColor, 
-    getMenuLinkWeight, 
-    authButtonStyles 
+import {
+    HEADER_COLORS,
+    getLanguageButtonStyle,
+    languageSwitcherContainerStyle,
+    getMenuLinkColor,
+    getMenuLinkWeight,
+    authButtonStyles
 } from './headerStyles';
 
 export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSearch, handleSearch, headerBgWhite }: any) {

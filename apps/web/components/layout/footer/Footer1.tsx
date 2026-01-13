@@ -1,105 +1,17 @@
 'use client'
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+
 
 export default function Footer1() {
 	const t = useTranslations();
 	const locale = useLocale();
-	const [timeLeft, setTimeLeft] = useState({
-		days: 0,
-		hours: 0,
-		minutes: 0,
-		seconds: 0
-	})
 
-	useEffect(() => {
-		const targetDate = new Date('2026-07-09T09:00:00')
-
-		const updateCountdown = () => {
-			const now = new Date()
-			const difference = targetDate.getTime() - now.getTime()
-
-			if (difference > 0) {
-				setTimeLeft({
-					days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-					hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-					minutes: Math.floor((difference / 1000 / 60) % 60),
-					seconds: Math.floor((difference / 1000) % 60)
-				})
-			}
-		}
-
-		updateCountdown()
-		const timer = setInterval(updateCountdown, 1000)
-		return () => clearInterval(timer)
-	}, [])
 
 	return (
 		<>
 			{/* Countdown Banner */}
-			<div style={{
-				background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%)',
-				padding: '20px 0',
-				position: 'relative'
-			}}>
-				<div className="container">
-					<div className="row align-items-center">
-						<div className="col-lg-4 col-md-12 text-center text-lg-start mb-3 mb-lg-0">
-							<h4 style={{ color: '#fff', margin: 0, fontSize: '18px', fontWeight: '600' }}>
-								<i className="fa-solid fa-calendar-days" style={{ marginRight: '8px', color: '#FFBA00' }} />
-								ACCP 2026 • {t('cta.eventDate')}
-							</h4>
-						</div>
-						<div className="col-lg-5 col-md-12 mb-3 mb-lg-0">
-							<div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-								{[
-									{ value: timeLeft.days, label: t('common.days') },
-									{ value: timeLeft.hours, label: t('common.hours') },
-									{ value: timeLeft.minutes, label: t('common.minutes') },
-									{ value: timeLeft.seconds, label: t('common.seconds') }
-								].map((item, index) => (
-									<div key={index} style={{
-										textAlign: 'center',
-										background: 'rgba(255,255,255,0.15)',
-										borderRadius: '8px',
-										padding: '8px 12px',
-										minWidth: '50px'
-									}}>
-										<div style={{
-											fontSize: '20px',
-											fontWeight: '700',
-											color: '#FFBA00',
-											lineHeight: 1
-										}}>
-											{item.value.toString().padStart(2, '0')}
-										</div>
-										<div style={{
-											fontSize: '9px',
-											color: 'rgba(255,255,255,0.7)',
-											textTransform: 'uppercase',
-											marginTop: '2px'
-										}}>
-											{item.label}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
-						<div className="col-lg-3 col-md-12 text-center text-lg-end">
-							<Link href={`/${locale}/registration`} className="vl-btn1" style={{
-								background: '#FFBA00',
-								color: '#1a237e',
-								padding: '10px 20px',
-								fontWeight: '600',
-								fontSize: '14px'
-							}}>
-								{t('common.registerNow')}
-							</Link>
-						</div>
-					</div>
-				</div>
-			</div>
+
 
 			{/* Main Footer */}
 			<div className="footer1-sertion-area" style={{ paddingTop: '60px' }}>

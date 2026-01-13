@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
-import { uploadToGoogleDrive, UploadFolderType } from "../../services/googleDrive.js";
+import { uploadToGoogleDrive, UploadFolderType, getFileStream, extractFileIdFromUrl } from "../../services/googleDrive.js";
 
 // Allowed file types
 const ALLOWED_MIME_TYPES = [
@@ -65,6 +65,37 @@ async function handleFileUpload(
 }
 
 export async function uploadRoutes(fastify: FastifyInstance) {
+  /**
+   * GET /upload/proxy
+   * Proxy file from Google Drive (securely)
+   */
+  fastify.get("/proxy", async (request, reply) => {
+    const { url } = request.query as { url: string };
+
+    if (!url) {
+      return reply.status(400).send({ error: "Missing url parameter" });
+    }
+
+    const fileId = extractFileIdFromUrl(url);
+
+    if (!fileId) {
+      return reply.status(400).send({ error: "Invalid Google Drive URL" });
+    }
+
+    try {
+      const { stream, mimeType } = await getFileStream(fileId);
+
+      reply.header("Content-Type", mimeType);
+      // Cache for 1 hour
+      reply.header("Cache-Control", "public, max-age=3600");
+
+      return reply.send(stream);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: "Failed to fetch file" });
+    }
+  });
+
   /**
    * POST /upload/verify-doc
    * Upload student verification document to Google Drive (student_docs folder)

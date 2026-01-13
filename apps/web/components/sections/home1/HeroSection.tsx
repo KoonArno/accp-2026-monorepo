@@ -3,6 +3,39 @@ import { useTranslations } from 'next-intl';
 import Countdown from '@/components/elements/Countdown'
 import Link from 'next/link'
 
+const heroStyles = {
+    mainTitle: {
+        fontSize: '80px',
+        lineHeight: '1.1',
+        fontWeight: '700',
+        marginBottom: '20px'
+    },
+    titleWhite: {
+        color: '#fff'
+    },
+    titleGold: {
+        background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D4A0 50%, #D4AF37 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        fontWeight: '700'
+    },
+    subtitle: {
+        fontSize: '36px',
+        fontWeight: '600',
+        color: '#fff',
+        textTransform: 'uppercase' as const,
+        marginBottom: '30px',
+        letterSpacing: '2px'
+    },
+    description: {
+        fontSize: '18px',
+        lineHeight: '1.6',
+        color: '#fff',
+        marginBottom: '0'
+    }
+} as const;
+
 export default function HeroSection() {
     const t = useTranslations();
 
@@ -10,22 +43,20 @@ export default function HeroSection() {
         <>
             <div className="hero1-section-area">
                 <div className="bg1">
-                    <img src="/assets/img/bg/header-bg2.png" alt="" className="header-bg1" />
+                    <img src="/assets/img/bg/Bghome.png" alt="" className="header-bg1" />
                 </div>
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-6">
-                            <div className="hero1-header heading1">
-                                <h5 data-aos="fade-left" data-aos-duration={800}>
-                                    {t('hero.subtitle')}
-                                </h5>
-                                <div className="space16" />
-                                <h1 className="text-anime-style-3">
-                                    {t('hero.title')} <br className="d-lg-block d-none" />
-                                    {t('hero.location')}
+                            <div className="hero1-header heading1" style={{ marginLeft: '50px', marginTop: '-60px' }}>
+                                <h1 className="text-anime-style-3" style={heroStyles.mainTitle}>
+                                    <span style={heroStyles.titleWhite}>ACCP </span>
+                                    <span style={heroStyles.titleGold}>2026</span>
                                 </h1>
-                                <div className="space16" />
-                                <p data-aos="fade-left" data-aos-duration={900}>
+                                <h2 style={heroStyles.subtitle}>
+                                    {t('hero.location')}
+                                </h2>
+                                <p data-aos="fade-left" data-aos-duration={900} style={heroStyles.description}>
                                     {t('hero.theme')}
                                 </p>
                                 <div className="space32" />
@@ -37,9 +68,7 @@ export default function HeroSection() {
                         </div>
                         <div className="col-lg-5">
                             <div className="header-images">
-                                <div className="img1" data-aos="zoom-in" data-aos-duration={1000}>
-                                    <img src="/assets/img/all-images/hero/hero-img1.png" alt="ACCP 2026 Conference" />
-                                </div>
+                                {/* Image removed as requested */}
                             </div>
                         </div>
                         <div className="col-lg-1">

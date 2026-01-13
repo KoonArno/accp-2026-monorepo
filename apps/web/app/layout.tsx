@@ -13,6 +13,8 @@ import "../styles/vendor/odometer.css"
 import "../styles/main.css"
 import "../styles/responsive-fixes.css"
 import "../styles/theme-enhancements.css"
+import "../styles/hero-image-fix.css"
+import "../styles/header-menu-fix.css"
 
 import type { Metadata } from "next"
 import { Figtree, Space_Grotesk, Noto_Sans_Thai } from "next/font/google"

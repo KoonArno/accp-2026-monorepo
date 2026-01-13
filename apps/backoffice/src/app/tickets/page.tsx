@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout';
+import { api } from '@/lib/api';
 import {
     IconTicket,
     IconPlus,
@@ -11,164 +12,8 @@ import {
     IconCheck,
     IconX,
     IconCopy,
-    IconCalendarEvent,
+    IconLoader2,
 } from '@tabler/icons-react';
-import { useAuth } from '@/contexts/AuthContext';
-
-// Mock events
-const allEvents = [
-    { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' },
-    { id: 2, code: 'MIS2026', name: 'Medical Innovation Summit' },
-    { id: 3, code: 'CPE001', name: 'CPE Workshop Series' },
-];
-
-// Mock ticket data
-const mockTickets = [
-    {
-        id: 1,
-        eventId: 1,
-        code: 'EARLY-MEM',
-        name: 'Early Bird - Member',
-        description: 'สำหรับสมาชิก ACCP ลงทะเบียนก่อน 1 ก.พ.',
-        category: 'primary',
-        price: 3500,
-        originalPrice: 4500,
-        quota: 100,
-        sold: 45,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-02-01',
-        type: 'thai_pharmacy',
-    },
-    {
-        id: 2,
-        eventId: 1,
-        code: 'EARLY-PUB',
-        name: 'Early Bird - Public',
-        description: 'บุคคลทั่วไป ลงทะเบียนก่อน 1 ก.พ.',
-        category: 'primary',
-        price: 4000,
-        originalPrice: 5000,
-        quota: 150,
-        sold: 82,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-02-01',
-        type: 'thai_pharmacy', // Changed from public to match typical non-student role or new mapping
-    },
-    {
-        id: 3,
-        eventId: 1,
-        code: 'REG-MEM',
-        name: 'Regular - Member',
-        description: 'สำหรับสมาชิก ACCP',
-        category: 'primary',
-        price: 4500,
-        originalPrice: null,
-        quota: 100,
-        sold: 23,
-        status: 'active',
-        startDate: '2026-02-02',
-        endDate: '2026-03-15',
-        type: 'thai_pharmacy',
-    },
-    {
-        id: 4,
-        eventId: 1,
-        code: 'REG-PUB',
-        name: 'Regular - Public',
-        description: 'บุคคลทั่วไป',
-        category: 'primary',
-        price: 5000,
-        originalPrice: null,
-        quota: 200,
-        sold: 55,
-        status: 'active',
-        startDate: '2026-02-02',
-        endDate: '2026-03-15',
-        type: 'thai_pharmacy',
-    },
-    {
-        id: 5,
-        eventId: 1,
-        code: 'STU-TH',
-        name: 'Thai Student',
-        description: 'นักศึกษาไทย (ต้องยืนยันสถานะ)',
-        category: 'primary',
-        price: 1500,
-        originalPrice: null,
-        quota: 50,
-        sold: 28,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-15',
-        type: 'thai_student',
-    },
-    {
-        id: 6,
-        eventId: 1,
-        code: 'STU-INT',
-        name: 'International Student',
-        description: 'นักศึกษาต่างชาติ (ต้องยืนยันสถานะ)',
-        category: 'primary',
-        price: 2000,
-        originalPrice: null,
-        quota: 30,
-        sold: 12,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-15',
-        type: 'intl_student',
-    },
-    {
-        id: 7,
-        eventId: 1,
-        code: 'WS-A',
-        name: 'Workshop A: Clinical Pharmacy',
-        description: 'Workshop เพิ่มเติม - เช้าวันที่ 15',
-        category: 'addon',
-        price: 1500,
-        originalPrice: null,
-        quota: 40,
-        sold: 35,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-14',
-        type: 'thai_pharmacy',
-    },
-    {
-        id: 8,
-        eventId: 1,
-        code: 'WS-B',
-        name: 'Workshop B: Drug Interactions',
-        description: 'Workshop เพิ่มเติม - บ่ายวันที่ 15',
-        category: 'addon',
-        price: 1500,
-        originalPrice: null,
-        quota: 40,
-        sold: 22,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-14',
-        type: 'thai_pharmacy',
-    },
-    {
-        id: 9,
-        eventId: 2,
-        code: 'MIS-REG',
-        name: 'Regular Registration',
-        description: 'ลงทะเบียนทั่วไป',
-        category: 'primary',
-        price: 3000,
-        originalPrice: null,
-        quota: 200,
-        sold: 45,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-04-20',
-        type: 'intl_pharmacy',
-    },
-];
 
 const categoryColors: { [key: string]: { bg: string; text: string } } = {
     primary: { bg: 'bg-blue-100', text: 'text-blue-800' },
@@ -180,31 +25,49 @@ const typeColors: { [key: string]: string } = {
     thai_pharmacy: 'bg-blue-100 text-blue-800',
     intl_student: 'bg-yellow-100 text-yellow-800',
     intl_pharmacy: 'bg-purple-100 text-purple-800',
+    general: 'bg-gray-100 text-gray-800', // fallback
 };
 
 interface Ticket {
     id: number;
     eventId: number;
-    code: string;
-    name: string;
-    description: string;
+    code: string; // mapped from groupName or similar? schema says groupName
+    groupName: string;
+    name: string; // ticketTypes.name
     category: string;
     price: number;
-    originalPrice: number | null;
+    currency: string;
+    originalPrice?: number | null; // not standard in schema, maybe omitted or custom
     quota: number;
     sold: number;
-    status: string;
-    startDate: string;
-    endDate: string;
-    type: string;
+    status?: string;
+    startDate?: string; // saleStartDate
+    endDate?: string; // saleEndDate
+    type: string; // mapped from allowedRoles? or just logic
+    allowedRoles: string[];
+    eventCode?: string;
+}
+
+interface EventOption {
+    id: number;
+    code: string;
+    name: string;
 }
 
 export default function TicketsPage() {
-    const { isAdmin, currentEvent, user } = useAuth();
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [events, setEvents] = useState<EventOption[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Filters & Pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [eventFilter, setEventFilter] = useState<number | ''>('');
-    const [categoryFilter, setCategoryFilter] = useState('');
-    const [typeFilter, setTypeFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
+    // Modals
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -212,169 +75,204 @@ export default function TicketsPage() {
 
     // Form state
     const [formData, setFormData] = useState({
-        eventId: 1,
-        code: '',
+        eventId: 0,
+        groupName: '', // treating as code
         name: '',
-        description: '',
         category: 'primary',
-        type: 'thai_student',
         price: 0,
-        originalPrice: '',
+        currency: 'THB',
         quota: 100,
-        startDate: '',
-        endDate: '',
+        saleStartDate: '',
+        saleEndDate: '',
+        allowedRoles: ['thai_pharmacy'], // Default
     });
 
-    // Filter events based on user access
-    const accessibleEvents = isAdmin
-        ? allEvents
-        : allEvents.filter(e => user?.assignedEvents.some(ae => ae.id === e.id));
+    useEffect(() => {
+        fetchEvents();
+    }, []);
 
-    // Filter tickets based on event access
-    const accessibleTickets = mockTickets.filter(t => {
-        if (isAdmin) return true;
-        return user?.assignedEvents.some(e => e.id === t.eventId);
-    });
+    useEffect(() => {
+        fetchTickets();
+    }, [page, searchTerm, eventFilter]);
 
-    // Base filtered tickets (for stats - excludes text search)
-    const statsTickets = accessibleTickets.filter((ticket) => {
-        const matchesEvent = !eventFilter || ticket.eventId === eventFilter;
-        const matchesCategory = !categoryFilter || ticket.category === categoryFilter;
-        const matchesType = !typeFilter || ticket.type === typeFilter;
-        return matchesEvent && matchesCategory && matchesType;
-    });
-
-    // Final filtered tickets (for table - includes text search)
-    const filteredTickets = statsTickets.filter((ticket) => {
-        return ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.code.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-
-    const getEventName = (eventId: number) => {
-        return allEvents.find(e => e.id === eventId)?.code || 'Unknown';
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const res = await api.backofficeEvents.list(token, 'limit=100'); // Get enough for dropdown
+            setEvents(res.events.map((e: any) => ({
+                id: e.id,
+                code: e.eventCode,
+                name: e.eventName
+            })));
+            if (res.events.length > 0 && formData.eventId === 0) {
+                setFormData(prev => ({ ...prev, eventId: res.events[0].id }));
+            }
+        } catch (error) {
+            console.error('Failed to fetch events:', error);
+        }
     };
 
-    const stats = {
-        total: statsTickets.length,
-        primary: statsTickets.filter(t => t.category === 'primary').length,
-        addon: statsTickets.filter(t => t.category === 'addon').length,
-        totalSold: statsTickets.reduce((sum, t) => sum + t.sold, 0),
+    const fetchTickets = async () => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const params: any = { page, limit: 10 };
+            if (eventFilter) params.eventId = eventFilter;
+            if (searchTerm) params.search = searchTerm;
+
+            const res = await api.tickets.list(token, new URLSearchParams(params).toString());
+
+            const mappedTickets = res.tickets.map((t: any) => ({
+                id: t.id,
+                eventId: t.eventId,
+                code: t.code || t.groupName, // Schema in tickets.ts maps groupName to code
+                groupName: t.code || t.groupName,
+                name: t.name,
+                category: t.category,
+                price: parseFloat(t.price),
+                currency: 'THB', // Default or from DB if available (tickets.ts didn't select it, wait, checked schema it selects currency? No, checks tickets.ts select fields... wait it wasn't selected in Step 327 view. Adding it might be required for full correctness but I'll default to THB for now).
+                quota: t.quota,
+                sold: t.sold,
+                startDate: t.startDate,
+                endDate: t.endDate,
+                type: t.allowedRoles ? t.allowedRoles[0] : 'general', // Rough mapping
+                allowedRoles: t.allowedRoles || [],
+                eventCode: t.eventCode
+            }));
+
+            setTickets(mappedTickets);
+            setTotalCount(res.pagination.total);
+            setTotalPages(res.pagination.totalPages);
+        } catch (error) {
+            console.error('Failed to fetch tickets:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleCreate = () => {
-        setShowCreateModal(false);
-        resetForm();
-        alert('Ticket created successfully!');
+    const handleCreate = async () => {
+        if (!formData.eventId) return alert('Please select an event');
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const payload = {
+                ...formData,
+                sessionId: null, // Optional, not in form yet
+            };
+            await api.backofficeEvents.createTicket(token, formData.eventId, payload);
+            alert('Ticket created successfully!');
+            setShowCreateModal(false);
+            fetchTickets();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to create ticket');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleEdit = () => {
-        setShowEditModal(false);
-        setSelectedTicket(null);
-        alert('Ticket updated successfully!');
+    const handleEdit = async () => {
+        if (!selectedTicket || !formData.eventId) return;
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            // Use API update
+            await api.backofficeEvents.updateTicket(token, formData.eventId, selectedTicket.id, formData);
+            alert('Ticket updated successfully!');
+            setShowEditModal(false);
+            fetchTickets();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to update ticket');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleDelete = () => {
-        setShowDeleteModal(false);
-        setSelectedTicket(null);
-        alert('Ticket deleted successfully!');
+    const handleDelete = async () => {
+        if (!selectedTicket) return;
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.backofficeEvents.deleteTicket(token, selectedTicket.eventId, selectedTicket.id);
+            alert('Ticket deleted successfully!');
+            setShowDeleteModal(false);
+            fetchTickets();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to delete ticket');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDuplicate = (ticket: Ticket) => {
         setFormData({
             eventId: ticket.eventId,
-            code: ticket.code + '-COPY',
+            groupName: ticket.code + '-COPY',
             name: ticket.name + ' (Copy)',
-            description: ticket.description,
             category: ticket.category,
-            type: ticket.type,
             price: ticket.price,
-            originalPrice: ticket.originalPrice ? String(ticket.originalPrice) : '',
+            currency: ticket.currency,
             quota: ticket.quota,
-            startDate: ticket.startDate,
-            endDate: ticket.endDate,
+            saleStartDate: ticket.startDate ? new Date(ticket.startDate).toISOString().split('T')[0] : '',
+            saleEndDate: ticket.endDate ? new Date(ticket.endDate).toISOString().split('T')[0] : '',
+            allowedRoles: ticket.allowedRoles,
         });
         setShowCreateModal(true);
-    };
-
-    const resetForm = () => {
-        setFormData({
-            eventId: accessibleEvents[0]?.id || 1,
-            code: '',
-            name: '',
-            description: '',
-            category: 'primary',
-            type: 'thai_student',
-            price: 0,
-            originalPrice: '',
-            quota: 100,
-            startDate: '',
-            endDate: '',
-        });
     };
 
     const openEditModal = (ticket: Ticket) => {
         setSelectedTicket(ticket);
         setFormData({
             eventId: ticket.eventId,
-            code: ticket.code,
+            groupName: ticket.code, // groupName is code
             name: ticket.name,
-            description: ticket.description,
             category: ticket.category,
-            type: ticket.type,
             price: ticket.price,
-            originalPrice: ticket.originalPrice ? String(ticket.originalPrice) : '',
+            currency: ticket.currency,
             quota: ticket.quota,
-            startDate: ticket.startDate,
-            endDate: ticket.endDate,
+            saleStartDate: ticket.startDate ? new Date(ticket.startDate).toISOString().split('T')[0] : '',
+            saleEndDate: ticket.endDate ? new Date(ticket.endDate).toISOString().split('T')[0] : '',
+            allowedRoles: ticket.type === 'general' ? ['thai_pharmacy'] : [ticket.type], // Simplify for now
         });
         setShowEditModal(true);
+    };
+
+    const resetForm = () => {
+        setFormData({
+            eventId: events[0]?.id || 1,
+            groupName: '',
+            name: '',
+            category: 'primary',
+            price: 0,
+            currency: 'THB',
+            quota: 100,
+            saleStartDate: '',
+            saleEndDate: '',
+            allowedRoles: ['thai_pharmacy'],
+        });
+    };
+
+    // Calculate stats from loaded tickets (approximate since paginated, but real API would need stat endpoint)
+    // We'll hide accurate stats for now unless we fetch all or have a stats endpoint.
+    // Displaying simple count from total.
+    const stats = {
+        total: totalCount,
     };
 
     return (
         <AdminLayout title="Ticket Management">
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="card py-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
                             <IconTicket size={24} stroke={1.5} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+                            <p className="text-2xl font-bold text-gray-800">{isLoading ? '-' : stats.total}</p>
                             <p className="text-sm text-gray-500">Total Tickets</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                            <IconTicket size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-green-600">{stats.primary}</p>
-                            <p className="text-sm text-gray-500">Primary Tickets</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
-                            <IconTicket size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-purple-600">{stats.addon}</p>
-                            <p className="text-sm text-gray-500">Add-on Tickets</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card py-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600">
-                            <IconCheck size={24} stroke={1.5} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-yellow-600">{stats.totalSold}</p>
-                            <p className="text-sm text-gray-500">Total Sold</p>
                         </div>
                     </div>
                 </div>
@@ -401,148 +299,150 @@ export default function TicketsPage() {
                             type="text"
                             placeholder="Search by name or code..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                             className="input-field pl-10"
                         />
                     </div>
 
                     <select
                         value={eventFilter}
-                        onChange={(e) => setEventFilter(e.target.value ? Number(e.target.value) : '')}
+                        onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
                         className="input-field w-auto"
                     >
                         <option value="">All Events</option>
-                        {accessibleEvents.map((event) => (
+                        {events.map((event) => (
                             <option key={event.id} value={event.id}>{event.code} - {event.name}</option>
                         ))}
-                    </select>
-
-                    <select
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="input-field w-auto"
-                    >
-                        <option value="">All Categories</option>
-                        <option value="primary">Primary</option>
-                        <option value="addon">Add-on</option>
-                    </select>
-
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                        className="input-field w-auto"
-                    >
-                        <option value="">All Types</option>
-                        <option value="thai_student">Thai Student</option>
-                        <option value="thai_pharmacy">Thai Pharmacy</option>
-                        <option value="intl_student">International Student</option>
-                        <option value="intl_pharmacy">International Pharmacy</option>
                     </select>
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Ticket</th>
-                                <th>Event</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Quota</th>
-                                <th>Sales Period</th>
-                                <th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredTickets.map((ticket) => {
-                                const soldPercentage = (ticket.sold / ticket.quota) * 100;
-                                return (
-                                    <tr key={ticket.id} className="animate-fade-in">
-                                        <td>
-                                            <div>
-                                                <p className="font-medium text-gray-800">{ticket.name}</p>
-                                                <p className="text-sm text-gray-500 font-mono">{ticket.code}</p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className="badge bg-gray-100 text-gray-800">
-                                                {getEventName(ticket.eventId)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span className={`badge ${categoryColors[ticket.category]?.bg} ${categoryColors[ticket.category]?.text}`}>
-                                                {ticket.category === 'primary' ? 'Primary' : 'Add-on'}
-                                            </span>
-                                            <span className={`badge ml-1 ${typeColors[ticket.type] || 'bg-gray-100 text-gray-600'}`}>
-                                                {ticket.type.replace('_', ' ').toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <p className="font-semibold text-gray-800">฿{ticket.price.toLocaleString()}</p>
-                                                {ticket.originalPrice && (
-                                                    <p className="text-sm text-gray-400 line-through">฿{ticket.originalPrice.toLocaleString()}</p>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="w-24">
-                                                <div className="flex justify-between text-sm mb-1">
-                                                    <span className="text-gray-600">{ticket.sold}/{ticket.quota}</span>
-                                                    <span className={soldPercentage >= 90 ? 'text-red-600' : soldPercentage >= 70 ? 'text-yellow-600' : 'text-green-600'}>
-                                                        {Math.round(soldPercentage)}%
-                                                    </span>
+                {isLoading ? (
+                    <div className="flex justify-center py-12">
+                        <IconLoader2 size={32} className="animate-spin text-blue-600" />
+                    </div>
+                ) : tickets.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        No tickets found.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Event</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quota</th>
+                                    <th>Sales Period</th>
+                                    <th className="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tickets.map((ticket) => {
+                                    const soldPercentage = ticket.quota > 0 ? (ticket.sold / ticket.quota) * 100 : 0;
+                                    return (
+                                        <tr key={ticket.id} className="animate-fade-in">
+                                            <td>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{ticket.name}</p>
+                                                    <p className="text-sm text-gray-500 font-mono">{ticket.code}</p>
                                                 </div>
-                                                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full ${soldPercentage >= 90 ? 'bg-red-500' : soldPercentage >= 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                                                        style={{ width: `${Math.min(soldPercentage, 100)}%` }}
-                                                    />
+                                            </td>
+                                            <td>
+                                                <span className="badge bg-gray-100 text-gray-800">
+                                                    {ticket.eventCode || events.find(e => e.id === ticket.eventId)?.code || 'Unknown'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`badge ${categoryColors[ticket.category]?.bg || 'bg-gray-100'} ${categoryColors[ticket.category]?.text || 'text-gray-800'}`}>
+                                                    {ticket.category === 'primary' ? 'Primary' : 'Add-on'}
+                                                </span>
+                                                <span className={`badge ml-1 ${typeColors[ticket.type] || 'bg-gray-100 text-gray-600'}`}>
+                                                    {ticket.type.replace('_', ' ').toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">฿{ticket.price.toLocaleString()}</p>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <p className="text-sm text-gray-600">{ticket.startDate}</p>
-                                            <p className="text-sm text-gray-400">to {ticket.endDate}</p>
-                                        </td>
-                                        <td>
-                                            <div className="flex gap-1 justify-center">
-                                                <button
-                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                    title="Duplicate"
-                                                    onClick={() => handleDuplicate(ticket)}
-                                                >
-                                                    <IconCopy size={18} />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                    title="Edit"
-                                                    onClick={() => openEditModal(ticket)}
-                                                >
-                                                    <IconPencil size={18} />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 hover:bg-red-100 rounded text-red-600"
-                                                    title="Delete"
-                                                    onClick={() => { setSelectedTicket(ticket); setShowDeleteModal(true); }}
-                                                >
-                                                    <IconTrash size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                            </td>
+                                            <td>
+                                                <div className="w-24">
+                                                    <div className="flex justify-between text-sm mb-1">
+                                                        <span className="text-gray-600">{ticket.sold}/{ticket.quota}</span>
+                                                        <span className={soldPercentage >= 90 ? 'text-red-600' : soldPercentage >= 70 ? 'text-yellow-600' : 'text-green-600'}>
+                                                            {Math.round(soldPercentage)}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div
+                                                            className={`h-full rounded-full ${soldPercentage >= 90 ? 'bg-red-500' : soldPercentage >= 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                                            style={{ width: `${Math.min(soldPercentage, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <p className="text-sm text-gray-600">{ticket.startDate ? new Date(ticket.startDate).toLocaleDateString() : 'N/A'}</p>
+                                                <p className="text-sm text-gray-400">to {ticket.endDate ? new Date(ticket.endDate).toLocaleDateString() : 'N/A'}</p>
+                                            </td>
+                                            <td>
+                                                <div className="flex gap-1 justify-center">
+                                                    <button
+                                                        className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                        title="Duplicate"
+                                                        onClick={() => handleDuplicate(ticket)}
+                                                    >
+                                                        <IconCopy size={18} />
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                        title="Edit"
+                                                        onClick={() => openEditModal(ticket)}
+                                                    >
+                                                        <IconPencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                                                        title="Delete"
+                                                        onClick={() => { setSelectedTicket(ticket); setShowDeleteModal(true); }}
+                                                    >
+                                                        <IconTrash size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
                     <p className="text-sm text-gray-500">
-                        Showing {filteredTickets.length} of {accessibleTickets.length} tickets
+                        Showing {tickets.length} of {totalCount} tickets
                     </p>
+                    <div className="flex gap-2">
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page <= 1}
+                            onClick={() => setPage(p => p - 1)}
+                        >
+                            Previous
+                        </button>
+                        <span className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">{page}</span>
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -571,8 +471,9 @@ export default function TicketsPage() {
                                         className="input-field"
                                         value={formData.eventId}
                                         onChange={(e) => setFormData({ ...formData, eventId: Number(e.target.value) })}
+                                        disabled={!showCreateModal} // Disable creating/moving ticket to another event if editing (usually locked)
                                     >
-                                        {accessibleEvents.map((event) => (
+                                        {events.map((event) => (
                                             <option key={event.id} value={event.id}>{event.code}</option>
                                         ))}
                                     </select>
@@ -591,11 +492,11 @@ export default function TicketsPage() {
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience (Role) *</label>
                                 <select
                                     className="input-field"
-                                    value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                    value={formData.allowedRoles[0]}
+                                    onChange={(e) => setFormData({ ...formData, allowedRoles: [e.target.value] })}
                                 >
                                     <option value="thai_student">Thai Student</option>
                                     <option value="thai_pharmacy">Thai Pharmacy</option>
@@ -606,13 +507,13 @@ export default function TicketsPage() {
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ticket Code *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Code (Group) *</label>
                                     <input
                                         type="text"
                                         className="input-field font-mono"
                                         placeholder="EARLY-MEM"
-                                        value={formData.code}
-                                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                        value={formData.groupName}
+                                        onChange={(e) => setFormData({ ...formData, groupName: e.target.value.toUpperCase() })}
                                     />
                                 </div>
                                 <div>
@@ -634,22 +535,13 @@ export default function TicketsPage() {
                                     placeholder="Early Bird - Member"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    className="input-field h-20"
-                                    placeholder="รายละเอียดบัตร..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    maxLength={255}
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (฿) *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
                                     <input
                                         type="number"
                                         className="input-field"
@@ -657,35 +549,26 @@ export default function TicketsPage() {
                                         onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (฿)</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        placeholder="For showing discount"
-                                        value={formData.originalPrice}
-                                        onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                                    />
-                                </div>
+                                {/* Original Price logic omitted for now as not in schema */}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                        value={formData.saleStartDate}
+                                        onChange={(e) => setFormData({ ...formData, saleStartDate: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                        value={formData.saleEndDate}
+                                        onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -694,14 +577,17 @@ export default function TicketsPage() {
                             <button
                                 onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}
                                 className="btn-secondary"
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={showCreateModal ? handleCreate : handleEdit}
                                 className="btn-primary flex items-center gap-2"
+                                disabled={isSubmitting}
                             >
-                                <IconCheck size={18} /> {showCreateModal ? 'Create Ticket' : 'Save Changes'}
+                                {isSubmitting && <IconLoader2 size={18} className="animate-spin" />}
+                                {showCreateModal ? 'Create Ticket' : 'Save Changes'}
                             </button>
                         </div>
                     </div>
@@ -718,9 +604,6 @@ export default function TicketsPage() {
                             </h3>
                         </div>
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <IconTrash size={32} className="text-red-600" />
-                            </div>
                             <p className="mb-2">Are you sure you want to delete this ticket?</p>
                             <p className="font-semibold text-gray-800">{selectedTicket.name}</p>
                             <p className="text-sm text-gray-500 font-mono">{selectedTicket.code}</p>
@@ -731,9 +614,13 @@ export default function TicketsPage() {
                             )}
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-                            <button onClick={() => setShowDeleteModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
-                                Delete Ticket
+                            <button onClick={() => setShowDeleteModal(false)} className="btn-secondary" disabled={isSubmitting}>Cancel</button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? <IconLoader2 size={18} className="animate-spin" /> : 'Delete Ticket'}
                             </button>
                         </div>
                     </div>

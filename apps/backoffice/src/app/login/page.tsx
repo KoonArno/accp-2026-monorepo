@@ -31,6 +31,12 @@ export default function LoginPage() {
                 // Role-based redirection
                 if (data.user.role === 'verifier') {
                     router.push('/verification');
+                } else if (data.user.role === 'reviewer') {
+                    router.push('/abstracts');
+                } else if (data.user.role === 'organizer') {
+                    router.push('/reports');
+                } else if (data.user.role === 'staff') {
+                    router.push('/checkin');
                 } else {
                     router.push('/'); // Go to Dashboard
                 }

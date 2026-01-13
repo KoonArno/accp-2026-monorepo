@@ -169,6 +169,26 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             return null;
         }
 
+        // Organizer specific restrictions
+        if (role === 'organizer') {
+            if (item.href === '/reports') return item;
+            return null;
+        }
+
+        // Reviewer specific restrictions
+        if (role === 'reviewer') {
+            // Only show Abstracts
+            if (item.href === '/abstracts') return item;
+            return null;
+        }
+
+        // Staff specific restrictions
+        if (role === 'staff') {
+            // Only show Check-in Scanner
+            if (item.href === '/checkin') return item;
+            return null;
+        }
+
         // Non-admin restrictions (existing logic)
 
         // Hide System Administration category and its links

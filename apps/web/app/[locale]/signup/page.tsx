@@ -30,9 +30,9 @@ export default function SignUp() {
 
             {/* Sign Up Form Section */}
             <div style={{
-                background: 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)',
-                padding: '80px 0',
-                minHeight: '60vh'
+                background: 'linear-gradient(180deg, #e8eaf6 0%, #c5cae9 100%)',
+                padding: '60px 0',
+                minHeight: 'calc(100vh - 200px)'
             }}>
                 <div className="container">
                     <div className="row justify-content-center">

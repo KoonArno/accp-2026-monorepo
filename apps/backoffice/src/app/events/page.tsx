@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/layout';
+import { api } from '@/lib/api';
 import {
     IconCalendarEvent,
     IconCheck,
@@ -15,71 +16,8 @@ import {
     IconPlus,
     IconX,
     IconAlertTriangle,
+    IconLoader2,
 } from '@tabler/icons-react';
-
-// Mock event data
-const mockEvents = [
-    {
-        id: 1,
-        code: 'ACCP2026',
-        name: 'ACCP Annual Conference 2026',
-        location: 'ศูนย์ประชุมแห่งชาติสิริกิติ์',
-        date: 'Mar 15-17, 2026',
-        type: 'multi_session',
-        registered: 205,
-        capacity: 250,
-        status: 'published',
-        image: null
-    },
-    {
-        id: 2,
-        code: 'MIS2026',
-        name: 'Medical Innovation Summit',
-        location: 'QSNCC',
-        date: 'Apr 20-22, 2026',
-        type: 'multi_session',
-        registered: 50,
-        capacity: 200,
-        status: 'published',
-        image: null
-    },
-    {
-        id: 3,
-        code: 'CPE001',
-        name: 'CPE Workshop Series',
-        location: 'Online',
-        date: 'May 10, 2026',
-        type: 'single_room',
-        registered: 80,
-        capacity: 100,
-        status: 'published',
-        image: null
-    },
-    {
-        id: 4,
-        code: 'RS2026',
-        name: 'Research Symposium 2026',
-        location: 'Chulalongkorn University',
-        date: 'Jun 15-16, 2026',
-        type: 'multi_session',
-        registered: 0,
-        capacity: 150,
-        status: 'draft',
-        image: null
-    },
-    {
-        id: 5,
-        code: 'DSW2026',
-        name: 'Drug Safety Workshop',
-        location: 'TBD',
-        date: 'Jul 20, 2026',
-        type: 'single_room',
-        registered: 0,
-        capacity: 50,
-        status: 'draft',
-        image: null
-    },
-];
 
 const statusColors: { [key: string]: string } = {
     published: 'badge-success',
@@ -95,47 +33,96 @@ const typeLabels: { [key: string]: { label: string; className: string } } = {
 
 interface Event {
     id: number;
-    code: string;
-    name: string;
-    location: string;
-    date: string;
-    type: string;
-    registered: number;
-    capacity: number;
+    eventCode: string;
+    eventName: string;
+    location: string | null;
+    startDate: string;
+    endDate: string;
+    eventType: string;
+    maxCapacity: number | null;
     status: string;
-    image: string | null;
+    imageUrl: string | null;
 }
 
+// Helper function to format date
+const formatDate = (dateStr: string): string => {
+    if (!dateStr) return '-';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    } catch {
+        return dateStr;
+    }
+};
+
 export default function EventsPage() {
+    const [events, setEvents] = useState<Event[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [showViewModal, setShowViewModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const filteredEvents = mockEvents.filter((event) => {
-        const matchesSearch =
-            event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            event.code.toLowerCase().includes(searchTerm.toLowerCase());
+    // Pagination
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
-        const matchesStatus = !statusFilter || event.status === statusFilter;
-        const matchesType = !typeFilter || event.type === typeFilter;
+    // Fetch events
+    useEffect(() => {
+        const fetchEvents = async () => {
+            setIsLoading(true);
+            setError('');
+            try {
+                const token = localStorage.getItem('backoffice_token') || '';
+                const params: any = { page, limit: 10 };
+                if (statusFilter) params.status = statusFilter;
+                if (typeFilter) params.eventType = typeFilter;
+                if (searchTerm) params.search = searchTerm;
 
-        return matchesSearch && matchesStatus && matchesType;
-    });
+                const response = await api.backofficeEvents.list(token, params);
+                setEvents(response.events);
+                setTotalPages(response.pagination.totalPages);
+                setTotalCount(response.pagination.total);
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch events');
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
+        fetchEvents();
+    }, [page, statusFilter, typeFilter, searchTerm]);
+
+    // Calculate stats
     const stats = {
-        total: mockEvents.length,
-        published: mockEvents.filter(e => e.status === 'published').length,
-        draft: mockEvents.filter(e => e.status === 'draft').length,
-        totalRegistrations: mockEvents.reduce((sum, e) => sum + e.registered, 0),
+        total: totalCount,
+        published: events.filter(e => e.status === 'published').length,
+        draft: events.filter(e => e.status === 'draft').length,
     };
 
-    const handleDelete = () => {
-        setShowDeleteModal(false);
-        setSelectedEvent(null);
-        alert('Event deleted successfully!');
+    const handleDelete = async () => {
+        if (!selectedEvent) return;
+        setIsDeleting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.backofficeEvents.delete(token, selectedEvent.id);
+            setEvents(events.filter(e => e.id !== selectedEvent.id));
+            setShowDeleteModal(false);
+            setSelectedEvent(null);
+        } catch (err: any) {
+            alert(err.message || 'Failed to delete event');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     return (
@@ -181,7 +168,7 @@ export default function EventsPage() {
                             <IconUsers size={24} stroke={1.5} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-purple-600">{stats.totalRegistrations}</p>
+                            <p className="text-2xl font-bold text-purple-600">-</p>
                             <p className="text-sm text-gray-500">Total Registrations</p>
                         </div>
                     </div>
@@ -205,14 +192,14 @@ export default function EventsPage() {
                             type="text"
                             placeholder="Search events..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                             className="input-field pl-10"
                         />
                     </div>
 
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="input-field w-auto"
                     >
                         <option value="">All Status</option>
@@ -224,7 +211,7 @@ export default function EventsPage() {
 
                     <select
                         value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
+                        onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
                         className="input-field w-auto"
                     >
                         <option value="">All Types</option>
@@ -233,99 +220,116 @@ export default function EventsPage() {
                     </select>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th className="w-12">ID</th>
-                                <th>Event</th>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Registrations</th>
-                                <th>Status</th>
-                                <th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredEvents.map((event) => (
-                                <tr key={event.id} className="animate-fade-in">
-                                    <td className="font-mono text-sm text-gray-600">{event.id}</td>
-                                    <td>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
-                                                <IconCalendarEvent size={24} stroke={1.5} />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-800">{event.name}</p>
-                                                <p className="text-sm text-gray-500">{event.code} • {event.location}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="text-gray-600">{event.date}</td>
-                                    <td>
-                                        <span className={`badge ${typeLabels[event.type]?.className || 'bg-gray-100 text-gray-800'}`}>
-                                            {typeLabels[event.type]?.label || event.type}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-green-500 rounded-full"
-                                                    style={{ width: `${(event.registered / event.capacity) * 100}%` }}
-                                                />
-                                            </div>
-                                            <span className="text-sm text-gray-600">{event.registered}/{event.capacity}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${statusColors[event.status]}`}>
-                                            {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="flex gap-1 justify-center">
-                                            <button
-                                                className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                title="View"
-                                                onClick={() => { setSelectedEvent(event); setShowViewModal(true); }}
-                                            >
-                                                <IconEye size={18} />
-                                            </button>
-                                            <Link
-                                                href={`/events/${event.id}/edit`}
-                                                className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                title="Edit"
-                                            >
-                                                <IconPencil size={18} />
-                                            </Link>
-                                            <button
-                                                className="p-1.5 hover:bg-red-100 rounded text-red-600"
-                                                title="Delete"
-                                                onClick={() => { setSelectedEvent(event); setShowDeleteModal(true); }}
-                                            >
-                                                <IconTrash size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
+                {/* Error State */}
+                {error && (
+                    <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
+                        {error}
+                    </div>
+                )}
+
+                {/* Loading State */}
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <IconLoader2 size={32} className="animate-spin text-blue-600" />
+                        <span className="ml-2 text-gray-500">Loading events...</span>
+                    </div>
+                ) : events.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        No events found. <Link href="/events/create" className="text-blue-600 hover:underline">Create one</Link>
+                    </div>
+                ) : (
+                    /* Table */
+                    <div className="overflow-x-auto">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th className="w-12">ID</th>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                    <th className="text-center">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {events.map((event) => (
+                                    <tr key={event.id} className="animate-fade-in">
+                                        <td className="font-mono text-sm text-gray-600">{event.id}</td>
+                                        <td>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
+                                                    <IconCalendarEvent size={24} stroke={1.5} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{event.eventName}</p>
+                                                    <p className="text-sm text-gray-500">{event.eventCode} • {event.location || 'TBD'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="text-gray-600">{formatDate(event.startDate)}</td>
+                                        <td>
+                                            <span className={`badge ${typeLabels[event.eventType]?.className || 'bg-gray-100 text-gray-800'}`}>
+                                                {typeLabels[event.eventType]?.label || event.eventType}
+                                            </span>
+                                        </td>
+                                        <td>{event.maxCapacity || '-'}</td>
+                                        <td>
+                                            <span className={`badge ${statusColors[event.status]}`}>
+                                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="flex gap-1 justify-center">
+                                                <button
+                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                    title="View"
+                                                    onClick={() => { setSelectedEvent(event); setShowViewModal(true); }}
+                                                >
+                                                    <IconEye size={18} />
+                                                </button>
+                                                <Link
+                                                    href={`/events/${event.id}/edit`}
+                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                    title="Edit"
+                                                >
+                                                    <IconPencil size={18} />
+                                                </Link>
+                                                <button
+                                                    className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                                                    title="Delete"
+                                                    onClick={() => { setSelectedEvent(event); setShowDeleteModal(true); }}
+                                                >
+                                                    <IconTrash size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <p className="text-sm text-gray-500">
-                        Showing {filteredEvents.length} of {mockEvents.length} events
+                        Showing {events.length} of {totalCount} events
                     </p>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page <= 1}
+                            onClick={() => setPage(p => p - 1)}
+                        >
                             Previous
                         </button>
-                        <button className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">1</button>
-                        <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                        <span className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">{page}</span>
+                        <button
+                            className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                        >
                             Next
                         </button>
                     </div>
@@ -350,29 +354,25 @@ export default function EventsPage() {
                                     <IconCalendarEvent size={48} className="text-gray-400" stroke={1.5} />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="text-xl font-semibold text-gray-800">{selectedEvent.name}</h4>
-                                    <p className="text-gray-500 mb-4">{selectedEvent.code}</p>
+                                    <h4 className="text-xl font-semibold text-gray-800">{selectedEvent.eventName}</h4>
+                                    <p className="text-gray-500 mb-4">{selectedEvent.eventCode}</p>
 
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <p className="text-gray-500">Type</p>
-                                            <p className="font-medium">{typeLabels[selectedEvent.type]?.label}</p>
+                                            <p className="font-medium">{typeLabels[selectedEvent.eventType]?.label}</p>
                                         </div>
                                         <div>
                                             <p className="text-gray-500">Date</p>
-                                            <p className="font-medium">{selectedEvent.date}</p>
+                                            <p className="font-medium">{formatDate(selectedEvent.startDate)}</p>
                                         </div>
                                         <div>
                                             <p className="text-gray-500">Location</p>
-                                            <p className="font-medium">{selectedEvent.location}</p>
+                                            <p className="font-medium">{selectedEvent.location || 'TBD'}</p>
                                         </div>
                                         <div>
                                             <p className="text-gray-500">Capacity</p>
-                                            <p className="font-medium">{selectedEvent.capacity}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-500">Registered</p>
-                                            <p className="font-medium">{selectedEvent.registered}</p>
+                                            <p className="font-medium">{selectedEvent.maxCapacity || '-'}</p>
                                         </div>
                                         <div>
                                             <p className="text-gray-500">Status</p>
@@ -408,14 +408,19 @@ export default function EventsPage() {
                                 <IconAlertTriangle size={32} className="text-red-600" />
                             </div>
                             <p className="mb-2">Are you sure you want to delete this event?</p>
-                            <p className="font-semibold text-gray-800">{selectedEvent.name}</p>
+                            <p className="font-semibold text-gray-800">{selectedEvent.eventName}</p>
                             <p className="text-sm text-gray-500 mt-4">
                                 This action cannot be undone. All registrations and related data will be permanently deleted.
                             </p>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-                            <button onClick={() => setShowDeleteModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                            <button onClick={() => setShowDeleteModal(false)} className="btn-secondary" disabled={isDeleting}>Cancel</button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                                disabled={isDeleting}
+                            >
+                                {isDeleting && <IconLoader2 size={18} className="animate-spin" />}
                                 Delete Event
                             </button>
                         </div>

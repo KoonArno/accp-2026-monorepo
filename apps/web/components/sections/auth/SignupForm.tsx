@@ -10,17 +10,7 @@ import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
-const internationalCountries = [
-    "Afghanistan", "Albania", "Algeria", "Argentina", "Australia", "Austria", "Bangladesh",
-    "Belgium", "Brazil", "Cambodia", "Canada", "China", "Colombia", "Denmark", "Egypt",
-    "Finland", "France", "Germany", "Greece", "Hong Kong", "India", "Indonesia", "Iran",
-    "Iraq", "Ireland", "Israel", "Italy", "Japan", "Jordan", "Kenya", "Korea (South)",
-    "Kuwait", "Laos", "Lebanon", "Malaysia", "Mexico", "Myanmar", "Nepal", "Netherlands",
-    "New Zealand", "Nigeria", "Norway", "Pakistan", "Philippines", "Poland", "Portugal",
-    "Qatar", "Romania", "Russia", "Saudi Arabia", "Singapore", "South Africa", "Spain",
-    "Sri Lanka", "Sweden", "Switzerland", "Taiwan", "Turkey", "UAE", "UK", "USA",
-    "Vietnam", "Other"
-];
+
 
 export default function SignupForm() {
     const t = useTranslations('signup');
@@ -45,6 +35,7 @@ export default function SignupForm() {
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [studentDocument, setStudentDocument] = useState<File | null>(null);
     const [isPending, setIsPending] = useState(false);
+    const [step, setStep] = useState(1);
 
     // Handle file selection (store in state only, no upload yet)
     const handleFileSelect = (file: File) => {
@@ -107,7 +98,7 @@ export default function SignupForm() {
                 //     return;
                 // }
             } else if (!country) {
-                alert(locale === 'th' ? 'กรุณาเลือกประเทศ' : 'Please select country');
+                alert(locale === 'th' ? 'กรุณาระบุประเทศ' : 'Please enter country');
                 setIsLoading(false);
                 return;
             }
@@ -183,11 +174,11 @@ export default function SignupForm() {
         }
     };
 
-    const tabs: { id: TabType; label: string; labelTh: string }[] = [
-        { id: 'thaiStudent', label: 'Thai Student', labelTh: 'นักศึกษาไทย' },
-        { id: 'internationalStudent', label: 'International Student', labelTh: 'นักศึกษาต่างชาติ' },
-        { id: 'thaiProfessional', label: 'Thai Medical Professional', labelTh: 'บุคลากรทางการแพทย์ไทย' },
-        { id: 'internationalProfessional', label: 'International Medical Professional', labelTh: 'บุคลากรทางการแพทย์ต่างชาติ' }
+    const tabs: { id: TabType; label: string; labelTh: string; desc: string; descTh: string }[] = [
+        { id: 'thaiStudent', label: 'Thai Student', labelTh: 'นักศึกษาไทย', desc: 'For Thai Student', descTh: 'สำหรับนักศึกษาชาวไทย' },
+        { id: 'internationalStudent', label: 'International Student', labelTh: 'นักศึกษาต่างชาติ', desc: 'For International Student', descTh: 'สำหรับนักศึกษาชาวต่างชาติ' },
+        { id: 'thaiProfessional', label: 'Thai Medical Professional', labelTh: 'บุคลากรทางการแพทย์ไทย', desc: 'For Thai Medical Professional', descTh: 'สำหรับบุคลากรทางการแพทย์ชาวไทย' },
+        { id: 'internationalProfessional', label: 'International Medical Professional', labelTh: 'บุคลากรทางการแพทย์ต่างชาติ', desc: 'For International Medical Professional', descTh: 'สำหรับบุคลากรทางการแพทย์ชาวต่างชาติ' }
     ];
 
     const isThai = activeTab === 'thaiStudent';
@@ -215,6 +206,30 @@ export default function SignupForm() {
         }
         .react-international-phone-input {
             flex: 1;
+        }
+        
+        /* Account Type Card Animation */
+        .account-type-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .account-type-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            border-color: #1a237e !important;
+        }
+        .account-type-card:active {
+            transform: translateY(0);
+        }
+        
+        /* Fade In Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-content {
+            animation: fadeIn 0.4s ease-out forwards;
         }
     `;
 
@@ -298,39 +313,134 @@ export default function SignupForm() {
                 </div>
 
                 {/* Title */}
-                <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1a1a1a', textAlign: 'center', marginBottom: '8px' }}>
-                    {locale === 'th' ? 'สร้างบัญชี' : 'Create Account'}
+                <h2 style={{ fontSize: '26px', fontWeight: '700', color: '#1a1a1a', textAlign: 'center', marginBottom: '8px' }}>
+                    {step === 1 
+                        ? (locale === 'th' ? 'เลือกประเภทบัญชี' : 'Select Account Type')
+                        : (locale === 'th' ? 'สร้างบัญชี' : 'Create Account')
+                    }
                 </h2>
-                <p style={{ textAlign: 'center', color: '#666', fontSize: '14px', marginBottom: '24px' }}>
-                    {locale === 'th' ? 'เลือกประเภทผู้ใช้งาน' : 'Select your account type'}
+                <p style={{ textAlign: 'center', color: '#666', fontSize: '15px', marginBottom: '32px' }}>
+                    {step === 1
+                        ? (locale === 'th' ? 'กรุณาเลือกประเภทผู้ใช้งานของคุณเพื่อดำเนินการต่อ' : 'Please select your user type to continue')
+                        : (locale === 'th' ? 'กรอกข้อมูลส่วนตัวเพื่อลงทะเบียน' : 'Please fill in your details to register')
+                    }
                 </p>
 
-                {/* Tab Selector */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setActiveTab(tab.id)}
-                            style={{
-                                padding: '12px 8px',
-                                border: activeTab === tab.id ? '2px solid #1a237e' : '1px solid #e0e0e0',
-                                borderRadius: '8px',
-                                background: activeTab === tab.id ? '#f5f5ff' : '#fff',
-                                color: activeTab === tab.id ? '#1a237e' : '#666',
-                                fontSize: '12px',
-                                fontWeight: activeTab === tab.id ? '600' : '400',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            {locale === 'th' ? tab.labelTh : tab.label}
-                        </button>
-                    ))}
-                </div>
+                {/* Step 1: Account Type Selection */}
+                {step === 1 && (
+                    <div className="step-content">
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '24px' }}>
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    className="account-type-card"
+                                    onClick={() => { setActiveTab(tab.id); setStep(2); }}
+                                    style={{
+                                        padding: '20px',
+                                        border: '2px solid #eef0f2',
+                                        borderRadius: '12px',
+                                        background: '#fff',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '16px',
+                                        textAlign: 'left',
+                                        width: '100%'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '12px',
+                                        background: tab.id.includes('Student') ? '#e8eaf6' : '#e0f2f1',
+                                        color: tab.id.includes('Student') ? '#1a237e' : '#00695c',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '24px',
+                                        flexShrink: 0
+                                    }}>
+                                        {tab.id.includes('Student') ? '🎓' : '⚕️'}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a1a', marginBottom: '4px' }}>
+                                            {locale === 'th' ? tab.labelTh : tab.label}
+                                        </div>
+                                        <div style={{ fontSize: '13px', color: '#666' }}>
+                                            {locale === 'th' ? tab.descTh : tab.desc}
+                                        </div>
+                                    </div>
+                                    <div style={{ marginLeft: 'auto', color: '#ccc' }}>
+                                        →
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                        
+                        {/* Login Link for Step 1 */}
+                        <div style={{ textAlign: 'center', marginTop: '24px', borderTop: '1px solid #f0f0f0', paddingTop: '24px' }}>
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                                {t('haveAccount')}{' '}
+                                <Link href={`/${locale}/login`} style={{ color: '#1a237e', fontWeight: '600', textDecoration: 'none' }}>
+                                    {t('signIn')}
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+                )}
 
-                {/* Form */}
-                <form onSubmit={handleSubmit}>
+                {/* Step 2: Form */}
+                {step === 2 && (
+                    <form onSubmit={handleSubmit} className="step-content">
+                        {/* Selected Type Indicator / Back Button */}
+                        <div style={{ 
+                            marginBottom: '24px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between', 
+                            background: '#f8f9fa', 
+                            padding: '16px', 
+                            borderRadius: '12px',
+                            border: '1px solid #eef0f2'
+                        }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                 <div style={{
+                                     fontSize: '20px',
+                                     color: activeTab.includes('Student') ? '#1a237e' : '#00695c'
+                                 }}>
+                                    {activeTab.includes('Student') ? '🎓' : '⚕️'}
+                                 </div>
+                                 <div>
+                                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: '600', letterSpacing: '0.5px' }}>
+                                        {locale === 'th' ? 'ประเภทบัญชี' : 'Account Type'}
+                                    </div>
+                                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>
+                                        {locale === 'th' 
+                                            ? tabs.find(t => t.id === activeTab)?.labelTh 
+                                            : tabs.find(t => t.id === activeTab)?.label
+                                        }
+                                    </div>
+                                 </div>
+                             </div>
+                             <button 
+                                type="button" 
+                                onClick={() => setStep(1)} 
+                                style={{ 
+                                    padding: '6px 12px',
+                                    fontSize: '13px',
+                                    color: '#1a237e',
+                                    fontWeight: '600',
+                                    background: 'transparent',
+                                    border: '1px solid rgba(26, 35, 126, 0.2)',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                             >
+                                {locale === 'th' ? 'เปลี่ยน' : 'Change'}
+                             </button>
+                        </div>
                     {/* Name Fields */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                         <div>
@@ -394,11 +504,14 @@ export default function SignupForm() {
                                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#333', marginBottom: '6px' }}>
                                     {locale === 'th' ? 'ประเทศ' : 'Country'} <span style={{ color: '#e53935' }}>*</span>
                                 </label>
-                                <select value={country} onChange={(e) => setCountry(e.target.value)} required
-                                    style={{ ...inputStyle, appearance: 'none', background: '#fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 12px center', backgroundSize: '16px' }}>
-                                    <option value="">{locale === 'th' ? 'เลือกประเทศ' : 'Select country'}</option>
-                                    {internationalCountries.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                <input
+                                    type="text"
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                    placeholder={locale === 'th' ? 'กรอกชื่อประเทศ' : 'Enter country name'}
+                                    required
+                                    style={inputStyle}
+                                />
                             </div>
                         </>
                     )}
@@ -570,9 +683,7 @@ export default function SignupForm() {
                         }}>
                         {isLoading ? (locale === 'th' ? 'กำลังสร้างบัญชี...' : 'Creating...') : t('createAccount')}
                     </button>
-                </form>
-
-                {/* Login Link */}
+                {/* Login Link for Step 2 */}
                 <div style={{ textAlign: 'center', marginTop: '24px' }}>
                     <p style={{ fontSize: '14px', color: '#666' }}>
                         {t('haveAccount')}{' '}
@@ -581,6 +692,8 @@ export default function SignupForm() {
                         </Link>
                     </p>
                 </div>
+                </form>
+            )}
             </div>
         </>
     );

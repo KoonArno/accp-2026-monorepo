@@ -10,13 +10,13 @@ import { US, TH } from 'country-flag-icons/react/3x2'
 const LanguageSwitch = Switch as any;
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
-import { 
-    HEADER_COLORS, 
-    getLanguageButtonStyle, 
-    languageSwitcherContainerStyle, 
-    getMenuLinkColor, 
-    getMenuLinkWeight, 
-    authButtonStyles 
+import {
+    HEADER_COLORS,
+    getLanguageButtonStyle,
+    languageSwitcherContainerStyle,
+    getMenuLinkColor,
+    getMenuLinkWeight,
+    authButtonStyles
 } from './headerStyles';
 
 export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSearch, handleSearch, headerBgWhite }: any) {
@@ -82,7 +82,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
     const switchOffColor = isHeaderWhite ? "#e4e4e4" : "#ffba00"; // TH background
     const switchOnColor = isHeaderWhite ? "#e4e4e4" : "#ffba00";  // EN background
     const switchHandleColor = "#fff"; // Handle is always white to show the flag clearly (if we put flag in handle) - or keep color handle?
-    
+
     // User requested: "header เป็นสีขาวให้พื้นหลังของปุ่ม toggle switch เปลี่ยนภาษา"
     // And: "พื้นหลังตัวย่อภาษาเป็น icon ธงภาษา" -> This likely means uncheckedIcon/checkedIcon should be flags
 
@@ -211,77 +211,87 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
 
                                     <div className="btn-area" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         {/* Language Switcher */}
-                                        <div className="d-none d-lg-flex" style={{ ...languageSwitcherContainerStyle, alignItems: 'center' }}>
-                                            <LanguageSwitch
-                                                onChange={handleLanguageChange}
-                                                checked={locale === 'en'}
-                                                offColor="#ffffff"
-                                                onColor="#ffffff"
-                                                offHandleColor="#FFBA00"
-                                                onHandleColor="#FFBA00"
-                                                handleDiameter={34}
-                                                checkedHandleIcon={
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "center",
-                                                            alignItems: "center",
-                                                            height: "100%",
-                                                            fontSize: 14,
-                                                            color: "#333",
-                                                            fontWeight: "800",
-                                                        }}
-                                                    >
-                                                        EN
-                                                    </div>
-                                                }
-                                                uncheckedHandleIcon={
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "center",
-                                                            alignItems: "center",
-                                                            height: "100%",
-                                                            fontSize: 14,
-                                                            color: "#333",
-                                                            fontWeight: "800",
-                                                        }}
-                                                    >
-                                                        TH
-                                                    </div>
-                                                }
-                                                uncheckedIcon={
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "flex-end",
-                                                            alignItems: "center",
-                                                            height: "100%",
-                                                            paddingRight: 8
-                                                        }}
-                                                    >
-                                                        <TH style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} title="Thai" />
-                                                    </div>
-                                                }
-                                                checkedIcon={
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "flex-start",
-                                                            alignItems: "center",
-                                                            height: "100%",
-                                                            paddingLeft: 8
-                                                        }}
-                                                    >
-                                                        <US style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} title="English" />
-                                                    </div>
-                                                }
-                                                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-                                                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-                                                height={40}
-                                                width={90}
-                                                className="react-switch"
-                                            />
+                                        <div className="d-none d-lg-flex" style={{ alignItems: 'center' }}>
+                                            <div style={{
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: '24px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                background: '#fff',
+                                                padding: '2px'
+                                            }}>
+                                                <LanguageSwitch
+                                                    onChange={handleLanguageChange}
+                                                    checked={locale === 'en'}
+                                                    offColor="#ffffff"
+                                                    onColor="#ffffff"
+                                                    offHandleColor="#FFBA00"
+                                                    onHandleColor="#FFBA00"
+                                                    handleDiameter={34}
+                                                    checkedHandleIcon={
+                                                        <div
+                                                            style={{
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                height: "100%",
+                                                                fontSize: 14,
+                                                                color: "#333",
+                                                                fontWeight: "800",
+                                                            }}
+                                                        >
+                                                            EN
+                                                        </div>
+                                                    }
+                                                    uncheckedHandleIcon={
+                                                        <div
+                                                            style={{
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                height: "100%",
+                                                                fontSize: 14,
+                                                                color: "#333",
+                                                                fontWeight: "800",
+                                                            }}
+                                                        >
+                                                            TH
+                                                        </div>
+                                                    }
+                                                    uncheckedIcon={
+                                                        <div
+                                                            style={{
+                                                                display: "flex",
+                                                                justifyContent: "flex-end",
+                                                                alignItems: "center",
+                                                                height: "100%",
+                                                                paddingRight: 8
+                                                            }}
+                                                        >
+                                                            <TH style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} title="Thai" />
+                                                        </div>
+                                                    }
+                                                    checkedIcon={
+                                                        <div
+                                                            style={{
+                                                                display: "flex",
+                                                                justifyContent: "flex-start",
+                                                                alignItems: "center",
+                                                                height: "100%",
+                                                                paddingLeft: 8
+                                                            }}
+                                                        >
+                                                            <US style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} title="English" />
+                                                        </div>
+                                                    }
+                                                    boxShadow="none"
+                                                    activeBoxShadow="none"
+                                                    height={40}
+                                                    width={96}
+                                                    className="react-switch"
+                                                    id="language-switch"
+                                                />
+                                            </div>
                                         </div>
 
                                         {isAuthenticated ? (

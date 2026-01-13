@@ -179,6 +179,8 @@ export default function PreconferenceWorkshops() {
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
                                                     alignItems: 'center',
+                                                    flexWrap: 'wrap',
+                                                    gap: '15px',
                                                     borderTop: '1px solid #eee',
                                                     paddingTop: '20px'
                                                 }}>
@@ -223,27 +225,7 @@ export default function PreconferenceWorkshops() {
                         </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="cta1-section-area" style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                        padding: '80px 0'
-                    }}>
-                        <div className="container">
-                            <div className="row align-items-center">
-                                <div className="col-lg-8" data-aos="fade-right" data-aos-duration={800}>
-                                    <div className="cta-content">
-                                        <h3 style={{ color: 'white', marginBottom: '10px' }}>{t('questions')}</h3>
-                                        <p style={{ color: 'rgba(255,255,255,0.8)', margin: 0 }}>{t('contactText')}</p>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 text-lg-end" data-aos="fade-left" data-aos-duration={800}>
-                                    <div className="btn-area1">
-                                        <Link href="/contact" className="vl-btn1">{tCommon('contact')}</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </Layout>
         </>

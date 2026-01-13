@@ -9,9 +9,7 @@ export default function HeroSection() {
     return (
         <>
             <div className="hero1-section-area">
-                <div className="bg1">
-                    <img src="/assets/img/bg/header-bg2.png" alt="" className="header-bg1" />
-                </div>
+
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-6">
@@ -21,7 +19,7 @@ export default function HeroSection() {
                                 </h5>
                                 <div className="space16" />
                                 <h1 className="text-anime-style-3">
-                                    {t('hero.title')} <br className="d-lg-block d-none" />
+                                    ACCP <span className="gold-text">2026</span> <br className="d-lg-block d-none" />
                                     {t('hero.location')}
                                 </h1>
                                 <div className="space16" />
@@ -35,13 +33,7 @@ export default function HeroSection() {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-lg-5">
-                            <div className="header-images">
-                                <div className="img1" data-aos="zoom-in" data-aos-duration={1000}>
-                                    <img src="/assets/img/all-images/hero/hero-img1.png" alt="ACCP 2026 Conference" />
-                                </div>
-                            </div>
-                        </div>
+
                         <div className="col-lg-1">
                             <Countdown />
                         </div>

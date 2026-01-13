@@ -51,27 +51,7 @@ export default function PlenaryKeynotes() {
 
                     <PlenarySchedule />
 
-                    {/* CTA */}
-                    <div className="cta1-section-area" style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-                        padding: '80px 0'
-                    }}>
-                        <div className="container">
-                            <div className="row align-items-center">
-                                <div className="col-lg-8" data-aos="fade-right" data-aos-duration={800}>
-                                    <div className="cta-content">
-                                        <h3 style={{ color: 'white', marginBottom: '10px' }}>{tCommon('registerNow')}</h3>
-                                        <p style={{ color: 'rgba(255,255,255,0.8)', margin: 0 }}>Register now to secure your place at ACCP 2026 and learn from the best in clinical pharmacy.</p>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 text-lg-end" data-aos="fade-left" data-aos-duration={800}>
-                                    <div className="btn-area1">
-                                        <Link href="/registration" className="vl-btn1">{tCommon('registerNow')}</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </Layout>
         </>

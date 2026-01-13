@@ -53,20 +53,10 @@ export default function MyTickets() {
 
     return (
         <Layout headerStyle={1} footerStyle={1} headerBgWhite={true}>
-            <div style={{
-                minHeight: '100vh',
-                padding: '120px 20px 40px',
-                background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
-            }}>
+            <div className="ticket-page-container">
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     {/* Header */}
-                    <div style={{
-                        background: '#fff',
-                        borderRadius: '20px',
-                        padding: '40px',
-                        marginBottom: '30px',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)'
-                    }}>
+                    <div className="ticket-header-card">
                         <h1 style={{
                             fontSize: '32px',
                             fontWeight: '700',
@@ -86,15 +76,7 @@ export default function MyTickets() {
 
                     {/* Main Registration Ticket */}
                     {tickets.map((ticket) => (
-                        <div key={ticket.id} style={{
-                            background: '#fff',
-                            borderRadius: '20px',
-                            padding: '40px',
-                            marginBottom: '25px',
-                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}>
+                        <div key={ticket.id} className="ticket-card">
                             {/* Decorative gradient bar */}
                             <div style={{
                                 position: 'absolute',
@@ -106,23 +88,12 @@ export default function MyTickets() {
                             }} />
 
                             {/* Status Badge */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '20px',
-                                right: '40px',
-                                padding: '8px 20px',
-                                background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)',
-                                color: '#fff',
-                                borderRadius: '20px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                boxShadow: '0 4px 15px rgba(0, 200, 83, 0.3)'
-                            }}>
+                            <div className="ticket-status-badge">
                                 <i className="fa-solid fa-circle-check" style={{ marginRight: '6px' }} />
                                 {t(ticket.status)}
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '40px', marginTop: '20px' }}>
+                            <div className="ticket-layout-grid">
                                 {/* Left side - Ticket Details */}
                                 <div>
                                     <h2 style={{
@@ -147,28 +118,18 @@ export default function MyTickets() {
                                         {t(ticket.category)}
                                     </div>
 
-                                    <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'auto 1fr',
-                                        gap: '12px 20px',
-                                        marginBottom: '25px'
-                                    }}>
-                                        <div style={{ color: '#999', fontSize: '14px' }}>{t('ticketId')}:</div>
-                                        <div style={{ color: '#333', fontSize: '14px', fontWeight: '600', fontFamily: 'monospace' }}>{ticket.id}</div>
+                                    <div className="ticket-details-grid">
+                                        <div className="ticket-info-label">{t('ticketId')}:</div>
+                                        <div className="ticket-info-value" style={{ fontFamily: 'monospace' }}>{ticket.id}</div>
 
-                                        <div style={{ color: '#999', fontSize: '14px' }}>{t('purchaseDate')}:</div>
-                                        <div style={{ color: '#333', fontSize: '14px', fontWeight: '600' }}>{ticket.purchaseDate}</div>
+                                        <div className="ticket-info-label">{t('purchaseDate')}:</div>
+                                        <div className="ticket-info-value">{ticket.purchaseDate}</div>
 
-                                        <div style={{ color: '#999', fontSize: '14px' }}>{t('amountPaid')}:</div>
-                                        <div style={{ color: '#00C853', fontSize: '18px', fontWeight: '700' }}>{ticket.amount}</div>
+                                        <div className="ticket-info-label">{t('amountPaid')}:</div>
+                                        <div className="ticket-info-value" style={{ color: '#00C853', fontSize: '18px', fontWeight: '700' }}>{ticket.amount}</div>
                                     </div>
 
-                                    <div style={{
-                                        padding: '20px',
-                                        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                        borderRadius: '12px',
-                                        borderLeft: '4px solid #1a237e'
-                                    }}>
+                                    <div className="ticket-includes-box">
                                         <h3 style={{
                                             fontSize: '14px',
                                             fontWeight: '700',
@@ -195,16 +156,7 @@ export default function MyTickets() {
                                 </div>
 
                                 {/* Right side - QR Code */}
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '30px',
-                                    background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-                                    borderRadius: '16px',
-                                    border: '2px dashed #e0e0e0'
-                                }}>
+                                <div className="ticket-qr-section">
                                     <div style={{
                                         width: '180px',
                                         height: '180px',
@@ -261,13 +213,7 @@ export default function MyTickets() {
                     ))}
 
                     {/* Gala Dinner Ticket */}
-                    <div style={{
-                        background: '#fff',
-                        borderRadius: '20px',
-                        padding: '40px',
-                        marginBottom: '25px',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)'
-                    }}>
+                    <div className="ticket-card">
                         <h2 style={{
                             fontSize: '22px',
                             fontWeight: '700',
@@ -281,24 +227,8 @@ export default function MyTickets() {
                             {t(galaDinnerTicket.eventName)}
                         </h2>
 
-                        <div style={{
-                            padding: '25px',
-                            background: 'linear-gradient(135deg, #fce4ec 0%, #ffffff 100%)',
-                            borderRadius: '12px',
-                            border: '1px solid #f8bbd0',
-                            position: 'relative'
-                        }}>
-                            <div style={{
-                                position: 'absolute',
-                                top: '25px',
-                                right: '25px',
-                                padding: '6px 16px',
-                                background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)',
-                                color: '#fff',
-                                borderRadius: '16px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                            }}>
+                        <div className="gala-card">
+                            <div className="ticket-status-badge">
                                 {t(galaDinnerTicket.status)}
                             </div>
 
@@ -312,12 +242,7 @@ export default function MyTickets() {
                                 An Elegant Evening of Fine Dining & Networking
                             </h3>
 
-                            <div style={{
-                                display: 'flex',
-                                gap: '30px',
-                                flexWrap: 'wrap',
-                                fontSize: '14px'
-                            }}>
+                            <div className="addon-details-flex">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <i className="fa-solid fa-calendar" style={{ color: '#C2185B' }} />
                                     <span style={{ color: '#666' }}>{galaDinnerTicket.date}</span>
@@ -340,12 +265,7 @@ export default function MyTickets() {
 
                     {/* Workshop Add-ons */}
                     {addons.length > 0 && (
-                        <div style={{
-                            background: '#fff',
-                            borderRadius: '20px',
-                            padding: '40px',
-                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)'
-                        }}>
+                        <div className="ticket-card">
                             <h2 style={{
                                 fontSize: '22px',
                                 fontWeight: '700',
@@ -360,25 +280,8 @@ export default function MyTickets() {
                             </h2>
 
                             {addons.map((addon) => (
-                                <div key={addon.id} style={{
-                                    padding: '25px',
-                                    background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e8e8e8',
-                                    marginBottom: '15px',
-                                    position: 'relative'
-                                }}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '25px',
-                                        right: '25px',
-                                        padding: '6px 16px',
-                                        background: 'linear-gradient(135deg, #00C853 0%, #69F0AE 100%)',
-                                        color: '#fff',
-                                        borderRadius: '16px',
-                                        fontSize: '12px',
-                                        fontWeight: '600'
-                                    }}>
+                                <div key={addon.id} className="addon-card">
+                                    <div className="ticket-status-badge">
                                         {t(addon.status)}
                                     </div>
 
@@ -392,12 +295,7 @@ export default function MyTickets() {
                                         {addon.name}
                                     </h3>
 
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '30px',
-                                        flexWrap: 'wrap',
-                                        fontSize: '14px'
-                                    }}>
+                                    <div className="addon-details-flex">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <i className="fa-solid fa-calendar" style={{ color: '#00695c' }} />
                                             <span style={{ color: '#666' }}>{addon.date}</span>

@@ -171,13 +171,7 @@ export default function Registration() {
               {/* Main Content */}
               <div className="col-lg-8">
                 {/* Section 1: Personal Information */}
-                <div style={{
-                  backgroundColor: "#fff",
-                  padding: "30px",
-                  borderRadius: "16px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  marginBottom: "24px"
-                }}>
+                <div className="checkout-card">
 
 
                   <div className="row">
@@ -245,42 +239,30 @@ export default function Registration() {
                 </div>
 
                 {/* Section 2: Package (Locked) */}
-                <div style={{
-                  backgroundColor: "#fff",
-                  padding: "30px",
-                  borderRadius: "16px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  marginBottom: "24px"
-                }}>
+                <div className="checkout-card">
 
 
                   {/* Locked Package Display */}
-                  <div style={{
-                    padding: "20px",
-                    backgroundColor: "#f0f9f6",
-                    border: "2px solid #00C853",
-                    borderRadius: "12px",
-                    marginBottom: "20px"
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                      <i className="fa-solid fa-lock" style={{ fontSize: "24px", color: "#00C853" }} />
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#1a1a2e", margin: 0 }}>
+                  <div className="checkout-package-locked">
+                    <div className="checkout-package-info">
+                      <i className="fa-solid fa-lock checkout-package-icon" />
+                      <div className="checkout-package-text">
+                        <h3>
                           {t(`packages.${checkoutData.selectedPackage}`)}
                         </h3>
-                        <p style={{ fontSize: "12px", color: "#666", margin: "4px 0 0 0" }}>
+                        <p>
                           Package locked based on your registration type
                         </p>
                       </div>
-                      <div style={{ textAlign: "right" }}>
-                        {currentPackage?.originalPriceUSD && (
-                          <div style={{ fontSize: "14px", color: "#999", textDecoration: "line-through" }}>
-                            {formatCurrency(isThai ? (currentPackage.originalPriceTHB || 0) : (currentPackage.originalPriceUSD || 0), locale)}
-                          </div>
-                        )}
-                        <div style={{ fontSize: "28px", fontWeight: "700", color: "#00C853" }}>
-                          {formatCurrency(isThai ? (currentPackage?.priceTHB || 0) : (currentPackage?.priceUSD || 0), locale)}
+                    </div>
+                    <div className="checkout-package-price-box">
+                      {currentPackage?.originalPriceUSD && (
+                        <div className="checkout-package-original-price">
+                          {formatCurrency(isThai ? (currentPackage.originalPriceTHB || 0) : (currentPackage.originalPriceUSD || 0), locale)}
                         </div>
+                      )}
+                      <div className="checkout-package-current-price">
+                        {formatCurrency(isThai ? (currentPackage?.priceTHB || 0) : (currentPackage?.priceUSD || 0), locale)}
                       </div>
                     </div>
                   </div>
@@ -341,9 +323,8 @@ export default function Registration() {
                           borderLeft: '2px solid #e0e0e0',
                           paddingLeft: '16px',
                           display: 'grid',
-                          gridTemplateColumns: '1fr 1fr',
                           gap: '10px'
-                        }}>
+                        }} className="checkout-grid-2">
                           {workshopOptions.map(option => (
                             <label key={option.value} style={{
                               display: 'flex',
@@ -358,7 +339,7 @@ export default function Registration() {
                               boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                               opacity: option.isFull ? 0.8 : 1,
                               width: "100%"
-                            }}>
+                            }} className="checkout-option-label">
                               <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <input
                                   type="radio"
@@ -432,14 +413,13 @@ export default function Registration() {
                           borderLeft: '2px solid #e0e0e0',
                           paddingLeft: '16px'
                         }}>
-                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px'}}>
+                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
                             Optional
                           </div>
                           <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
                             gap: '10px'
-                          }}>
+                          }} className="checkout-grid-2">
                             {[
                               { value: 'vegetarian', label: t("dietaryOptions.vegetarian") },
                               { value: 'vegan', label: t("dietaryOptions.vegan") },
@@ -456,7 +436,7 @@ export default function Registration() {
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
                                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                              }}>
+                              }} className="checkout-option-label">
                                 <input
                                   type="radio"
                                   name="dietaryRequirement"
@@ -534,17 +514,11 @@ export default function Registration() {
                   />
 
                   {/* Payment Method Section */}
-                  <div style={{
-                    backgroundColor: "#fff",
-                    padding: "24px",
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                    marginTop: "20px"
-                  }}>
+                  <div className="checkout-card" style={{ marginTop: "20px" }}>
                     <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px", color: "#1a1a2e" }}>
                       {t("paymentMethod")}
                     </h3>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <div className="checkout-grid-2">
                       <PaymentMethodCard
                         id="qr"
                         title="QR Payment"

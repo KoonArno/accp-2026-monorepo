@@ -89,9 +89,12 @@ export default function AbstractSubmission() {
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
     const [wordCount, setWordCount] = useState(0)
 
+    const [trackingId, setTrackingId] = useState('')
+
     // Scroll to top when form is submitted successfully
     useEffect(() => {
         if (submitStatus === 'success') {
+            setTrackingId(`ACCP2026-${Date.now().toString().slice(-6)}`)
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
     }, [submitStatus])
@@ -195,53 +198,6 @@ export default function AbstractSubmission() {
         }
     }
 
-    const inputStyle = {
-        width: '100%',
-        padding: '14px 16px',
-        border: '1px solid #e0e0e0',
-        borderRadius: '8px',
-        fontSize: '15px',
-        transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
-        outline: 'none'
-    }
-
-    const selectStyle = {
-        width: '100%',
-        padding: '14px 40px 14px 16px',
-        border: '2px solid #e0e0e0',
-        borderRadius: '10px',
-        fontSize: '15px',
-        fontWeight: '500' as const,
-        color: '#1a1a2e',
-        backgroundColor: '#fff',
-        cursor: 'pointer',
-        appearance: 'none' as const,
-        WebkitAppearance: 'none' as const,
-        MozAppearance: 'none' as const,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FFBA00' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'right 14px center',
-        backgroundSize: '18px',
-        transition: 'all 0.3s ease',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
-    }
-
-    const labelStyle = {
-        display: 'block',
-        marginBottom: '8px',
-        fontWeight: '600' as const,
-        color: '#1a1a2e',
-        fontSize: '14px'
-    }
-
-    const sectionStyle = {
-        backgroundColor: '#fff',
-        padding: '30px',
-        borderRadius: '16px',
-        marginBottom: '24px',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
-    }
-
     if (submitStatus === 'success') {
         return (
             <Layout headerStyle={1} footerStyle={1}>
@@ -288,7 +244,7 @@ export default function AbstractSubmission() {
                                             {t('successMessage')}
                                         </p>
                                         <p style={{ color: '#999', fontSize: '14px', marginBottom: '32px' }}>
-                                            {t('trackingId')} <strong style={{ color: '#FFBA00' }}>ACCP2026-{Date.now().toString().slice(-6)}</strong>
+                                            {t('trackingId')} <strong style={{ color: '#FFBA00' }}>{trackingId}</strong>
                                         </p>
                                     </div>
 
@@ -370,9 +326,16 @@ export default function AbstractSubmission() {
                                         )}
                                     </div>
 
-                                    <div className="btn-area1" style={{ textAlign: 'center', marginTop: '30px' }}>
-                                        <Link href="/" className="vl-btn1">{t('returnHome')}</Link>
-                                        <Link href="/call-for-abstracts" className="vl-btn2" style={{ marginLeft: '16px' }}>{t('viewGuidelines')}</Link>
+                                    <div className="btn-area" style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        gap: '16px',
+                                        marginTop: '30px',
+                                        flexWrap: 'wrap'
+                                    }}>
+                                        <a href="/abstract-submission" className="vl-btn1" style={{ width: 'auto', minWidth: '180px' }}>{tCommon('submitAbstract')}</a>
+                                        <Link href="/" className="vl-btn2" style={{ width: 'auto', minWidth: '180px', marginLeft: 0 }}>{t('returnHome')}</Link>
+                                        <Link href="/call-for-abstracts" className="vl-btn2" style={{ width: 'auto', minWidth: '180px', marginLeft: 0 }}>{t('viewGuidelines')}</Link>
                                     </div>
                                 </div>
                             </div>
@@ -407,13 +370,7 @@ export default function AbstractSubmission() {
                         <div className="row">
                             <div className="col-lg-10 m-auto">
                                 {/* Guidelines Link */}
-                                <div style={{
-                                    backgroundColor: '#e3f2fd',
-                                    padding: '20px',
-                                    borderRadius: '12px',
-                                    marginBottom: '30px',
-                                    border: '1px solid #2196F3'
-                                }}>
+                                <div className="guidelines-box">
                                     <p style={{ margin: 0, color: '#1565c0' }}>
                                         <i className="fa-solid fa-info-circle" style={{ marginRight: '8px' }} />
                                         {t('guidelineNote')} <Link href="/call-for-abstracts" style={{ color: '#1565c0', fontWeight: '600' }}>{t('guidelineLink')}</Link> {t('guidelineNote2')}
@@ -422,36 +379,36 @@ export default function AbstractSubmission() {
 
                                 <form onSubmit={handleSubmit}>
                                     {/* Section 1: Author Information */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
                                             <i className="fa-solid fa-user" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section1Title')}
                                         </h3>
 
                                         <div className="row">
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('firstName')} *</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('firstName')} *</label>
                                                     <input
                                                         type="text"
                                                         name="firstName"
                                                         value={formData.firstName}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         required
                                                         placeholder={t('firstNamePlaceholder')}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('lastName')} *</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('lastName')} *</label>
                                                     <input
                                                         type="text"
                                                         name="lastName"
                                                         value={formData.lastName}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         required
                                                         placeholder={t('lastNamePlaceholder')}
                                                     />
@@ -460,29 +417,29 @@ export default function AbstractSubmission() {
                                         </div>
 
                                         <div className="row">
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('email')} *</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('email')} *</label>
                                                     <input
                                                         type="email"
                                                         name="email"
                                                         value={formData.email}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         required
                                                         placeholder={t('emailPlaceholder')}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('phone')}</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('phone')}</label>
                                                     <input
                                                         type="tel"
                                                         name="phone"
                                                         value={formData.phone}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         placeholder={t('phonePlaceholder')}
                                                     />
                                                 </div>
@@ -490,29 +447,29 @@ export default function AbstractSubmission() {
                                         </div>
 
                                         <div className="row">
-                                            <div className="col-md-8">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('affiliation')} *</label>
+                                            <div className="col-12 col-md-8">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('affiliation')} *</label>
                                                     <input
                                                         type="text"
                                                         name="affiliation"
                                                         value={formData.affiliation}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         required
                                                         placeholder={t('affiliationPlaceholder')}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-md-4">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('country')} *</label>
+                                            <div className="col-12 col-md-4">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('country')} *</label>
                                                     <input
                                                         type="text"
                                                         name="country"
                                                         value={formData.country}
                                                         onChange={handleInputChange}
-                                                        style={inputStyle}
+                                                        className="submission-input"
                                                         required
                                                         placeholder={t('countryPlaceholder')}
                                                     />
@@ -522,8 +479,8 @@ export default function AbstractSubmission() {
                                     </div>
 
                                     {/* Section 2: Co-Authors */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
                                             <i className="fa-solid fa-users" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section2Title')}
                                         </h3>
@@ -535,14 +492,8 @@ export default function AbstractSubmission() {
                                             </p>
                                         ) : (
                                             coAuthors.map((coAuthor, index) => (
-                                                <div key={coAuthor.id} style={{
-                                                    backgroundColor: '#f8f9fa',
-                                                    padding: '20px',
-                                                    borderRadius: '12px',
-                                                    marginBottom: '16px',
-                                                    border: '1px solid #e0e0e0'
-                                                }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                                <div key={coAuthor.id} className="co-author-card">
+                                                    <div className="co-author-header">
                                                         <h5 style={{ margin: 0, color: '#1a1a2e', fontSize: '16px' }}>
                                                             <i className="fa-solid fa-user" style={{ marginRight: '8px', color: '#FFBA00' }} />
                                                             Co-Author {index + 1}
@@ -564,38 +515,38 @@ export default function AbstractSubmission() {
                                                     </div>
 
                                                     <div className="row">
-                                                        <div className="col-md-4">
-                                                            <div style={{ marginBottom: '12px' }}>
-                                                                <label style={labelStyle}>First Name *</label>
+                                                        <div className="col-12 col-md-4">
+                                                            <div className="submission-input-group">
+                                                                <label className="submission-label">First Name *</label>
                                                                 <input
                                                                     type="text"
                                                                     value={coAuthor.firstName}
                                                                     onChange={(e) => handleCoAuthorChange(coAuthor.id, 'firstName', e.target.value)}
-                                                                    style={inputStyle}
+                                                                    className="submission-input"
                                                                     placeholder="Enter first name"
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4">
-                                                            <div style={{ marginBottom: '12px' }}>
-                                                                <label style={labelStyle}>Last Name *</label>
+                                                        <div className="col-12 col-md-4">
+                                                            <div className="submission-input-group">
+                                                                <label className="submission-label">Last Name *</label>
                                                                 <input
                                                                     type="text"
                                                                     value={coAuthor.lastName}
                                                                     onChange={(e) => handleCoAuthorChange(coAuthor.id, 'lastName', e.target.value)}
-                                                                    style={inputStyle}
+                                                                    className="submission-input"
                                                                     placeholder="Enter last name"
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4">
-                                                            <div style={{ marginBottom: '12px' }}>
-                                                                <label style={labelStyle}>Email *</label>
+                                                        <div className="col-12 col-md-4">
+                                                            <div className="submission-input-group">
+                                                                <label className="submission-label">Email *</label>
                                                                 <input
                                                                     type="email"
                                                                     value={coAuthor.email}
                                                                     onChange={(e) => handleCoAuthorChange(coAuthor.id, 'email', e.target.value)}
-                                                                    style={inputStyle}
+                                                                    className="submission-input"
                                                                     placeholder="email@example.com"
                                                                 />
                                                             </div>
@@ -603,26 +554,26 @@ export default function AbstractSubmission() {
                                                     </div>
 
                                                     <div className="row">
-                                                        <div className="col-md-8">
-                                                            <div style={{ marginBottom: '12px' }}>
-                                                                <label style={labelStyle}>Institution *</label>
+                                                        <div className="col-12 col-md-8">
+                                                            <div className="submission-input-group">
+                                                                <label className="submission-label">Institution *</label>
                                                                 <input
                                                                     type="text"
                                                                     value={coAuthor.institution}
                                                                     onChange={(e) => handleCoAuthorChange(coAuthor.id, 'institution', e.target.value)}
-                                                                    style={inputStyle}
+                                                                    className="submission-input"
                                                                     placeholder="University / Hospital / Organization"
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4">
-                                                            <div style={{ marginBottom: '12px' }}>
-                                                                <label style={labelStyle}>Country *</label>
+                                                        <div className="col-12 col-md-4">
+                                                            <div className="submission-input-group">
+                                                                <label className="submission-label">Country *</label>
                                                                 <input
                                                                     type="text"
                                                                     value={coAuthor.country}
                                                                     onChange={(e) => handleCoAuthorChange(coAuthor.id, 'country', e.target.value)}
-                                                                    style={inputStyle}
+                                                                    className="submission-input"
                                                                     placeholder="Country"
                                                                 />
                                                             </div>
@@ -635,21 +586,7 @@ export default function AbstractSubmission() {
                                         <button
                                             type="button"
                                             onClick={addCoAuthor}
-                                            style={{
-                                                backgroundColor: '#e8f5e9',
-                                                color: '#2e7d32',
-                                                border: '2px dashed #4caf50',
-                                                padding: '14px 24px',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                width: '100%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px'
-                                            }}
+                                            className="btn-add-coauthor"
                                         >
                                             <i className="fa-solid fa-plus" />
                                             Add Co-Author
@@ -657,34 +594,34 @@ export default function AbstractSubmission() {
                                     </div>
 
                                     {/* Section 3: Abstract Details */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
                                             <i className="fa-solid fa-file-alt" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section3Title')}
                                         </h3>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('abstractTitle')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('abstractTitle')} *</label>
                                             <input
                                                 type="text"
                                                 name="title"
                                                 value={formData.title}
                                                 onChange={handleInputChange}
-                                                style={inputStyle}
+                                                className="submission-input"
                                                 required
                                                 placeholder={t('abstractTitlePlaceholder')}
                                             />
                                         </div>
 
                                         <div className="row">
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('category')} *</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('category')} *</label>
                                                     <select
                                                         name="category"
                                                         value={formData.category}
                                                         onChange={handleInputChange}
-                                                        style={selectStyle}
+                                                        className="submission-select"
                                                         required
                                                     >
                                                         <option value="">{t('selectCategory')}</option>
@@ -694,14 +631,14 @@ export default function AbstractSubmission() {
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div className="col-md-6">
-                                                <div style={{ marginBottom: '20px' }}>
-                                                    <label style={labelStyle}>{t('presentationType')} *</label>
+                                            <div className="col-12 col-md-6">
+                                                <div className="submission-input-group">
+                                                    <label className="submission-label">{t('presentationType')} *</label>
                                                     <select
                                                         name="presentationType"
                                                         value={formData.presentationType}
                                                         onChange={handleInputChange}
-                                                        style={selectStyle}
+                                                        className="submission-select"
                                                         required
                                                     >
                                                         <option value="">{t('selectPresentationType')}</option>
@@ -713,14 +650,14 @@ export default function AbstractSubmission() {
                                             </div>
                                         </div>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('keywordsLabel')}</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('keywordsLabel')}</label>
                                             <input
                                                 type="text"
                                                 name="keywords"
                                                 value={formData.keywords}
                                                 onChange={handleInputChange}
-                                                style={inputStyle}
+                                                className="submission-input"
                                                 required
                                                 placeholder={t('keywordsPlaceholder')}
                                             />
@@ -728,8 +665,8 @@ export default function AbstractSubmission() {
                                     </div>
 
                                     {/* Section 4: Abstract Content */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '12px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
                                             <i className="fa-solid fa-edit" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section4Title')}
                                         </h3>
@@ -737,49 +674,53 @@ export default function AbstractSubmission() {
                                             {t('wordCount')} <strong style={{ color: wordCount >= 250 && wordCount <= 300 ? '#4caf50' : '#f44336' }}>{wordCount}</strong> {t('wordCountRange')}
                                         </p>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('background')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('background')} *</label>
                                             <textarea
                                                 name="background"
                                                 value={formData.background}
                                                 onChange={handleInputChange}
-                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                className="submission-input"
+                                                style={{ minHeight: '100px', resize: 'vertical' }}
                                                 required
                                                 placeholder={t('backgroundPlaceholder')}
                                             />
                                         </div>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('methods')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('methods')} *</label>
                                             <textarea
                                                 name="methods"
                                                 value={formData.methods}
                                                 onChange={handleInputChange}
-                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                className="submission-input"
+                                                style={{ minHeight: '100px', resize: 'vertical' }}
                                                 required
                                                 placeholder={t('methodsPlaceholder')}
                                             />
                                         </div>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('results')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('results')} *</label>
                                             <textarea
                                                 name="results"
                                                 value={formData.results}
                                                 onChange={handleInputChange}
-                                                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                                                className="submission-input"
+                                                style={{ minHeight: '100px', resize: 'vertical' }}
                                                 required
                                                 placeholder={t('resultsPlaceholder')}
                                             />
                                         </div>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('conclusions')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('conclusions')} *</label>
                                             <textarea
                                                 name="conclusions"
                                                 value={formData.conclusions}
                                                 onChange={handleInputChange}
-                                                style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+                                                className="submission-input"
+                                                style={{ minHeight: '80px', resize: 'vertical' }}
                                                 required
                                                 placeholder={t('conclusionsPlaceholder')}
                                             />
@@ -787,8 +728,8 @@ export default function AbstractSubmission() {
                                     </div>
 
                                     {/* Section 5: File Upload */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
                                             <i className="fa-solid fa-upload" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section5Title')}
                                         </h3>
@@ -798,115 +739,107 @@ export default function AbstractSubmission() {
                                             borderRadius: '12px',
                                             padding: '40px',
                                             textAlign: 'center',
-                                            backgroundColor: '#fafafa'
-                                        }}>
-                                            <i className="fa-solid fa-cloud-upload-alt" style={{ fontSize: '48px', color: '#FFBA00', marginBottom: '16px' }} />
-                                            <p style={{ marginBottom: '16px', color: '#666' }}>
-                                                {t('uploadNote')}
-                                            </p>
+                                            cursor: 'pointer',
+                                            transition: 'border-color 0.3s ease',
+                                            backgroundColor: '#f8f9fa'
+                                        }}
+                                            onClick={() => document.getElementById('abstract-file')?.click()}
+                                        >
                                             <input
                                                 type="file"
-                                                accept=".pdf"
+                                                id="abstract-file"
                                                 onChange={handleFileChange}
+                                                accept=".pdf"
                                                 style={{ display: 'none' }}
-                                                id="abstractFile"
                                             />
-                                            <label
-                                                htmlFor="abstractFile"
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    backgroundColor: '#FFBA00',
-                                                    color: '#1a1a2e',
-                                                    padding: '12px 24px',
-                                                    borderRadius: '8px',
-                                                    fontWeight: '600',
-                                                    display: 'inline-block'
-                                                }}
-                                            >
-                                                {t('chooseFile')}
-                                            </label>
-                                            {uploadedFiles.length > 0 && (
-                                                <div style={{ marginTop: '20px', textAlign: 'left' }}>
-                                                    <p style={{ fontWeight: '600', color: '#1a1a2e', marginBottom: '12px' }}>
-                                                        <i className="fa-solid fa-file-pdf" style={{ marginRight: '8px', color: '#FFBA00' }} />
-                                                        Uploaded Files ({uploadedFiles.length})
-                                                    </p>
-                                                    {uploadedFiles.map((f, index) => (
-                                                        <div key={f.id} style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'space-between',
-                                                            backgroundColor: '#e8f5e9',
-                                                            padding: '10px 14px',
-                                                            borderRadius: '8px',
-                                                            marginBottom: '8px'
-                                                        }}>
-                                                            <span
-                                                                onClick={() => {
-                                                                    const url = URL.createObjectURL(f.file)
-                                                                    window.open(url, '_blank')
-                                                                }}
-                                                                style={{
-                                                                    color: '#2e7d32',
-                                                                    fontSize: '14px',
-                                                                    cursor: 'pointer',
-                                                                    textDecoration: 'underline'
-                                                                }}
-                                                                title="Click to view PDF"
-                                                            >
-                                                                <i className="fa-solid fa-check-circle" style={{ marginRight: '8px' }} />
-                                                                {index + 1}. {f.file.name}
-                                                            </span>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeFile(f.id)}
-                                                                style={{
-                                                                    background: 'none',
-                                                                    border: 'none',
-                                                                    color: '#f44336',
-                                                                    cursor: 'pointer',
-                                                                    fontSize: '14px'
-                                                                }}
-                                                                title="Remove file"
-                                                            >
-                                                                <i className="fa-solid fa-times" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <div style={{
+                                                width: '64px',
+                                                height: '64px',
+                                                backgroundColor: '#fff',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                margin: '0 auto 16px',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                            }}>
+                                                <i className="fa-solid fa-cloud-upload-alt" style={{ fontSize: '24px', color: '#FFBA00' }} />
+                                            </div>
+                                            <h4 style={{ fontSize: '18px', marginBottom: '8px', color: '#1a1a2e' }}>{t('chooseFile')}</h4>
+                                            <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
+                                                {t('uploadNote')}
+                                            </p>
                                         </div>
+
+                                        {uploadedFiles.length > 0 && (
+                                            <div style={{ marginTop: '24px' }}>
+                                                <h5 style={{ fontSize: '16px', marginBottom: '12px', color: '#1a1a2e' }}>Uploaded Files:</h5>
+                                                {uploadedFiles.map((f) => (
+                                                    <div key={f.id} style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        padding: '12px 16px',
+                                                        backgroundColor: '#f1f8e9',
+                                                        borderRadius: '8px',
+                                                        marginBottom: '8px',
+                                                        border: '1px solid #c5e1a5'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                            <i className="fa-solid fa-file-pdf" style={{ color: '#e53935', marginRight: '12px', fontSize: '20px' }} />
+                                                            <span style={{ fontSize: '14px', color: '#33691e', fontWeight: '500' }}>{f.file.name}</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeFile(f.id);
+                                                            }}
+                                                            style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: '#d32f2f',
+                                                                cursor: 'pointer',
+                                                                padding: '4px'
+                                                            }}
+                                                        >
+                                                            <i className="fa-solid fa-times" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Section 6: Declaration */}
-                                    <div style={sectionStyle}>
-                                        <h3 style={{ marginBottom: '24px', color: '#1a1a2e', borderBottom: '3px solid #FFBA00', paddingBottom: '12px', display: 'inline-block' }}>
-                                            <i className="fa-solid fa-check-double" style={{ marginRight: '12px', color: '#FFBA00' }} />
+                                    {/* Declaration */}
+                                    <div className="submission-section">
+                                        <h3 className="submission-section-title">
+                                            <i className="fa-solid fa-check-circle" style={{ marginRight: '12px', color: '#FFBA00' }} />
                                             {t('section6Title')}
                                         </h3>
 
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={labelStyle}>{t('coi')} *</label>
+                                        <div className="submission-input-group">
+                                            <label className="submission-label">{t('coi')} *</label>
                                             <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
-                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '15px' }}>
                                                     <input
                                                         type="radio"
                                                         name="coi"
                                                         value="no"
                                                         checked={formData.coi === 'no'}
                                                         onChange={handleInputChange}
-                                                        style={{ marginRight: '8px' }}
+                                                        style={{ width: '18px', height: '18px', marginRight: '8px', accentColor: '#FFBA00' }}
                                                     />
                                                     {t('noCoi')}
                                                 </label>
-                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '15px' }}>
                                                     <input
                                                         type="radio"
                                                         name="coi"
                                                         value="yes"
                                                         checked={formData.coi === 'yes'}
                                                         onChange={handleInputChange}
-                                                        style={{ marginRight: '8px' }}
+                                                        style={{ width: '18px', height: '18px', marginRight: '8px', accentColor: '#FFBA00' }}
                                                     />
                                                     {t('yesCoi')}
                                                 </label>
@@ -914,53 +847,52 @@ export default function AbstractSubmission() {
                                         </div>
 
                                         {formData.coi === 'yes' && (
-                                            <div style={{ marginBottom: '20px' }}>
-                                                <label style={labelStyle}>{t('coiDetails')}</label>
+                                            <div className="submission-input-group">
+                                                <label className="submission-label">{t('coiDetails')} *</label>
                                                 <textarea
                                                     name="coiDetails"
                                                     value={formData.coiDetails}
                                                     onChange={handleInputChange}
-                                                    style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
-                                                    placeholder={t('coiDetailsPlaceholder')}
+                                                    className="submission-input"
+                                                    style={{ minHeight: '80px', resize: 'vertical' }}
+                                                    required
                                                 />
                                             </div>
                                         )}
 
-                                        <div style={{ marginBottom: '16px' }}>
-                                            <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
+                                        <div style={{ marginTop: '24px', borderTop: '1px solid #e0e0e0', paddingTop: '24px' }}>
+                                            <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', marginBottom: '16px' }}>
                                                 <input
                                                     type="checkbox"
                                                     name="confirmOriginal"
                                                     checked={formData.confirmOriginal}
                                                     onChange={handleInputChange}
-                                                    style={{ marginRight: '12px', marginTop: '4px' }}
+                                                    style={{ width: '20px', height: '20px', marginTop: '2px', accentColor: '#FFBA00' }}
                                                     required
                                                 />
-                                                <span style={{ fontSize: '14px', color: '#333' }}>
-                                                    {t('confirmOriginal')}
+                                                <span style={{ fontSize: '15px', color: '#333', lineHeight: '1.5' }}>
+                                                    I confirm that this abstract is my original work and has not been published or presented elsewhere.
                                                 </span>
                                             </label>
-                                        </div>
 
-                                        <div style={{ marginBottom: '16px' }}>
-                                            <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
+                                            <label style={{ display: 'flex', gap: '12px', cursor: 'pointer' }}>
                                                 <input
                                                     type="checkbox"
                                                     name="agreeTerms"
                                                     checked={formData.agreeTerms}
                                                     onChange={handleInputChange}
-                                                    style={{ marginRight: '12px', marginTop: '4px' }}
+                                                    style={{ width: '20px', height: '20px', marginTop: '2px', accentColor: '#FFBA00' }}
                                                     required
                                                 />
-                                                <span style={{ fontSize: '14px', color: '#333' }}>
-                                                    {t('agreeTerms')} <Link href="/abstract-submission-guideline" style={{ color: '#FFBA00' }}>{t('termsLink')}</Link> {t('agreeTerms2')}
+                                                <span style={{ fontSize: '15px', color: '#333', lineHeight: '1.5' }}>
+                                                    I agree to the <Link href="/conditions-policies" style={{ color: '#FFBA00', textDecoration: 'underline' }}>terms and conditions</Link> of abstract submission.
                                                 </span>
                                             </label>
                                         </div>
                                     </div>
 
                                     {/* Submit Button */}
-                                    <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                                    <div style={{ textAlign: 'center', marginTop: '40px' }}>
                                         <button
                                             type="submit"
                                             className="vl-btn1"
@@ -975,13 +907,10 @@ export default function AbstractSubmission() {
                                             {isSubmitting ? (
                                                 <>
                                                     <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }} />
-                                                    {t('submitting')}
+                                                    Submitting...
                                                 </>
                                             ) : (
-                                                <>
-                                                    <i className="fa-solid fa-paper-plane" style={{ marginRight: '8px' }} />
-                                                    {t('submitButton')}
-                                                </>
+                                                tCommon('submitAbstract')
                                             )}
                                         </button>
                                     </div>

@@ -62,8 +62,8 @@ export default function BecomeSponsorCta() {
 
                         <p style={{ color: 'rgba(255,255,255,0.8)', margin: 0, fontSize: '1rem' }}>
                             <i className="fa-solid fa-envelope" style={{ marginRight: '10px' }}></i>
-                            <a href="mailto:sponsorship@accp2026.org" style={{ color: '#fff', textDecoration: 'underline' }}>
-                                sponsorship@accp2026.org
+                            <a href="mailto:accpbangkok2026@gmail.com" style={{ color: '#fff', textDecoration: 'underline' }}>
+                                accpbangkok2026@gmail.com
                             </a>
                         </p>
                     </div>

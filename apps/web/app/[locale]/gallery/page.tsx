@@ -100,53 +100,7 @@ export default function Gallery() {
 
                     <GallerySection />
 
-                    {/* CTA Section */}
-                    <section style={{
-                        padding: '80px 0',
-                        background: 'linear-gradient(135deg, #7B2D8E 0%, #5a1f6a 100%)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
-                        <div style={{
-                            position: 'absolute',
-                            top: '-50%',
-                            right: '-10%',
-                            width: '500px',
-                            height: '500px',
-                            background: 'rgba(255,186,0,0.1)',
-                            borderRadius: '50%'
-                        }} />
-                        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-                            <div className="row align-items-center">
-                                <div className="col-lg-8">
-                                    <h2 style={{ color: '#fff', fontSize: '2.2rem', fontWeight: '700', marginBottom: '15px' }}>
-                                        {t('ctaTitle')}
-                                    </h2>
-                                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem', marginBottom: 0 }}>
-                                        {t('ctaDesc')}
-                                    </p>
-                                </div>
-                                <div className="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                                    <Link href="/registration" style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '10px',
-                                        padding: '16px 35px',
-                                        background: 'linear-gradient(135deg, #FFBA00, #FF8C00)',
-                                        color: '#000',
-                                        borderRadius: '50px',
-                                        fontWeight: '700',
-                                        textDecoration: 'none',
-                                        boxShadow: '0 10px 30px rgba(255,186,0,0.3)',
-                                        transition: 'all 0.3s ease'
-                                    }}>
-                                        {tCommon('registerNow')}
-                                        <i className="fa-solid fa-arrow-right"></i>
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+
                 </div>
             </Layout>
         </>

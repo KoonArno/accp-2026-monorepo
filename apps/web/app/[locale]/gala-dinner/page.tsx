@@ -279,27 +279,7 @@ export default function GalaDinner() {
                         </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="cta1-section-area" style={{
-                        background: 'linear-gradient(135deg, #FFBA00 0%, #FFD54F 100%)',
-                        padding: '80px 0'
-                    }}>
-                        <div className="container">
-                            <div className="row align-items-center">
-                                <div className="col-lg-8" data-aos="fade-right" data-aos-duration={800}>
-                                    <div className="cta-content">
-                                        <h3 style={{ color: '#1a237e', marginBottom: '10px' }}>{t('reserveSpot')}</h3>
-                                        <p style={{ color: '#333', margin: 0 }}>{t('reserveDesc')}</p>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 text-lg-end" data-aos="fade-left" data-aos-duration={800}>
-                                    <div className="btn-area1">
-                                        <Link href="/registration" className="vl-btn1" style={{ backgroundColor: '#1a237e' }}>{tCommon('registerNow')}</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </Layout>
         </>

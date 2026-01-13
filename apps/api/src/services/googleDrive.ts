@@ -24,19 +24,31 @@ function getDriveClient() {
   return google.drive({ version: "v3", auth: oauth2Client });
 }
 
+// Folder type mapping
+export type UploadFolderType = "student_docs" | "abstracts";
+
+const FOLDER_ENV_MAP: Record<UploadFolderType, string> = {
+  student_docs: "GOOGLE_DRIVE_FOLDER_STUDENT_DOCS",
+  abstracts: "GOOGLE_DRIVE_FOLDER_ABSTRACTS",
+};
+
 /**
  * Upload a file to Google Drive and return shareable link
+ * @param folderType - Which folder to upload to (student_docs or abstracts)
  */
 export async function uploadToGoogleDrive(
   fileBuffer: Buffer,
   fileName: string,
-  mimeType: string
+  mimeType: string,
+  folderType: UploadFolderType = "student_docs"
 ): Promise<string> {
   const drive = getDriveClient();
-  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  
+  const envKey = FOLDER_ENV_MAP[folderType];
+  const folderId = process.env[envKey];
 
   if (!folderId) {
-    throw new Error("GOOGLE_DRIVE_FOLDER_ID environment variable not set");
+    throw new Error(`${envKey} environment variable not set`);
   }
 
   // Generate unique filename with timestamp

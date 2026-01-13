@@ -88,6 +88,24 @@ export const plenarySpeakers = [
         session: "Plenary Session 2",
         day: "Day 2",
         time: "08:30 - 10:00"
+    },
+    {
+        name: "Prof. Dr. Chen Wei",
+        role: "Director, Center for Pharmaceutical Care",
+        affiliation: "Peking University, China",
+        topic: "Digital Health Integration in Pharmacy Practice",
+        session: "Plenary Session 1",
+        day: "Day 1",
+        time: "11:00 - 12:30"
+    },
+    {
+        name: "Dr. Alexandra Peters",
+        role: "Associate Professor of Clinical Pharmacy",
+        affiliation: "University of Munich, Germany",
+        topic: "Sustainable Pharmacy: Green Practices in Healthcare",
+        session: "Keynote Lecture",
+        day: "Day 3",
+        time: "13:00 - 14:30"
     }
 ];
 

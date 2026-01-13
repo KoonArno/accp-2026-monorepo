@@ -125,7 +125,12 @@ interface SidebarProps {
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
-    const { isAdmin } = useAuth();
+    const { isAdmin, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        window.location.href = '/login';
+    };
 
     const toggleSubmenu = (label: string) => {
         setExpandedMenus(prev =>
@@ -149,7 +154,22 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         // Admin sees everything
         if (isAdmin) return item;
 
-        // Non-admin restrictions
+        const role = (useAuth() as any).user?.role;
+
+        // Verifier specific restrictions
+        if (role === 'verifier') {
+            // Only show Verification related items
+            if (item.label === 'ATTENDEE MANAGEMENT') return item;
+            if (item.label === 'Registrations' && item.children) {
+                return {
+                    ...item,
+                    children: item.children.filter(child => child.href === '/verification')
+                };
+            }
+            return null;
+        }
+
+        // Non-admin restrictions (existing logic)
 
         // Hide System Administration category and its links
         if (item.label === 'SYSTEM ADMINISTRATION') return null;
@@ -290,7 +310,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
             {/* Logout - Sticky at bottom */}
             <div className="p-4 border-t border-slate-700 bg-slate-800 mt-auto">
-                <button className="sidebar-link w-full text-red-400 hover:bg-red-900/30">
+                <button
+                    onClick={handleLogout}
+                    className="sidebar-link w-full text-red-400 hover:bg-red-900/30"
+                >
                     <IconLogout size={20} stroke={1.5} />
                     <span>Logout</span>
                 </button>

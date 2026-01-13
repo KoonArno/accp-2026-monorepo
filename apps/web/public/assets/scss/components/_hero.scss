@@ -4,7 +4,7 @@
 .hero1-section-area {
 	position: relative;
 	z-index: 1;
-	background-image: url(/assets/img/bg/header-bg1.png);
+	/* background-image: url(/assets/img/bg/header-bg1.png); */
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -1529,7 +1529,7 @@
 		img {
 			height: 100%;
 			width: 100%;
-			object-fit: cover;
+			object-fit: contain;
 			border-radius: 8px;
 		}
 	}

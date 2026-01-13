@@ -11,7 +11,7 @@ export default function PlenarySpeakers() {
             <div className="container">
                 <div className="row">
                     {plenarySpeakers.map((speaker, index) => (
-                        <div className="col-lg-3 col-md-6" key={index} data-aos="fade-up" data-aos-duration={800} data-aos-delay={index * 100}>
+                        <div className="col-lg-4 col-md-6" key={index} data-aos="fade-up" data-aos-duration={800} data-aos-delay={index * 100}>
                             <div className="team1-boxarea">
                                 <div className="img1">
                                     <div style={{

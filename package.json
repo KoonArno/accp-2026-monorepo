@@ -15,7 +15,8 @@
     "dev:api": "turbo run dev --filter=@accp/api",
     "db:generate": "turbo run db:generate --filter=@accp/database",
     "db:push": "turbo run db:push --filter=@accp/database",
-    "db:studio": "turbo run db:studio --filter=@accp/database"
+    "db:studio": "turbo run db:studio --filter=@accp/database",
+    "db:seed": "turbo run db:seed --filter=@accp/database"
   },
   "devDependencies": {
     "turbo": "^2.3.0"

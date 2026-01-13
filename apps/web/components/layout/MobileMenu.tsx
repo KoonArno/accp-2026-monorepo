@@ -170,7 +170,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu }: any) {
                                         <span><i className="fa-solid fa-envelope" /></span>
                                     </div>
                                     <div className="contact-info-text">
-                                        <Link href="mailto:info@accp2026.org">info@accp2026.org</Link>
+                                        <Link href="mailto:accpbangkok2026@gmail.com">accpbangkok2026@gmail.com</Link>
                                     </div>
                                 </div>
                                 <div className="single-footer">
@@ -187,18 +187,19 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu }: any) {
                                 </div>
                                 <div className="single-footer">
                                     <h3>{t('followUs')}</h3>
-                                    <div className="social-links-mobile-menu">
-                                        <ul>
-                                            <li>
-                                                <Link href="/#"><i className="fa-brands fa-facebook-f" /></Link>
-                                            </li>
-                                            <li>
-                                                <Link href="/#"><i className="fa-brands fa-instagram" /></Link>
-                                            </li>
-                                            <li>
-                                                <Link href="/#"><i className="fa-brands fa-linkedin-in" /></Link>
-                                            </li>
-                                        </ul>
+                                    <div className="social-links-mobile-menu" style={{ marginTop: '16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                            <i className="fa-brands fa-facebook" style={{ fontSize: '20px', color: '#1877F2' }} />
+                                            <Link href="https://www.facebook.com/accpbangkok2026" target="_blank" style={{ color: '#333', fontSize: '16px', fontWeight: '500' }}>
+                                                accpbangkok2026
+                                            </Link>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <i className="fa-brands fa-instagram" style={{ fontSize: '20px', color: '#E4405F' }} />
+                                            <Link href="https://www.instagram.com/accpbangkok2026" target="_blank" style={{ color: '#333', fontSize: '16px', fontWeight: '500' }}>
+                                                accpbangkok2026
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -83,27 +83,7 @@ export default function Accommodation() {
                         </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="cta1-section-area" style={{
-                        background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)',
-                        padding: '80px 0'
-                    }}>
-                        <div className="container">
-                            <div className="row align-items-center">
-                                <div className="col-lg-8" data-aos="fade-right" data-aos-duration={800}>
-                                    <div className="cta-content">
-                                        <h3 style={{ color: 'white', marginBottom: '10px' }}>{t('ctaTitle')}</h3>
-                                        <p style={{ color: 'rgba(255,255,255,0.8)', margin: 0 }}>{t('ctaDesc')}</p>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 text-lg-end" data-aos="fade-left" data-aos-duration={800}>
-                                    <div className="btn-area1">
-                                        <Link href="/travel-visa" className="vl-btn1">{tCommon('travelVisa')}</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </Layout>
         </>

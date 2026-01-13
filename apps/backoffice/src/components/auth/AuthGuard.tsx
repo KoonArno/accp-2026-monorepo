@@ -27,6 +27,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
                 // Already logged in but on login page
                 if (user.role === 'verifier') {
                     router.replace('/verification');
+                } else if (user.role === 'reviewer') {
+                    router.replace('/abstracts');
+                } else if (user.role === 'organizer') {
+                    router.replace('/reports');
+                } else if (user.role === 'staff') {
+                    router.replace('/checkin');
                 } else {
                     router.replace('/');
                 }
@@ -34,6 +40,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
                 // Logged in but no access to this page
                 if (user.role === 'verifier') {
                     router.replace('/verification');
+                } else if (user.role === 'reviewer') {
+                    router.replace('/abstracts');
+                } else if (user.role === 'organizer') {
+                    router.replace('/reports');
+                } else if (user.role === 'staff') {
+                    router.replace('/checkin');
                 } else {
                     router.replace('/'); // Or 403 page
                 }

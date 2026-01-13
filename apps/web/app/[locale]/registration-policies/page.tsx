@@ -40,7 +40,7 @@ export default function RegistrationPolicies() {
                                         <h2>{t('pageTitle')}</h2>
                                         <div className="space16" />
                                         <p style={{ color: '#666', lineHeight: '1.8' }}>
-                                            {t('overviewDesc')} <a href="mailto:secretariat@accp2026.org" style={{ color: '#1a237e', fontWeight: '600' }}>secretariat@accp2026.org</a>
+                                            {t('overviewDesc')} <a href="mailto:accpbangkok2026@gmail.com" style={{ color: '#1a237e', fontWeight: '600' }}>accpbangkok2026@gmail.com</a>
                                         </p>
                                     </div>
                                 </div>
@@ -52,30 +52,7 @@ export default function RegistrationPolicies() {
                     <PolicyDetails />
                     <PolicyFaq />
 
-                    {/* Contact Section */}
-                    <div className="cta2-section-area" style={{ background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)', padding: '80px 0' }}>
-                        <div className="container">
-                            <div className="row align-items-center">
-                                <div className="col-lg-8" data-aos="fade-right" data-aos-duration={800}>
-                                    <div className="cta-header heading4">
-                                        <h3 style={{ color: 'white' }}>{t('ctaTitle')}</h3>
-                                        <div className="space10" />
-                                        <p style={{ color: '#c5cae9' }}>{t('ctaDesc')}</p>
-                                        <div className="space16" />
-                                        <p style={{ color: '#fff', fontSize: '18px' }}>
-                                            <i className="fa-solid fa-envelope" style={{ marginRight: '10px' }} />
-                                            <a href="mailto:secretariat@accp2026.org" style={{ color: '#FFBA00' }}>secretariat@accp2026.org</a>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="col-lg-4 text-lg-end" data-aos="fade-left" data-aos-duration={800}>
-                                    <div className="btn-area1">
-                                        <Link href="/registration" className="vl-btn1">{tCommon('registerNow')}</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </Layout>
         </>

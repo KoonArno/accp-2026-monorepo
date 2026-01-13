@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AdminLayout } from '@/components/layout';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     IconReportAnalytics,
     IconDownload,
@@ -67,6 +68,7 @@ const checkInBySession = [
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'];
 
 export default function ReportsPage() {
+    const { currentEvent } = useAuth();
     const [reportType, setReportType] = useState('overview');
     const [dateRange, setDateRange] = useState('all');
 
@@ -75,7 +77,7 @@ export default function ReportsPage() {
     const totalCheckedIn = checkInBySession.reduce((sum, s) => sum + s.checkedIn, 0);
 
     return (
-        <AdminLayout title="Reports & Analytics">
+        <AdminLayout title={currentEvent ? `Reports: ${currentEvent.name}` : "Reports & Analytics"}>
             {/* Header Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div className="flex gap-2">

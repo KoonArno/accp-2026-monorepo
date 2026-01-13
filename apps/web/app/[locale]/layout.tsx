@@ -6,7 +6,7 @@ import { AuthProvider } from '@/context/AuthContext';
 
 type Props = {
     children: React.ReactNode;
-    params: { locale: string };
+    params: Promise<{ locale: string }>;
 }
 
 export function generateStaticParams() {
@@ -15,8 +15,9 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
     children,
-    params: { locale }
+    params
 }: Props) {
+    const { locale } = await params;
     // Validate locale
     if (!routing.locales.includes(locale as any)) {
         notFound();

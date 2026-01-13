@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import ModalVideo from 'react-modal-video'
+import dynamic from 'next/dynamic'
+const ModalVideo = dynamic(() => import('react-modal-video') as any, { ssr: false }) as any;
 import "@/node_modules/react-modal-video/css/modal-video.css"
 import Countdown from '@/components/elements/Countdown'
 import Layout from "@/components/layout/Layout"
@@ -277,6 +278,7 @@ export default function BlogSingle() {
 					{/*===== BLOG AREA ENDS =======*/}
 					{/*===== CTA AREA ENDS =======*/}
 				</div>
+				{/* @ts-ignore */}
 				<ModalVideo channel='youtube' isOpen={isOpen} videoId="JXMWOmuR1hU" onClose={() => setOpen(false)} />
 			</Layout>
 		</>

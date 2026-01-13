@@ -2,7 +2,12 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link'
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import Switch from 'react-switch';
+import { US, TH } from 'country-flag-icons/react/3x2'
+
+// Cast to any to avoid TypeScript error with React 18 types
+const LanguageSwitch = Switch as any;
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
 import { 
@@ -19,6 +24,12 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
     const locale = useLocale();
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
+    const router = useRouter();
+
+    const handleLanguageChange = (checked: boolean) => {
+        const nextLocale = checked ? 'en' : 'th';
+        router.push(switchLocale(nextLocale));
+    };
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     // Function to get the path without locale prefix
@@ -60,6 +71,21 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
             pointerEvents: isOpen ? 'auto' : 'none',
         };
     };
+
+    // Calculate IsHeaderWhite based on scroll or headerBgWhite prop
+    // This prop seems to handle the visual state of the header
+    const isHeaderWhite = scroll || headerBgWhite;
+
+    // Define switch colors based on header state
+    // When header is white (scrolled), we want a darker background for the switch to see it
+    // When header is transparent (top), we want a light/transparent background
+    const switchOffColor = isHeaderWhite ? "#e4e4e4" : "#ffba00"; // TH background
+    const switchOnColor = isHeaderWhite ? "#e4e4e4" : "#ffba00";  // EN background
+    const switchHandleColor = "#fff"; // Handle is always white to show the flag clearly (if we put flag in handle) - or keep color handle?
+    
+    // User requested: "header เป็นสีขาวให้พื้นหลังของปุ่ม toggle switch เปลี่ยนภาษา"
+    // And: "พื้นหลังตัวย่อภาษาเป็น icon ธงภาษา" -> This likely means uncheckedIcon/checkedIcon should be flags
+
 
     return (
         <>
@@ -185,19 +211,77 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
 
                                     <div className="btn-area" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         {/* Language Switcher */}
-                                        <div className="d-none d-lg-flex" style={languageSwitcherContainerStyle}>
-                                            <Link
-                                                href={`/th${getPathWithoutLocale()}`}
-                                                style={getLanguageButtonStyle(locale === 'th', headerBgWhite)}
-                                            >
-                                                TH
-                                            </Link>
-                                            <Link
-                                                href={`/en${getPathWithoutLocale()}`}
-                                                style={getLanguageButtonStyle(locale === 'en', headerBgWhite)}
-                                            >
-                                                EN
-                                            </Link>
+                                        <div className="d-none d-lg-flex" style={{ ...languageSwitcherContainerStyle, alignItems: 'center' }}>
+                                            <LanguageSwitch
+                                                onChange={handleLanguageChange}
+                                                checked={locale === 'en'}
+                                                offColor="#ffffff"
+                                                onColor="#ffffff"
+                                                offHandleColor="#FFBA00"
+                                                onHandleColor="#FFBA00"
+                                                handleDiameter={34}
+                                                checkedHandleIcon={
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "center",
+                                                            alignItems: "center",
+                                                            height: "100%",
+                                                            fontSize: 14,
+                                                            color: "#333",
+                                                            fontWeight: "800",
+                                                        }}
+                                                    >
+                                                        EN
+                                                    </div>
+                                                }
+                                                uncheckedHandleIcon={
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "center",
+                                                            alignItems: "center",
+                                                            height: "100%",
+                                                            fontSize: 14,
+                                                            color: "#333",
+                                                            fontWeight: "800",
+                                                        }}
+                                                    >
+                                                        TH
+                                                    </div>
+                                                }
+                                                uncheckedIcon={
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "flex-end",
+                                                            alignItems: "center",
+                                                            height: "100%",
+                                                            paddingRight: 8
+                                                        }}
+                                                    >
+                                                        <TH style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} title="Thai" />
+                                                    </div>
+                                                }
+                                                checkedIcon={
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "flex-start",
+                                                            alignItems: "center",
+                                                            height: "100%",
+                                                            paddingLeft: 8
+                                                        }}
+                                                    >
+                                                        <US style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} title="English" />
+                                                    </div>
+                                                }
+                                                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                                                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                                                height={40}
+                                                width={90}
+                                                className="react-switch"
+                                            />
                                         </div>
 
                                         {isAuthenticated ? (
@@ -220,27 +304,27 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                         </div>
                     </div>
                 </div>
+            </header>
 
-                {/* Mobile Header */}
-                <div className="mobile-header mobile-haeder1 d-block d-lg-none">
-                    <div className="container-fluid">
-                        <div className="col-12">
-                            <div className="mobile-header-elements">
-                                <div className="mobile-logo">
-                                    <Link href={`/${locale}`}>
-                                        <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
-                                    </Link>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div className="mobile-nav-icon dots-menu" onClick={handleMobileMenu}>
-                                        <i className="fa-solid fa-bars" />
-                                    </div>
+            {/* Mobile Header - Outside of header tag for proper fixed positioning */}
+            <div className="mobile-header mobile-haeder1 d-block d-lg-none">
+                <div className="container-fluid">
+                    <div className="col-12">
+                        <div className="mobile-header-elements">
+                            <div className="mobile-logo">
+                                <Link href={`/${locale}`}>
+                                    <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
+                                </Link>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="mobile-nav-icon dots-menu" onClick={handleMobileMenu}>
+                                    <i className="fa-solid fa-bars" />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
         </>
     )
 }

@@ -1,7 +1,7 @@
 export const policyFaqs = [
     {
         question: "How do I cancel my registration?",
-        answer: "To cancel your registration, please email secretariat@accp2026.org with your registration confirmation number and full name. Cancellation requests must be submitted in writing."
+        answer: "To cancel your registration, please email accpbangkok2026@gmail.com with your registration confirmation number and full name. Cancellation requests must be submitted in writing."
     },
     {
         question: "When will I receive my refund?",
@@ -9,7 +9,7 @@ export const policyFaqs = [
     },
     {
         question: "Can I transfer my registration to another person?",
-        answer: "Yes, registration transfers are permitted until June 15, 2026. Please contact secretariat@accp2026.org with details of both the original registrant and the new registrant."
+        answer: "Yes, registration transfers are permitted until June 15, 2026. Please contact accpbangkok2026@gmail.com with details of both the original registrant and the new registrant."
     },
     {
         question: "What if I paid for workshops or gala dinner add-ons?",

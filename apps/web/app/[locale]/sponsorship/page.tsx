@@ -3,7 +3,6 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import SponsorsList from '@/components/sections/sponsorship/SponsorsList';
-import BecomeSponsorCta from '@/components/sections/sponsorship/BecomeSponsorCta';
 
 export default function Sponsorship() {
     const tCommon = useTranslations('common');
@@ -28,7 +27,6 @@ export default function Sponsorship() {
                 </div>
 
                 <SponsorsList />
-                <BecomeSponsorCta />
             </div>
         </Layout>
     )

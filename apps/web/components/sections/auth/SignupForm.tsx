@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+import { Hourglass } from 'react-loader-spinner';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -234,6 +235,7 @@ export default function SignupForm() {
     `;
 
     const PhoneInputAny = PhoneInput as any;
+    const HourglassAny = Hourglass as any;
 
     return (
         <>
@@ -247,6 +249,37 @@ export default function SignupForm() {
                 margin: '0 auto',
                 position: 'relative'
             }}>
+                {/* Loading Overlay */}
+                {isLoading && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(255,255,255,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        <HourglassAny
+                            visible={true}
+                            height="80"
+                            width="80"
+                            ariaLabel="hourglass-loading"
+                            wrapperStyle={{}}
+                            wrapperClass=""
+                            colors={['#1a237e', '#72a1ed']}
+                        />
+                        <div style={{ color: '#1a237e', fontSize: '18px', fontWeight: '600' }}>
+                            {locale === 'th' ? 'กำลังดำเนินการ...' : 'Processing...'}
+                        </div>
+                    </div>
+                )}
+
                 {/* Modal Overlay */}
                 {isPending && (
                     <div style={{

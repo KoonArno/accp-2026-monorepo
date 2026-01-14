@@ -122,7 +122,7 @@ export default function SpeakersPage() {
         setIsUploading(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
-            const data = await api.upload(token, file, 'speakers');
+            const data = await api.uploadFile(token, file, 'speakers');
             setFormData({ ...formData, photoUrl: data.url || data.fileUrl });
         } catch (error) {
             console.error('Upload error:', error);

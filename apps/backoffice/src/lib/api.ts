@@ -141,7 +141,7 @@ export const api = {
   },
 
   // File Upload
-  upload: (token: string, file: File, folder: string = 'general') => {
+  uploadFile: (token: string, file: File, folder: string = 'general') => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);

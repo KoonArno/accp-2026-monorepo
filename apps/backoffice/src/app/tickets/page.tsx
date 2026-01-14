@@ -368,7 +368,7 @@ export default function TicketsPage() {
                                             <td>
                                                 <div>
                                                     <p className="font-medium text-gray-800">{ticket.name}</p>
-                                                    <p className="text-sm text-gray-500 font-mono">{ticket.code}</p>
+                                                    <p className="text-sm text-gray-500 font-mono">ID: {ticket.id}</p>
                                                 </div>
                                             </td>
                                             <td>

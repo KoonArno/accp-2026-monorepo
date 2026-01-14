@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
+import { useAuth } from '@/context/AuthContext'
+import { Hourglass } from 'react-loader-spinner'
 
 export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')
@@ -88,8 +90,39 @@ export default function AbstractSubmission() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
     const [wordCount, setWordCount] = useState(0)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
 
     const [trackingId, setTrackingId] = useState('')
+    const { user, isAuthenticated } = useAuth()
+
+    // Autofill user data when logged in
+    useEffect(() => {
+        const autofillUserData = async () => {
+            if (isAuthenticated && user && user.email) {
+                try {
+                    const response = await fetch(`http://localhost:3002/api/users/profile/${encodeURIComponent(user.email)}`)
+                    if (response.ok) {
+                        const data = await response.json()
+                        if (data.success && data.user) {
+                            setFormData(prev => ({
+                                ...prev,
+                                firstName: data.user.firstName || '',
+                                lastName: data.user.lastName || '',
+                                email: data.user.email || '',
+                                affiliation: data.user.institution || '',
+                                country: data.user.country || '',
+                                phone: data.user.phone || '',
+                            }))
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user profile:', error)
+                }
+            }
+        }
+
+        autofillUserData()
+    }, [isAuthenticated, user])
 
     // Scroll to top when form is submitted successfully
     useEffect(() => {
@@ -175,6 +208,7 @@ export default function AbstractSubmission() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setSubmitStatus('idle')
 
         // Validate word count
         if (wordCount < 250 || wordCount > 300) {
@@ -183,15 +217,63 @@ export default function AbstractSubmission() {
             return
         }
 
+        // Validate file upload
+        if (uploadedFiles.length === 0) {
+            alert('Please upload an abstract file (PDF)')
+            setIsSubmitting(false)
+            return
+        }
+
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000))
+            // Prepare FormData for multipart submission
+            const formDataToSend = new FormData()
+            
+            // Add basic fields
+            formDataToSend.append('firstName', formData.firstName)
+            formDataToSend.append('lastName', formData.lastName)
+            formDataToSend.append('email', formData.email)
+            formDataToSend.append('affiliation', formData.affiliation)
+            formDataToSend.append('country', formData.country)
+            if (formData.phone) formDataToSend.append('phone', formData.phone)
+            
+            // Add abstract details
+            formDataToSend.append('title', formData.title)
+            formDataToSend.append('category', formData.category)
+            formDataToSend.append('presentationType', formData.presentationType)
+            formDataToSend.append('keywords', formData.keywords)
+            
+            // Add abstract content
+            formDataToSend.append('background', formData.background)
+            formDataToSend.append('methods', formData.methods)
+            formDataToSend.append('results', formData.results)
+            formDataToSend.append('conclusion', formData.conclusions)
+            
+            // Add co-authors as JSON string
+            if (coAuthors.length > 0) {
+                formDataToSend.append('coAuthors', JSON.stringify(coAuthors))
+            }
+            
+            // Add file
+            formDataToSend.append('abstractFile', uploadedFiles[0].file)
 
-            // Here you would send to your backend API
-            console.log('Form Data:', formData)
+            // Submit to API
+            const response = await fetch('http://localhost:3002/api/abstracts/submit', {
+                method: 'POST',
+                body: formDataToSend,
+            })
 
-            setSubmitStatus('success')
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to submit abstract')
+            }
+
+            // Set tracking ID from response
+            setTrackingId(`ACCP2026-${result.abstract.id}`)
+            setShowSuccessModal(true) // Show modal instead of changing submit status
         } catch (error) {
+            console.error('Submission error:', error)
+            alert(error instanceof Error ? error.message : 'Failed to submit abstract. Please try again.')
             setSubmitStatus('error')
         } finally {
             setIsSubmitting(false)
@@ -349,6 +431,100 @@ export default function AbstractSubmission() {
     return (
         <Layout headerStyle={1} footerStyle={1}>
             <div>
+                {/* Loading Overlay */}
+                {isSubmitting && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(255,255,255,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        <Hourglass
+                            visible={true}
+                            height="80"
+                            width="80"
+                            ariaLabel="hourglass-loading"
+                            wrapperStyle={{}}
+                            wrapperClass=""
+                            colors={['#1a237e', '#72a1ed']}
+                        />
+                        <div style={{ color: '#1a237e', fontSize: '18px', fontWeight: '600' }}>
+                            {tCommon('loading')}...
+                        </div>
+                    </div>
+                )}
+
+                {/* Success Modal */}
+                {showSuccessModal && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '20px'
+                    }}>
+                        <div style={{
+                            background: '#fff',
+                            borderRadius: '16px',
+                            padding: '40px',
+                            width: '100%',
+                            maxWidth: '500px',
+                            textAlign: 'center',
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.2)'
+                        }}>
+                            <div style={{ marginBottom: '24px' }}>
+                                <img src="/assets/img/logo/accp_logo_main.png" alt="ACCP 2026"
+                                    style={{ height: '80px', width: 'auto', margin: '0 auto' }} />
+                            </div>
+                            <div style={{ fontSize: '48px', marginBottom: '24px' }}>✅</div>
+                            <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#1a1a1a', marginBottom: '16px' }}>
+                                {t('successTitle') || 'Abstract Submitted Successfully!'}
+                            </h3>
+                            <p style={{ color: '#666', fontSize: '16px', marginBottom: '16px', lineHeight: '1.7' }}>
+                                ขอบคุณสำหรับการส่ง Abstract ของคุณ
+                            </p>
+                            <p style={{ color: '#666', fontSize: '16px', marginBottom: '24px', lineHeight: '1.7' }}>
+                                กรุณารอผลการคัดเลือก Abstract<br />ในวันที่ <strong style={{ color: '#FFBA00' }}>10 เมษายน 2026</strong>
+                            </p>
+                            <p style={{ color: '#999', fontSize: '14px', marginBottom: '32px' }}>
+                                Tracking ID: <strong style={{ color: '#FFBA00' }}>{trackingId}</strong>
+                            </p>
+                            <button
+                                onClick={() => window.location.href = '/'}
+                                style={{
+                                    display: 'inline-block',
+                                    padding: '14px 32px',
+                                    background: '#1a237e',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    fontWeight: '600',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    width: '100%'
+                                }}
+                            >
+                                {tCommon('backToHome') || 'Back to Home'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="inner-page-header" style={{ backgroundImage: 'url(/assets/img/bg/header-bg16.png)' }}>
                     <div className="container">
@@ -620,14 +796,17 @@ export default function AbstractSubmission() {
                                                     <select
                                                         name="category"
                                                         value={formData.category}
-                                                        onChange={handleInputChange}
-                                                        className="submission-select"
+                                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                        className="submission-input"
                                                         required
                                                     >
-                                                        <option value="">{t('selectCategory')}</option>
-                                                        {categories.map((cat, index) => (
-                                                            <option key={index} value={cat}>{cat}</option>
-                                                        ))}
+                                                        <option value="">Select Category</option>
+                                                        <option value="clinical_pharmacy">{t('categories.clinicalPharmacy') || 'Clinical Pharmacy'}</option>
+                                                        <option value="social_administrative">{t('categories.socialAdministrative') || 'Social and Administrative Pharmacy'}</option>
+                                                        <option value="pharmaceutical_sciences">{t('categories.pharmaceuticalSciences') || 'Pharmaceutical Sciences'}</option>
+                                                        <option value="pharmacology_toxicology">{t('categories.pharmacology') || 'Pharmacology and Toxicology'}</option>
+                                                        <option value="pharmacy_education">{t('categories.education') || 'Pharmacy Education'}</option>
+                                                        <option value="digital_pharmacy">{t('categories.digitalPharmacy') || 'Digital Pharmacy and Innovation'}</option>
                                                     </select>
                                                 </div>
                                             </div>

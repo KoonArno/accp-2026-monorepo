@@ -51,11 +51,12 @@ export const registrationStatusEnum = pgEnum("registration_status", [
   "cancelled",
 ]);
 export const abstractCategoryEnum = pgEnum("abstract_category", [
-  "clinical",
-  "social",
-  "experimental",
-  "education",
-  "other",
+  "clinical_pharmacy",
+  "social_administrative",
+  "pharmaceutical_sciences",
+  "pharmacology_toxicology",
+  "pharmacy_education",
+  "digital_pharmacy"
 ]);
 export const presentationTypeEnum = pgEnum("presentation_type", [
   "oral",
@@ -362,7 +363,6 @@ export const eventSpeakers = pgTable("event_speakers", {
 export const abstracts = pgTable("abstracts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
-    .notNull()
     .references(() => users.id),
   eventId: integer("event_id")
     .notNull()

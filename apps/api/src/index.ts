@@ -32,6 +32,8 @@ import backofficeCheckinsRoutes from "./routes/backoffice/checkins.js";
 import backofficeTicketsRoutes from "./routes/backoffice/tickets.js";
 import backofficeSessionsRoutes from "./routes/backoffice/sessions.js";
 import publicSpeakersRoutes from "./routes/public/speakers.js";
+import abstractSubmitRoutes from "./routes/public/abstracts/submit.js";
+import userProfileRoutes from "./routes/public/users/profile.js";
 
 fastify.register(authRoutes, { prefix: "/auth" });
 fastify.register(loginRoutes, { prefix: "/auth" });
@@ -49,6 +51,8 @@ fastify.register(backofficeSessionsRoutes, { prefix: "/api/backoffice/sessions" 
 
 // Public API routes (no auth required)
 fastify.register(publicSpeakersRoutes, { prefix: "/api/speakers" });
+fastify.register(abstractSubmitRoutes, { prefix: "/api/abstracts" });
+fastify.register(userProfileRoutes, { prefix: "/api/users" });
 
 // Health check
 fastify.get("/health", async () => ({

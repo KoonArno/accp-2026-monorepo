@@ -4,10 +4,12 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import '@/styles/abstracts-responsive.css';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')
     const tCommon = useTranslations('common')
+    const { user, isAuthenticated } = useAuth()
 
     const categories = [
         t('categories.clinicalPharmacy'),
@@ -91,6 +93,19 @@ export default function AbstractSubmission() {
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
     }, [submitStatus])
+
+    // Autofill user data
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.firstName || prev.firstName,
+                lastName: user.lastName || prev.lastName,
+                email: user.email || prev.email,
+                country: user.country || prev.country
+            }))
+        }
+    }, [isAuthenticated, user])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target

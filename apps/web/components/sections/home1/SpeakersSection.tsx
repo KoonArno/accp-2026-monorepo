@@ -116,6 +116,13 @@ export default function SpeakersSection() {
                                                 <img
                                                     src={getSpeakerImageUrl(speaker.photoUrl, index)}
                                                     alt={`${speaker.firstName} ${speaker.lastName}`}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '420px', // Fixed height for uniformity
+                                                        objectFit: 'cover',
+                                                        objectPosition: 'top center',
+                                                        borderRadius: '10px' // Optional: matches typical card rounded corners
+                                                    }}
                                                 />
                                                 <ul>
                                                     <li><Link href="/#"><i className="fa-brands fa-facebook-f" /></Link></li>

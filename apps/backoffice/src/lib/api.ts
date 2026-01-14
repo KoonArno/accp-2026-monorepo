@@ -46,6 +46,11 @@ export const api = {
     me: (token: string) => fetchAPI<{ user: any }>('/backoffice/me', { token }),
   },
 
+  upload: {
+    venueImage: (token: string, formData: FormData) => fetchAPI<{ success: boolean; url: string }>('/api/upload/venue-image', { method: 'POST', body: formData as any, token }),
+  },
+
+
   // Public Events (ReadOnly or Public usage)
   events: {
     list: () => fetchAPI<{ events: any[] }>("/api/events"),
@@ -124,5 +129,14 @@ export const api = {
 
   payments: {
     list: (token: string) => fetchAPI<{ payments: any[] }>("/api/payments", { token }),
+  },
+
+  promoCodes: {
+    list: (token: string, query?: string) => fetchAPI<{ promoCodes: any[]; pagination: any }>(`/api/backoffice/promo-codes${query ? `?${query}` : ''}`, { token }),
+    get: (token: string, id: number) => fetchAPI<{ promoCode: any }>(`/api/backoffice/promo-codes/${id}`, { token }),
+    create: (token: string, data: any) => fetchAPI<{ promoCode: any }>('/api/backoffice/promo-codes', { method: 'POST', body: JSON.stringify(data), token }),
+    update: (token: string, id: number, data: any) => fetchAPI<{ promoCode: any }>(`/api/backoffice/promo-codes/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+    delete: (token: string, id: number) => fetchAPI<{ success: boolean }>(`/api/backoffice/promo-codes/${id}`, { method: 'DELETE', token }),
+    toggle: (token: string, id: number) => fetchAPI<{ promoCode: any }>(`/api/backoffice/promo-codes/${id}/toggle`, { method: 'PATCH', token }),
   },
 };

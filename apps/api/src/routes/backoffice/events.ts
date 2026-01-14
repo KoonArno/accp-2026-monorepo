@@ -190,16 +190,16 @@ export default async function (fastify: FastifyInstance) {
                     eventType: data.eventType,
                     location: data.location,
                     category: data.category,
-                    startDate: new Date(data.startDate),
-                    endDate: new Date(data.endDate),
+                    startDate: new Date(new Date(data.startDate).setHours(0, 0, 0, 0)),
+                    endDate: new Date(new Date(data.endDate).setHours(0, 0, 0, 0)),
                     maxCapacity: data.maxCapacity,
                     conferenceCode: data.conferenceCode,
                     cpeCredits: data.cpeCredits,
                     status: data.status,
                     imageUrl: data.imageUrl,
                     mapUrl: data.mapUrl,
-                    abstractStartDate: data.abstractStartDate ? new Date(data.abstractStartDate) : null,
-                    abstractEndDate: data.abstractEndDate ? new Date(data.abstractEndDate) : null,
+                    abstractStartDate: data.abstractStartDate ? new Date(new Date(data.abstractStartDate).setHours(0, 0, 0, 0)) : null,
+                    abstractEndDate: data.abstractEndDate ? new Date(new Date(data.abstractEndDate).setHours(0, 0, 0, 0)) : null,
                 })
                 .returning();
 
@@ -247,10 +247,10 @@ export default async function (fastify: FastifyInstance) {
             };
 
             // Convert date strings to Date objects
-            if (data.startDate) updates.startDate = new Date(data.startDate);
-            if (data.endDate) updates.endDate = new Date(data.endDate);
-            if (data.abstractStartDate) updates.abstractStartDate = new Date(data.abstractStartDate);
-            if (data.abstractEndDate) updates.abstractEndDate = new Date(data.abstractEndDate);
+            if (data.startDate) updates.startDate = new Date(new Date(data.startDate).setHours(0, 0, 0, 0));
+            if (data.endDate) updates.endDate = new Date(new Date(data.endDate).setHours(0, 0, 0, 0));
+            if (data.abstractStartDate) updates.abstractStartDate = new Date(new Date(data.abstractStartDate).setHours(0, 0, 0, 0));
+            if (data.abstractEndDate) updates.abstractEndDate = new Date(new Date(data.abstractEndDate).setHours(0, 0, 0, 0));
 
             const [updatedEvent] = await db
                 .update(events)

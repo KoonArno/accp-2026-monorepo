@@ -36,7 +36,11 @@ interface TicketData {
     name: string;
     category: 'primary' | 'addon';
     price: string;
-    quota: number;
+    currency: 'THB' | 'USD';
+    quota: string;
+    saleStartDate: string;
+    saleEndDate: string;
+    allowedRoles: string[];
     isNew?: boolean;
 }
 
@@ -61,6 +65,15 @@ interface EventFormData {
     cpeCredits: string;
     status: 'draft' | 'published' | 'cancelled' | 'completed';
 }
+
+const roleOptions = [
+    { value: 'medical_physician', label: 'Medical Physician' },
+    { value: 'medical_student', label: 'Medical Student' },
+    { value: 'nurse', label: 'Nurse' },
+    { value: 'pharmacist', label: 'Pharmacist' },
+    { value: 'allied_health', label: 'Allied Health' },
+    { value: 'general_public', label: 'General Public' },
+];
 
 // Helper to convert ISO date to datetime-local format
 const toDateTimeLocal = (isoString: string): string => {
@@ -120,6 +133,8 @@ export default function EditEventPage() {
     const [sessions, setSessions] = useState<SessionData[]>([]);
     const [tickets, setTickets] = useState<TicketData[]>([]);
     const [venueImages, setVenueImages] = useState<VenueImage[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [imageCaption, setImageCaption] = useState('');
 
     // Modals
     const [showSessionForm, setShowSessionForm] = useState(false);
@@ -141,7 +156,11 @@ export default function EditEventPage() {
         name: '',
         category: 'primary',
         price: '',
-        quota: 100,
+        currency: 'THB',
+        quota: '100',
+        saleStartDate: '',
+        saleEndDate: '',
+        allowedRoles: [],
     });
 
     const shouldShowSessions = formData.eventType === 'multi_session';
@@ -191,7 +210,11 @@ export default function EditEventPage() {
                         name: t.name,
                         category: t.category,
                         price: t.price,
-                        quota: t.quota,
+                        currency: t.currency || 'THB',
+                        quota: String(t.quota || 0),
+                        saleStartDate: t.saleStartDate ? toDateTimeLocal(t.saleStartDate) : '',
+                        saleEndDate: t.saleEndDate ? toDateTimeLocal(t.saleEndDate) : '',
+                        allowedRoles: t.allowedRoles || [],
                     })));
                 }
 
@@ -257,11 +280,32 @@ export default function EditEventPage() {
             const response = await api.backofficeEvents.createTicket(token, parseInt(eventId), {
                 name: ticketForm.name,
                 category: ticketForm.category,
-                price: ticketForm.price,
-                quota: ticketForm.quota,
+                price: Number(ticketForm.price),
+                currency: ticketForm.currency,
+                quota: parseInt(ticketForm.quota) || 0,
+                saleStartDate: ticketForm.saleStartDate ? new Date(ticketForm.saleStartDate).toISOString() : undefined,
+                saleEndDate: ticketForm.saleEndDate ? new Date(ticketForm.saleEndDate).toISOString() : undefined,
+                allowedRoles: ticketForm.allowedRoles,
             });
-            setTickets(prev => [...prev, response.ticket]);
-            setTicketForm({ name: '', category: 'primary', price: '', quota: 100 });
+            setTickets(prev => [...prev, {
+                ...response.ticket,
+                price: String(response.ticket.price), // Ensure price is string for state
+                quota: String(response.ticket.quota),
+                currency: response.ticket.currency,
+                saleStartDate: response.ticket.saleStartDate ? toDateTimeLocal(response.ticket.saleStartDate) : '',
+                saleEndDate: response.ticket.saleEndDate ? toDateTimeLocal(response.ticket.saleEndDate) : '',
+                allowedRoles: response.ticket.allowedRoles || [],
+            }]);
+            setTicketForm({
+                name: '',
+                category: 'primary',
+                price: '',
+                currency: 'THB',
+                quota: '100',
+                saleStartDate: '',
+                saleEndDate: '',
+                allowedRoles: [],
+            });
             setShowTicketModal(false);
         } catch (err: any) {
             alert(err.message || 'Failed to add ticket');
@@ -289,6 +333,46 @@ export default function EditEventPage() {
             setVenueImages(prev => prev.filter(img => img.id !== id));
         } catch (err: any) {
             alert(err.message || 'Failed to delete image');
+        }
+    };
+
+    // Generate upload handler
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File too large (max 5MB)');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // 1. Upload to Drive
+            const uploadRes = await api.upload.venueImage(token, formData);
+
+            // 2. Add to DB
+            const dbRes = await api.backofficeEvents.addImage(token, parseInt(eventId), {
+                imageUrl: uploadRes.url,
+                caption: imageCaption || file.name,
+                imageType: 'venue'
+            });
+
+            setVenueImages(prev => [...prev, {
+                id: dbRes.image.id,
+                imageUrl: dbRes.image.imageUrl,
+                caption: dbRes.image.caption,
+            }]);
+            setImageCaption('');
+            e.target.value = ''; // Reset input
+        } catch (err: any) {
+            alert(err.message || 'Failed to upload image');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -367,8 +451,8 @@ export default function EditEventPage() {
                     </div>
                     <div className="text-right">
                         <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${formData.status === 'published' ? 'bg-green-500' :
-                                formData.status === 'draft' ? 'bg-yellow-500' :
-                                    formData.status === 'cancelled' ? 'bg-red-500' : 'bg-gray-500'
+                            formData.status === 'draft' ? 'bg-yellow-500' :
+                                formData.status === 'cancelled' ? 'bg-red-500' : 'bg-gray-500'
                             }`}>
                             {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
                         </span>
@@ -696,6 +780,8 @@ export default function EditEventPage() {
                                         <th>Category</th>
                                         <th>Price</th>
                                         <th>Quota</th>
+                                        <th>Allowed Roles</th>
+                                        <th>Sale Period</th>
                                         <th className="w-24">Actions</th>
                                     </tr>
                                 </thead>
@@ -708,8 +794,27 @@ export default function EditEventPage() {
                                                     {ticket.category === 'primary' ? 'Primary' : 'Add-on'}
                                                 </span>
                                             </td>
-                                            <td className="font-semibold">฿{ticket.price}</td>
+                                            <td className="font-semibold">{ticket.currency} {Number(ticket.price).toLocaleString()}</td>
                                             <td>{ticket.quota}</td>
+                                            <td>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {ticket.allowedRoles?.length ? (
+                                                        ticket.allowedRoles.map(role => (
+                                                            <span key={role} className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
+                                                                {roleOptions.find(r => r.value === role)?.label || role}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-xs text-gray-400">All</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="text-xs text-gray-500">
+                                                    <div>{formatDateTime(ticket.saleStartDate)}</div>
+                                                    <div>to {formatDateTime(ticket.saleEndDate)}</div>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <button
                                                     onClick={() => handleDeleteTicket(ticket.id!)}
@@ -738,8 +843,38 @@ export default function EditEventPage() {
                         <h3 className="text-lg font-semibold">Venue Images</h3>
                     </div>
 
-                    <div className="bg-blue-50 text-blue-700 p-4 rounded-lg mb-4 flex items-center gap-2">
-                        <IconPhoto size={18} /> Upload images of the venue
+                    <div className="bg-white p-4 border border-gray-200 rounded-lg mb-6 shadow-sm">
+                        <h4 className="font-semibold mb-3 text-gray-800">Add New Image</h4>
+                        <div className="flex gap-4 items-end">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g. Main Hall"
+                                    value={imageCaption}
+                                    onChange={(e) => setImageCaption(e.target.value)}
+                                    disabled={isUploading}
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="file"
+                                    id="venue-image-upload"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    disabled={isUploading}
+                                />
+                                <label
+                                    htmlFor="venue-image-upload"
+                                    className={`btn-primary flex items-center gap-2 cursor-pointer ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                    {isUploading ? <IconLoader2 size={18} className="animate-spin" /> : <IconPlus size={18} />}
+                                    Upload Image
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     {venueImages.length > 0 ? (
@@ -798,29 +933,82 @@ export default function EditEventPage() {
                                     value={ticketForm.category}
                                     onChange={(e) => setTicketForm(prev => ({ ...prev, category: e.target.value as 'primary' | 'addon' }))}
                                 >
-                                    <option value="primary">Primary</option>
-                                    <option value="addon">Add-on</option>
+                                    <option value="primary">Primary Ticket</option>
+                                    <option value="addon">Add-on Item</option>
                                 </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                    <select
+                                        className="input-field"
+                                        value={ticketForm.currency}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, currency: e.target.value as 'THB' | 'USD' }))}
+                                    >
+                                        <option value="THB">THB (฿)</option>
+                                        <option value="USD">USD ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         className="input-field"
                                         placeholder="0.00"
                                         value={ticketForm.price}
                                         onChange={(e) => setTicketForm(prev => ({ ...prev, price: e.target.value }))}
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    value={ticketForm.quota}
+                                    onChange={(e) => setTicketForm(prev => ({ ...prev, quota: e.target.value }))}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sale Start</label>
                                     <input
-                                        type="number"
+                                        type="datetime-local"
                                         className="input-field"
-                                        value={ticketForm.quota}
-                                        onChange={(e) => setTicketForm(prev => ({ ...prev, quota: parseInt(e.target.value) || 100 }))}
+                                        value={ticketForm.saleStartDate}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, saleStartDate: e.target.value }))}
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sale End</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="input-field"
+                                        value={ticketForm.saleEndDate}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, saleEndDate: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                    {roleOptions.map((role) => (
+                                        <label key={role.value} className="flex items-center gap-2 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                checked={ticketForm.allowedRoles.includes(role.value)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setTicketForm(prev => ({ ...prev, allowedRoles: [...prev.allowedRoles, role.value] }));
+                                                    } else {
+                                                        setTicketForm(prev => ({ ...prev, allowedRoles: prev.allowedRoles.filter(r => r !== role.value) }));
+                                                    }
+                                                }}
+                                            />
+                                            {role.label}
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
                         </div>

@@ -132,6 +132,23 @@ export async function uploadRoutes(fastify: FastifyInstance) {
   });
 
   /**
+   * POST /upload/venue-image
+   * Upload venue image to Google Drive (venue_images folder)
+   */
+  fastify.post("/venue-image", async (request, reply) => {
+    try {
+      const result = await handleFileUpload(request, "venue_images");
+      return reply.status(result.status).send(result);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({
+        success: false,
+        error: "Failed to upload venue image",
+      });
+    }
+  });
+
+  /**
    * POST /upload
    * Generic upload (defaults to speakers for now)
    */

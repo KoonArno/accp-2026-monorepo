@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout';
+import { api } from '@/lib/api';
 import {
     IconDiscount,
     IconPlus,
@@ -13,94 +14,9 @@ import {
     IconCopy,
     IconCalendarEvent,
     IconPercentage,
+    IconLoader2,
 } from '@tabler/icons-react';
 import { useAuth } from '@/contexts/AuthContext';
-
-// Mock events
-const allEvents = [
-    { id: 1, code: 'ACCP2026', name: 'ACCP Annual Conference 2026' },
-    { id: 2, code: 'MIS2026', name: 'Medical Innovation Summit' },
-    { id: 3, code: 'CPE001', name: 'CPE Workshop Series' },
-];
-
-// Mock promo codes
-const mockPromoCodes = [
-    {
-        id: 1,
-        eventId: 1,
-        code: 'EARLYBIRD20',
-        description: 'ส่วนลด 20% สำหรับการลงทะเบียนก่อน 1 ก.พ.',
-        discountType: 'percentage',
-        discountValue: 20,
-        minPurchase: 0,
-        maxDiscount: 2000,
-        usageLimit: 100,
-        usedCount: 45,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-02-01',
-    },
-    {
-        id: 2,
-        eventId: 1,
-        code: 'MEMBER500',
-        description: 'ส่วนลด 500 บาท สำหรับสมาชิก',
-        discountType: 'fixed',
-        discountValue: 500,
-        minPurchase: 3000,
-        maxDiscount: null,
-        usageLimit: 50,
-        usedCount: 28,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-15',
-    },
-    {
-        id: 3,
-        eventId: 1,
-        code: 'GROUP10',
-        description: 'ส่วนลด 10% สำหรับลงทะเบียนกลุ่ม 5 คนขึ้นไป',
-        discountType: 'percentage',
-        discountValue: 10,
-        minPurchase: 15000,
-        maxDiscount: 5000,
-        usageLimit: null,
-        usedCount: 12,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-03-15',
-    },
-    {
-        id: 4,
-        eventId: 1,
-        code: 'WELCOME1000',
-        description: 'ส่วนลดผู้ลงทะเบียนใหม่',
-        discountType: 'fixed',
-        discountValue: 1000,
-        minPurchase: 4000,
-        maxDiscount: null,
-        usageLimit: 30,
-        usedCount: 30,
-        status: 'expired',
-        startDate: '2026-01-01',
-        endDate: '2026-01-15',
-    },
-    {
-        id: 5,
-        eventId: 2,
-        code: 'MIS15',
-        description: '15% off for MIS Summit',
-        discountType: 'percentage',
-        discountValue: 15,
-        minPurchase: 0,
-        maxDiscount: 1500,
-        usageLimit: 50,
-        usedCount: 8,
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-04-20',
-    },
-];
 
 const statusColors: { [key: string]: string } = {
     active: 'badge-success',
@@ -110,25 +26,41 @@ const statusColors: { [key: string]: string } = {
 
 interface PromoCode {
     id: number;
-    eventId: number;
+    eventId: number | null;
     code: string;
-    description: string;
+    description: string | null;
     discountType: string;
-    discountValue: number;
-    minPurchase: number;
-    maxDiscount: number | null;
-    usageLimit: number | null;
+    discountValue: string;
+    maxUses: number;
     usedCount: number;
+    validFrom: string | null;
+    validUntil: string | null;
+    isActive: boolean;
     status: string;
-    startDate: string;
-    endDate: string;
+    eventCode?: string;
+    eventName?: string;
+}
+
+interface EventOption {
+    id: number;
+    code: string;
+    name: string;
 }
 
 export default function PromoCodesPage() {
-    const { isAdmin, user } = useAuth();
+    const { isAdmin } = useAuth();
+    const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+    const [events, setEvents] = useState<EventOption[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [eventFilter, setEventFilter] = useState<number | ''>('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -136,95 +68,153 @@ export default function PromoCodesPage() {
 
     // Form state
     const [formData, setFormData] = useState({
-        eventId: 1,
+        eventId: null as number | null,
         code: '',
         description: '',
         discountType: 'percentage',
         discountValue: 10,
-        minPurchase: 0,
-        maxDiscount: '',
-        usageLimit: '',
-        startDate: '',
-        endDate: '',
+        maxUses: 100,
+        validFrom: '',
+        validUntil: '',
+        isActive: true,
     });
 
-    // Filter events based on user access
-    const accessibleEvents = isAdmin
-        ? allEvents
-        : allEvents.filter(e => user?.assignedEvents.some(ae => ae.id === e.id));
+    useEffect(() => {
+        fetchEvents();
+    }, []);
 
-    // Filter promo codes based on event access
-    const accessiblePromos = mockPromoCodes.filter(p => {
-        if (isAdmin) return true;
-        return user?.assignedEvents.some(e => e.id === p.eventId);
-    });
+    useEffect(() => {
+        fetchPromoCodes();
+    }, [page, eventFilter, statusFilter]);
 
-    const filteredPromos = accessiblePromos.filter((promo) => {
-        const matchesSearch =
-            promo.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            promo.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesEvent = !eventFilter || promo.eventId === eventFilter;
-        const matchesStatus = !statusFilter || promo.status === statusFilter;
-        return matchesSearch && matchesEvent && matchesStatus;
-    });
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const res = await api.backofficeEvents.list(token, 'limit=100');
+            setEvents(res.events.map((e: any) => ({
+                id: e.id,
+                code: e.eventCode,
+                name: e.eventName
+            })));
+        } catch (error) {
+            console.error('Failed to fetch events:', error);
+        }
+    };
 
-    const getEventName = (eventId: number) => {
-        return allEvents.find(e => e.id === eventId)?.code || 'Unknown';
+    const fetchPromoCodes = async () => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const params: any = { page, limit: 10 };
+            if (eventFilter) params.eventId = eventFilter;
+            if (statusFilter) params.status = statusFilter;
+            if (searchTerm) params.search = searchTerm;
+
+            const res = await api.promoCodes.list(token, new URLSearchParams(params).toString());
+            setPromoCodes(res.promoCodes);
+            setTotalCount(res.pagination.total);
+            setTotalPages(res.pagination.totalPages);
+        } catch (error) {
+            console.error('Failed to fetch promo codes:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const stats = {
-        total: accessiblePromos.length,
-        active: accessiblePromos.filter(p => p.status === 'active').length,
-        expired: accessiblePromos.filter(p => p.status === 'expired').length,
-        totalUsed: accessiblePromos.reduce((sum, p) => sum + p.usedCount, 0),
+        total: totalCount,
+        active: promoCodes.filter(p => p.status === 'active').length,
+        expired: promoCodes.filter(p => p.status === 'expired').length,
+        totalUsed: promoCodes.reduce((sum, p) => sum + p.usedCount, 0),
     };
 
-    const handleCreate = () => {
-        setShowCreateModal(false);
-        resetForm();
-        alert('Promo code created successfully!');
+    const getEventName = (eventId: number | null) => {
+        if (!eventId) return 'All Events';
+        return events.find(e => e.id === eventId)?.code || 'Unknown';
     };
 
-    const handleEdit = () => {
-        setShowEditModal(false);
-        setSelectedPromo(null);
-        alert('Promo code updated successfully!');
+    const handleCreate = async () => {
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.promoCodes.create(token, {
+                ...formData,
+                eventId: formData.eventId || null,
+            });
+            alert('Promo code created successfully!');
+            setShowCreateModal(false);
+            resetForm();
+            fetchPromoCodes();
+        } catch (error: any) {
+            alert(error.message || 'Failed to create promo code');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleDelete = () => {
-        setShowDeleteModal(false);
-        setSelectedPromo(null);
-        alert('Promo code deleted successfully!');
+    const handleEdit = async () => {
+        if (!selectedPromo) return;
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.promoCodes.update(token, selectedPromo.id, {
+                ...formData,
+                eventId: formData.eventId || null,
+            });
+            alert('Promo code updated successfully!');
+            setShowEditModal(false);
+            setSelectedPromo(null);
+            fetchPromoCodes();
+        } catch (error: any) {
+            alert(error.message || 'Failed to update promo code');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedPromo) return;
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            await api.promoCodes.delete(token, selectedPromo.id);
+            alert('Promo code deleted successfully!');
+            setShowDeleteModal(false);
+            setSelectedPromo(null);
+            fetchPromoCodes();
+        } catch (error: any) {
+            alert(error.message || 'Failed to delete promo code');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDuplicate = (promo: PromoCode) => {
         setFormData({
             eventId: promo.eventId,
             code: promo.code + '-COPY',
-            description: promo.description,
+            description: promo.description || '',
             discountType: promo.discountType,
-            discountValue: promo.discountValue,
-            minPurchase: promo.minPurchase,
-            maxDiscount: promo.maxDiscount ? String(promo.maxDiscount) : '',
-            usageLimit: promo.usageLimit ? String(promo.usageLimit) : '',
-            startDate: promo.startDate,
-            endDate: promo.endDate,
+            discountValue: parseFloat(promo.discountValue),
+            maxUses: promo.maxUses,
+            validFrom: promo.validFrom ? promo.validFrom.split('T')[0] : '',
+            validUntil: promo.validUntil ? promo.validUntil.split('T')[0] : '',
+            isActive: true,
         });
         setShowCreateModal(true);
     };
 
     const resetForm = () => {
         setFormData({
-            eventId: accessibleEvents[0]?.id || 1,
+            eventId: events[0]?.id || null,
             code: '',
             description: '',
             discountType: 'percentage',
             discountValue: 10,
-            minPurchase: 0,
-            maxDiscount: '',
-            usageLimit: '',
-            startDate: '',
-            endDate: '',
+            maxUses: 100,
+            validFrom: '',
+            validUntil: '',
+            isActive: true,
         });
     };
 
@@ -233,14 +223,13 @@ export default function PromoCodesPage() {
         setFormData({
             eventId: promo.eventId,
             code: promo.code,
-            description: promo.description,
+            description: promo.description || '',
             discountType: promo.discountType,
-            discountValue: promo.discountValue,
-            minPurchase: promo.minPurchase,
-            maxDiscount: promo.maxDiscount ? String(promo.maxDiscount) : '',
-            usageLimit: promo.usageLimit ? String(promo.usageLimit) : '',
-            startDate: promo.startDate,
-            endDate: promo.endDate,
+            discountValue: parseFloat(promo.discountValue),
+            maxUses: promo.maxUses,
+            validFrom: promo.validFrom ? promo.validFrom.split('T')[0] : '',
+            validUntil: promo.validUntil ? promo.validUntil.split('T')[0] : '',
+            isActive: promo.isActive,
         });
         setShowEditModal(true);
     };
@@ -254,6 +243,11 @@ export default function PromoCodesPage() {
         setFormData({ ...formData, code });
     };
 
+    const handleSearch = () => {
+        setPage(1);
+        fetchPromoCodes();
+    };
+
     return (
         <AdminLayout title="Promo Codes">
             {/* Event Filter - Above Content */}
@@ -264,11 +258,11 @@ export default function PromoCodesPage() {
                 <span className="text-sm font-medium text-gray-700">Select Event:</span>
                 <select
                     value={eventFilter}
-                    onChange={(e) => setEventFilter(e.target.value ? Number(e.target.value) : '')}
+                    onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
                     className="input-field pr-8 min-w-[250px] font-semibold bg-white"
                 >
                     <option value="">All Events</option>
-                    {accessibleEvents.map((event) => (
+                    {events.map((event) => (
                         <option key={event.id} value={event.id}>{event.name}</option>
                     ))}
                 </select>
@@ -282,7 +276,7 @@ export default function PromoCodesPage() {
                             <IconDiscount size={24} stroke={1.5} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+                            <p className="text-2xl font-bold text-gray-800">{isLoading ? '-' : stats.total}</p>
                             <p className="text-sm text-gray-500">Total Codes</p>
                         </div>
                     </div>
@@ -326,7 +320,7 @@ export default function PromoCodesPage() {
             <div className="card">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-semibold text-gray-800">
-                        {eventFilter ? `Promo Codes for ${accessibleEvents.find(e => e.id === eventFilter)?.name || 'Event'}` : 'All Promo Codes'}
+                        {eventFilter ? `Promo Codes for ${events.find(e => e.id === eventFilter)?.name || 'Event'}` : 'All Promo Codes'}
                     </h2>
                     <button
                         onClick={() => { resetForm(); setShowCreateModal(true); }}
@@ -346,13 +340,14 @@ export default function PromoCodesPage() {
                             placeholder="Search by code or description..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                             className="input-field pl-10"
                         />
                     </div>
 
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="input-field w-auto"
                     >
                         <option value="">All Status</option>
@@ -363,55 +358,55 @@ export default function PromoCodesPage() {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Promo Code</th>
-                                <th>Event</th>
-                                <th>Discount</th>
-                                <th>Usage</th>
-                                <th>Status</th>
-                                <th>Period</th>
-                                <th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredPromos.map((promo) => {
-                                const usagePercentage = promo.usageLimit ? (promo.usedCount / promo.usageLimit) * 100 : 0;
-                                return (
-                                    <tr key={promo.id} className="animate-fade-in">
-                                        <td>
-                                            <div>
-                                                <p className="font-mono font-semibold text-gray-800">{promo.code}</p>
-                                                <p className="text-sm text-gray-500">{promo.description}</p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className="badge bg-gray-100 text-gray-800">
-                                                {getEventName(promo.eventId)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <IconLoader2 size={32} className="animate-spin text-blue-600" />
+                    </div>
+                ) : promoCodes.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        No promo codes found.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Promo Code</th>
+                                    <th>Event</th>
+                                    <th>Discount</th>
+                                    <th>Usage</th>
+                                    <th>Status</th>
+                                    <th>Period</th>
+                                    <th className="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {promoCodes.map((promo) => {
+                                    const usagePercentage = promo.maxUses ? (promo.usedCount / promo.maxUses) * 100 : 0;
+                                    return (
+                                        <tr key={promo.id} className="animate-fade-in">
+                                            <td>
+                                                <div>
+                                                    <p className="font-mono font-semibold text-gray-800">{promo.code}</p>
+                                                    <p className="text-sm text-gray-500">{promo.description || '-'}</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className="badge bg-gray-100 text-gray-800">
+                                                    {promo.eventCode || getEventName(promo.eventId)}
+                                                </span>
+                                            </td>
+                                            <td>
                                                 <p className="font-semibold text-green-600">
                                                     {promo.discountType === 'percentage'
                                                         ? `${promo.discountValue}%`
-                                                        : `฿${promo.discountValue.toLocaleString()}`}
+                                                        : `฿${parseFloat(promo.discountValue).toLocaleString()}`}
                                                 </p>
-                                                {promo.minPurchase > 0 && (
-                                                    <p className="text-xs text-gray-400">min ฿{promo.minPurchase.toLocaleString()}</p>
-                                                )}
-                                                {promo.maxDiscount && (
-                                                    <p className="text-xs text-gray-400">max ฿{promo.maxDiscount.toLocaleString()}</p>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {promo.usageLimit ? (
+                                            </td>
+                                            <td>
                                                 <div className="w-20">
                                                     <div className="flex justify-between text-sm mb-1">
-                                                        <span className="text-gray-600">{promo.usedCount}/{promo.usageLimit}</span>
+                                                        <span className="text-gray-600">{promo.usedCount}/{promo.maxUses}</span>
                                                     </div>
                                                     <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                                                         <div
@@ -420,60 +415,73 @@ export default function PromoCodesPage() {
                                                         />
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                <div>
-                                                    <span className="text-gray-600">{promo.usedCount}</span>
-                                                    <span className="text-xs text-gray-400 block">Unlimited</span>
+                                            </td>
+                                            <td>
+                                                <span className={`badge ${statusColors[promo.status]}`}>
+                                                    {promo.status.charAt(0).toUpperCase() + promo.status.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <p className="text-sm text-gray-600">{promo.validFrom?.split('T')[0] || '-'}</p>
+                                                <p className="text-sm text-gray-400">to {promo.validUntil?.split('T')[0] || '-'}</p>
+                                            </td>
+                                            <td>
+                                                <div className="flex gap-1 justify-center">
+                                                    <button
+                                                        className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                        title="Duplicate"
+                                                        onClick={() => handleDuplicate(promo)}
+                                                    >
+                                                        <IconCopy size={18} />
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+                                                        title="Edit"
+                                                        onClick={() => openEditModal(promo)}
+                                                    >
+                                                        <IconPencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                                                        title="Delete"
+                                                        onClick={() => { setSelectedPromo(promo); setShowDeleteModal(true); }}
+                                                    >
+                                                        <IconTrash size={18} />
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <span className={`badge ${statusColors[promo.status]}`}>
-                                                {promo.status.charAt(0).toUpperCase() + promo.status.slice(1)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <p className="text-sm text-gray-600">{promo.startDate}</p>
-                                            <p className="text-sm text-gray-400">to {promo.endDate}</p>
-                                        </td>
-                                        <td>
-                                            <div className="flex gap-1 justify-center">
-                                                <button
-                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                    title="Duplicate"
-                                                    onClick={() => handleDuplicate(promo)}
-                                                >
-                                                    <IconCopy size={18} />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
-                                                    title="Edit"
-                                                    onClick={() => openEditModal(promo)}
-                                                >
-                                                    <IconPencil size={18} />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 hover:bg-red-100 rounded text-red-600"
-                                                    title="Delete"
-                                                    onClick={() => { setSelectedPromo(promo); setShowDeleteModal(true); }}
-                                                >
-                                                    <IconTrash size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-500">
-                        Showing {filteredPromos.length} of {accessiblePromos.length} promo codes
-                    </p>
-                </div>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                        <p className="text-sm text-gray-500">
+                            Showing page {page} of {totalPages} ({totalCount} total)
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="btn-secondary px-3 py-1 disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className="btn-secondary px-3 py-1 disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Create/Edit Modal */}
@@ -495,13 +503,14 @@ export default function PromoCodesPage() {
                         </div>
                         <div className="p-6">
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Event *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Event</label>
                                 <select
                                     className="input-field"
-                                    value={formData.eventId}
-                                    onChange={(e) => setFormData({ ...formData, eventId: Number(e.target.value) })}
+                                    value={formData.eventId || ''}
+                                    onChange={(e) => setFormData({ ...formData, eventId: e.target.value ? Number(e.target.value) : null })}
                                 >
-                                    {accessibleEvents.map((event) => (
+                                    <option value="">All Events</option>
+                                    {events.map((event) => (
                                         <option key={event.id} value={event.id}>{event.code} - {event.name}</option>
                                     ))}
                                 </select>
@@ -563,73 +572,65 @@ export default function PromoCodesPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Purchase (฿)</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        placeholder="0"
-                                        value={formData.minPurchase}
-                                        onChange={(e) => setFormData({ ...formData, minPurchase: Number(e.target.value) })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (฿)</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        placeholder="No limit"
-                                        value={formData.maxDiscount}
-                                        onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Usage Limit</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Max Uses *</label>
                                 <input
                                     type="number"
                                     className="input-field"
-                                    placeholder="Unlimited"
-                                    value={formData.usageLimit}
-                                    onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
+                                    placeholder="100"
+                                    value={formData.maxUses}
+                                    onChange={(e) => setFormData({ ...formData, maxUses: Number(e.target.value) || 1 })}
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Valid From</label>
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                        value={formData.validFrom}
+                                        onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Valid Until</label>
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                        value={formData.validUntil}
+                                        onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isActive}
+                                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                        className="rounded"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">Active</span>
+                                </label>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
                             <button
                                 onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}
                                 className="btn-secondary"
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={showCreateModal ? handleCreate : handleEdit}
                                 className="btn-primary flex items-center gap-2"
+                                disabled={isSubmitting}
                             >
-                                <IconCheck size={18} /> {showCreateModal ? 'Create Code' : 'Save Changes'}
+                                {isSubmitting && <IconLoader2 size={18} className="animate-spin" />}
+                                {showCreateModal ? 'Create Code' : 'Save Changes'}
                             </button>
                         </div>
                     </div>
@@ -658,8 +659,19 @@ export default function PromoCodesPage() {
                             )}
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-                            <button onClick={() => setShowDeleteModal(false)} className="btn-secondary">Cancel</button>
-                            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="btn-secondary"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting && <IconLoader2 size={18} className="animate-spin" />}
                                 Delete Code
                             </button>
                         </div>

@@ -38,10 +38,13 @@ interface SessionData {
 interface TicketData {
     id?: number;
     name: string;
-    description: string;
     category: 'primary' | 'addon';
     price: string;
-    quota: number;
+    currency: 'THB' | 'USD';
+    quota: string;
+    saleStartDate: string;
+    saleEndDate: string;
+    allowedRoles: string[];
 }
 
 interface EventFormData {
@@ -133,10 +136,13 @@ export default function CreateEventPage() {
     // Ticket form data
     const [ticketForm, setTicketForm] = useState<TicketData>({
         name: '',
-        description: '',
         category: 'primary',
         price: '',
-        quota: 100,
+        currency: 'THB',
+        quota: '100',
+        saleStartDate: '',
+        saleEndDate: '',
+        allowedRoles: ['thai_pharmacy'],
     });
 
     // Generate a unique event code
@@ -214,13 +220,21 @@ export default function CreateEventPage() {
     // Add ticket
     const handleAddTicket = () => {
         if (!ticketForm.name || !ticketForm.price) return;
+        const quotaNum = parseInt(ticketForm.quota) || 0;
+        if (quotaNum < 1) {
+            alert('Quota must be at least 1');
+            return;
+        }
         setTickets(prev => [...prev, { ...ticketForm, id: Date.now() }]);
         setTicketForm({
             name: '',
-            description: '',
             category: 'primary',
             price: '',
-            quota: 100,
+            currency: 'THB',
+            quota: '100',
+            saleStartDate: '',
+            saleEndDate: '',
+            allowedRoles: ['thai_pharmacy'],
         });
         setShowTicketModal(false);
     };
@@ -277,7 +291,11 @@ export default function CreateEventPage() {
                     name: ticket.name,
                     category: ticket.category,
                     price: ticket.price,
-                    quota: ticket.quota,
+                    currency: ticket.currency,
+                    quota: parseInt(ticket.quota) || 0,
+                    allowedRoles: ticket.allowedRoles,
+                    saleStartDate: ticket.saleStartDate || undefined,
+                    saleEndDate: ticket.saleEndDate || undefined,
                 });
             }
 
@@ -419,7 +437,7 @@ export default function CreateEventPage() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
                             <input
-                                type="datetime-local"
+                                type="date"
                                 className="input-field"
                                 value={formData.startDate}
                                 onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
@@ -428,7 +446,7 @@ export default function CreateEventPage() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
                             <input
-                                type="datetime-local"
+                                type="date"
                                 className="input-field"
                                 value={formData.endDate}
                                 onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
@@ -465,9 +483,9 @@ export default function CreateEventPage() {
                             <input
                                 type="number"
                                 className="input-field"
-                                value={formData.maxCapacity}
-                                min={1}
-                                onChange={(e) => setFormData(prev => ({ ...prev, maxCapacity: parseInt(e.target.value) || 100 }))}
+                                value={formData.maxCapacity || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, maxCapacity: parseInt(e.target.value) || 0 }))}
+                                placeholder="100"
                             />
                         </div>
                         <div>
@@ -686,10 +704,11 @@ export default function CreateEventPage() {
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Ticket Name</th>
-                                        <th>Category</th>
+                                        <th>Ticket</th>
+                                        <th>Category / Role</th>
                                         <th>Price</th>
                                         <th>Quota</th>
+                                        <th>Sale Period</th>
                                         <th className="w-24">Actions</th>
                                     </tr>
                                 </thead>
@@ -698,15 +717,23 @@ export default function CreateEventPage() {
                                         <tr key={ticket.id}>
                                             <td>
                                                 <p className="font-medium">{ticket.name}</p>
-                                                <p className="text-sm text-gray-500">{ticket.description}</p>
                                             </td>
                                             <td>
                                                 <span className={`badge ${ticket.category === 'primary' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
                                                     {ticket.category === 'primary' ? 'Primary' : 'Add-on'}
                                                 </span>
+                                                <span className="badge ml-1 bg-gray-100 text-gray-700">
+                                                    {ticket.allowedRoles[0]?.replace('_', ' ').toUpperCase() || 'ALL'}
+                                                </span>
                                             </td>
-                                            <td className="font-semibold">฿{ticket.price}</td>
+                                            <td className="font-semibold">
+                                                {ticket.currency === 'USD' ? '$' : '฿'}{ticket.price}
+                                            </td>
                                             <td>{ticket.quota}</td>
+                                            <td className="text-sm text-gray-600">
+                                                {ticket.saleStartDate || 'N/A'}
+                                                <br />to {ticket.saleEndDate || 'N/A'}
+                                            </td>
                                             <td>
                                                 <button
                                                     onClick={() => handleDeleteTicket(ticket.id!)}
@@ -808,7 +835,7 @@ export default function CreateEventPage() {
             {/* Add Ticket Modal */}
             {showTicketModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full">
+                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-gray-100">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -820,19 +847,9 @@ export default function CreateEventPage() {
                             </div>
                         </div>
                         <div className="p-6">
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Ticket Name *</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="e.g., Early Bird - Member"
-                                    value={ticketForm.name}
-                                    onChange={(e) => setTicketForm(prev => ({ ...prev, name: e.target.value }))}
-                                />
-                            </div>
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                                     <select
                                         className="input-field"
                                         value={ticketForm.category}
@@ -843,7 +860,59 @@ export default function CreateEventPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (฿)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience *</label>
+                                    <select
+                                        className="input-field"
+                                        value={ticketForm.allowedRoles[0]}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, allowedRoles: [e.target.value] }))}
+                                    >
+                                        <option value="thai_student">Thai Student</option>
+                                        <option value="thai_pharmacy">Thai Pharmacy</option>
+                                        <option value="intl_student">International Student</option>
+                                        <option value="intl_pharmacy">International Pharmacy</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
+                                    <input
+                                        type="number"
+                                        className="input-field"
+                                        value={ticketForm.quota}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, quota: e.target.value }))}
+                                        placeholder="100"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Ticket Name *</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g., Early Bird - Member"
+                                    value={ticketForm.name}
+                                    onChange={(e) => setTicketForm(prev => ({ ...prev, name: e.target.value }))}
+                                    maxLength={255}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency *</label>
+                                    <select
+                                        className="input-field"
+                                        value={ticketForm.currency}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, currency: e.target.value as 'THB' | 'USD' }))}
+                                    >
+                                        <option value="THB">THB (฿)</option>
+                                        <option value="USD">USD ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
                                     <input
                                         type="text"
                                         className="input-field"
@@ -853,23 +922,26 @@ export default function CreateEventPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Quota</label>
-                                <input
-                                    type="number"
-                                    className="input-field"
-                                    value={ticketForm.quota}
-                                    onChange={(e) => setTicketForm(prev => ({ ...prev, quota: parseInt(e.target.value) || 100 }))}
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    className="input-field h-20"
-                                    placeholder="Ticket description..."
-                                    value={ticketForm.description}
-                                    onChange={(e) => setTicketForm(prev => ({ ...prev, description: e.target.value }))}
-                                />
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sale Start Date</label>
+                                    <input
+                                        type="date"
+                                        className="input-field"
+                                        value={ticketForm.saleStartDate}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, saleStartDate: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sale End Date</label>
+                                    <input
+                                        type="date"
+                                        className="input-field"
+                                        value={ticketForm.saleEndDate}
+                                        onChange={(e) => setTicketForm(prev => ({ ...prev, saleEndDate: e.target.value }))}
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">

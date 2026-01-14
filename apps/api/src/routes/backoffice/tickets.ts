@@ -9,6 +9,7 @@ const ticketQuerySchema = z.object({
     limit: z.coerce.number().min(1).max(100).default(20),
     search: z.string().optional(),
     eventId: z.coerce.number().optional(),
+    category: z.enum(['primary', 'addon']).optional(),
 });
 
 export default async function (fastify: FastifyInstance) {
@@ -19,7 +20,7 @@ export default async function (fastify: FastifyInstance) {
             return reply.status(400).send({ error: "Invalid query", details: queryResult.error.flatten() });
         }
 
-        const { page, limit, search, eventId } = queryResult.data;
+        const { page, limit, search, eventId, category } = queryResult.data;
         const offset = (page - 1) * limit;
 
         // Get user from request (set by auth middleware)
@@ -59,6 +60,7 @@ export default async function (fastify: FastifyInstance) {
                     ilike(ticketTypes.name, `%${search}%`)
                 );
             }
+            if (category) conditions.push(eq(ticketTypes.category, category));
 
             const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -77,8 +79,10 @@ export default async function (fastify: FastifyInstance) {
                     name: ticketTypes.name,
                     category: ticketTypes.category,
                     price: ticketTypes.price,
+                    currency: ticketTypes.currency,
                     quota: ticketTypes.quota,
                     sold: ticketTypes.soldCount,
+                    allowedRoles: ticketTypes.allowedRoles,
                     startDate: ticketTypes.saleStartDate,
                     endDate: ticketTypes.saleEndDate,
                     eventCode: events.eventCode,

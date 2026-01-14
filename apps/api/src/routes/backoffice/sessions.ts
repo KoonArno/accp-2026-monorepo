@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { db } from "@accp/database";
-import { sessions, events } from "@accp/database/schema";
-import { eq, desc, ilike, and, count } from "drizzle-orm";
+import { sessions, events, staffEventAssignments } from "@accp/database/schema";
+import { eq, desc, ilike, and, count, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 const sessionQuerySchema = z.object({
@@ -22,8 +22,37 @@ export default async function (fastify: FastifyInstance) {
         const { page, limit, search, eventId } = queryResult.data;
         const offset = (page - 1) * limit;
 
+        // Get user from request (set by auth middleware)
+        const user = (request as any).user;
+
         try {
             const conditions = [];
+
+            // If user is not admin, filter by assigned events only
+            if (user && user.role !== 'admin') {
+                const assignments = await db
+                    .select({ eventId: staffEventAssignments.eventId })
+                    .from(staffEventAssignments)
+                    .where(eq(staffEventAssignments.staffId, user.id));
+
+                const assignedEventIds = assignments.map(a => a.eventId);
+
+                if (assignedEventIds.length === 0) {
+                    // No assignments, return empty list
+                    return reply.send({
+                        sessions: [],
+                        pagination: {
+                            page,
+                            limit,
+                            total: 0,
+                            totalPages: 0,
+                        },
+                    });
+                }
+
+                conditions.push(inArray(sessions.eventId, assignedEventIds));
+            }
+
             if (eventId) conditions.push(eq(sessions.eventId, eventId));
             if (search) {
                 conditions.push(

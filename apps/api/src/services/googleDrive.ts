@@ -25,11 +25,12 @@ function getDriveClient() {
 }
 
 // Folder type mapping
-export type UploadFolderType = "student_docs" | "abstracts";
+export type UploadFolderType = "student_docs" | "abstracts" | "speakers";
 
 const FOLDER_ENV_MAP: Record<UploadFolderType, string> = {
   student_docs: "GOOGLE_DRIVE_FOLDER_STUDENT_DOCS",
   abstracts: "GOOGLE_DRIVE_FOLDER_ABSTRACTS",
+  speakers: "GOOGLE_DRIVE_FOLDER_SPEAKERS",
 };
 
 /**
@@ -43,7 +44,7 @@ export async function uploadToGoogleDrive(
   folderType: UploadFolderType = "student_docs"
 ): Promise<string> {
   const drive = getDriveClient();
-  
+
   const envKey = FOLDER_ENV_MAP[folderType];
   const folderId = process.env[envKey];
 

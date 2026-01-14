@@ -60,16 +60,15 @@ export default function UsersPage() {
                 // Note: api.users.list returns { users: any[] }
                 const usersData = await api.users.list(token).catch(() => ({ users: [] }));
 
-                // Fetch events
-                // Note: api.events.list returns { events: any[] }
-                const eventsData = await api.events.list().catch(() => ({ events: [] }));
+                // Fetch events - use backoffice endpoint with token
+                const eventsData = await api.backofficeEvents.list(token).catch(() => ({ events: [], pagination: {} }));
 
                 if (usersData?.users) {
                     // Adapt API user to local User interface if needed
-                    // For now assuming compatible or basic mapping
                     setUsers(usersData.users.map((u: any) => ({
                         ...u,
                         name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                        status: u.isActive ? 'active' : 'inactive',
                         assignedEventIds: u.assignedEventIds || []
                     })));
                 }
@@ -105,8 +104,8 @@ export default function UsersPage() {
     });
 
     const filteredEvents = events.filter(e =>
-        e.code.toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
-        e.name.toLowerCase().includes(eventSearchTerm.toLowerCase())
+        (e.eventCode || '').toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
+        (e.eventName || '').toLowerCase().includes(eventSearchTerm.toLowerCase())
     );
 
     const getRoleInfo = (roleId: string) => {
@@ -114,7 +113,7 @@ export default function UsersPage() {
     };
 
     const getEventNames = (eventIds: number[]) => {
-        return eventIds.map(id => events.find(e => e.id === id)?.code).filter(Boolean);
+        return eventIds.map(id => events.find(e => e.id === id)?.eventCode).filter(Boolean);
     };
 
     const handleCreate = async () => {
@@ -125,7 +124,8 @@ export default function UsersPage() {
             const firstName = nameParts[0] || '-';
             const lastName = nameParts.slice(1).join(' ') || '-';
 
-            await api.users.create(token, {
+            // 1. Create user
+            const result = await api.users.create(token, {
                 email: formData.email,
                 password: formData.password,
                 role: formData.role,
@@ -133,10 +133,15 @@ export default function UsersPage() {
                 lastName,
             });
 
+            // 2. Assign events if not admin and user was created
+            if (result?.user?.id && formData.role !== 'admin' && formData.assignedEventIds.length > 0) {
+                await api.users.assignEvents(token, result.user.id, formData.assignedEventIds);
+            }
+
             setShowCreateModal(false);
             setEventSearchTerm('');
             setFormData({ name: '', email: '', password: '', role: 'staff', assignedEventIds: [] });
-            alert('User created successfully!'); // Optional: replace with toast
+            alert('User created successfully!');
 
             // Refresh list
             const usersData = await api.users.list(token).catch(() => ({ users: [] }));
@@ -144,6 +149,7 @@ export default function UsersPage() {
                 setUsers(usersData.users.map((u: any) => ({
                     ...u,
                     name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    status: u.isActive ? 'active' : 'inactive',
                     assignedEventIds: u.assignedEventIds || []
                 })));
             }
@@ -185,6 +191,7 @@ export default function UsersPage() {
                 setUsers(usersData.users.map((u: any) => ({
                     ...u,
                     name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    status: u.isActive ? 'active' : 'inactive',
                     assignedEventIds: u.assignedEventIds || []
                 })));
             }
@@ -226,6 +233,7 @@ export default function UsersPage() {
                 setUsers(usersData.users.map((u: any) => ({
                     ...u,
                     name: u.name || `${u.firstName} ${u.lastName}`.trim(),
+                    status: u.isActive ? 'active' : 'inactive',
                     assignedEventIds: u.assignedEventIds || []
                 })));
             }
@@ -517,8 +525,8 @@ export default function UsersPage() {
                                                     className="w-4 h-4 text-blue-600 rounded"
                                                 />
                                                 <div>
-                                                    <p className="font-medium text-sm">{event.code}</p>
-                                                    <p className="text-xs text-gray-500">{event.name}</p>
+                                                    <p className="font-medium text-sm">{event.eventCode}</p>
+                                                    <p className="text-xs text-gray-500">{event.eventName}</p>
                                                 </div>
                                             </label>
                                         ))}
@@ -616,8 +624,8 @@ export default function UsersPage() {
                                                     className="w-4 h-4 text-blue-600 rounded"
                                                 />
                                                 <div>
-                                                    <p className="font-medium text-sm">{event.code}</p>
-                                                    <p className="text-xs text-gray-500">{event.name}</p>
+                                                    <p className="font-medium text-sm">{event.eventCode}</p>
+                                                    <p className="text-xs text-gray-500">{event.eventName}</p>
                                                 </div>
                                             </label>
                                         ))}
@@ -669,8 +677,8 @@ export default function UsersPage() {
                                             className="w-4 h-4 text-blue-600 rounded"
                                         />
                                         <div className="flex-1">
-                                            <p className="font-medium">{event.code}</p>
-                                            <p className="text-sm text-gray-500">{event.name}</p>
+                                            <p className="font-medium">{event.eventCode}</p>
+                                            <p className="text-sm text-gray-500">{event.eventName}</p>
                                         </div>
                                     </label>
                                 ))}

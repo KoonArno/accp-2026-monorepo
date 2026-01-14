@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link'
 import { Autoplay, Navigation, Pagination } from "swiper/modules"
@@ -6,6 +7,15 @@ import { Swiper as SwiperOriginal, SwiperSlide as SwiperSlideOriginal } from "sw
 
 const Swiper = SwiperOriginal as any;
 const SwiperSlide = SwiperSlideOriginal as any;
+
+interface Speaker {
+    id: number;
+    firstName: string;
+    lastName: string;
+    organization?: string;
+    position?: string;
+    photoUrl?: string;
+}
 
 const swiperOptions = {
     modules: [Autoplay, Pagination, Navigation],
@@ -34,14 +44,40 @@ const swiperOptions = {
     }
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3002';
+
 export default function SpeakersSection() {
     const t = useTranslations();
+    const [speakers, setSpeakers] = useState<Speaker[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const speakers = [
-        { name: "Kendra Cremin", role: "Business Consultant", img: "team-img2" },
-        { name: "Dennis Jacobson", role: "Finance Consultant", img: "team-img1" },
-        { name: "Patricia Wilkinson", role: "HR Consultant", img: "team-img3" },
-    ]
+    useEffect(() => {
+        const fetchSpeakers = async () => {
+            try {
+                console.log('Fetching speakers from:', `${API_URL}/api/speakers`);
+                const res = await fetch(`${API_URL}/api/speakers`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setSpeakers(data.speakers || []);
+                } else {
+                    console.error('Fetch response not ok:', res.status, res.statusText);
+                }
+            } catch (error) {
+                console.error('Failed to fetch speakers:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSpeakers();
+    }, []);
+
+    // Fallback data if no speakers from API
+    const displaySpeakers = speakers.length > 0 ? speakers : [
+        { id: 1, firstName: "Kendra", lastName: "Cremin", position: "Business Consultant", photoUrl: "/assets/img/all-images/team/team-img2.png" },
+        { id: 2, firstName: "Dennis", lastName: "Jacobson", position: "Finance Consultant", photoUrl: "/assets/img/all-images/team/team-img1.png" },
+        { id: 3, firstName: "Patricia", lastName: "Wilkinson", position: "HR Consultant", photoUrl: "/assets/img/all-images/team/team-img3.png" },
+    ];
 
     return (
         <>
@@ -58,27 +94,34 @@ export default function SpeakersSection() {
                     </div>
                     <div className="row">
                         <div className="col-lg-12 position-relative">
-                            <Swiper {...swiperOptions} className="team-slider-area">
-                                {[...speakers, ...speakers].map((speaker, index) => (
-                                    <SwiperSlide key={index} className="team-widget-boxarea">
-                                        <div className="img1 image-anime">
-                                            <img src={`/assets/img/all-images/team/${speaker.img}.png`} alt="" />
-                                            <ul>
-                                                <li><Link href="/#"><i className="fa-brands fa-facebook-f" /></Link></li>
-                                                <li><Link href="/#"><i className="fa-brands fa-linkedin-in" /></Link></li>
-                                                <li><Link href="/#"><i className="fa-brands fa-instagram" /></Link></li>
-                                                <li><Link href="/#" className="m-0"><i className="fa-brands fa-youtube" /></Link></li>
-                                            </ul>
-                                        </div>
-                                        <div className="space20" />
-                                        <div className="text-area">
-                                            <Link href="/speakers">{speaker.name}</Link>
-                                            <div className="space16" />
-                                            <p>{speaker.role}</p>
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
+                            {isLoading ? (
+                                <div className="text-center py-5">Loading speakers...</div>
+                            ) : (
+                                <Swiper {...swiperOptions} className="team-slider-area">
+                                    {[...displaySpeakers, ...displaySpeakers].map((speaker, index) => (
+                                        <SwiperSlide key={index} className="team-widget-boxarea">
+                                            <div className="img1 image-anime">
+                                                <img
+                                                    src={speaker.photoUrl || `/assets/img/all-images/team/team-img${(index % 3) + 1}.png`}
+                                                    alt={`${speaker.firstName} ${speaker.lastName}`}
+                                                />
+                                                <ul>
+                                                    <li><Link href="/#"><i className="fa-brands fa-facebook-f" /></Link></li>
+                                                    <li><Link href="/#"><i className="fa-brands fa-linkedin-in" /></Link></li>
+                                                    <li><Link href="/#"><i className="fa-brands fa-instagram" /></Link></li>
+                                                    <li><Link href="/#" className="m-0"><i className="fa-brands fa-youtube" /></Link></li>
+                                                </ul>
+                                            </div>
+                                            <div className="space20" />
+                                            <div className="text-area">
+                                                <Link href="/speakers">{speaker.firstName} {speaker.lastName}</Link>
+                                                <div className="space16" />
+                                                <p>{speaker.position || speaker.organization || 'Speaker'}</p>
+                                            </div>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                            )}
 
                             <div className="owl-nav">
                                 <button type="button" role="presentation" className="owl-prev h1p">
@@ -95,3 +138,4 @@ export default function SpeakersSection() {
         </>
     )
 }
+

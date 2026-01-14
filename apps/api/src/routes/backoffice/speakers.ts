@@ -1,18 +1,115 @@
 import { FastifyInstance } from "fastify";
 import { db } from "@accp/database";
-import { speakers } from "@accp/database/schema";
+import { speakers, eventSpeakers, staffEventAssignments } from "@accp/database/schema";
 import { createSpeakerSchema, updateSpeakerSchema } from "../../schemas/speakers.schema.js";
-import { eq, desc, ilike, or } from "drizzle-orm";
+import { eq, desc, ilike, or, inArray, and } from "drizzle-orm";
+import { z } from "zod";
+
+const speakerQuerySchema = z.object({
+    eventId: z.coerce.number().optional(),
+});
 
 export default async function (fastify: FastifyInstance) {
     // List Speakers
     fastify.get("", async (request, reply) => {
+        const queryResult = speakerQuerySchema.safeParse(request.query);
+        const eventId = queryResult.success ? queryResult.data.eventId : undefined;
+
+        // Get user from request (set by auth middleware)
+        const user = (request as any).user;
+
         try {
-            const speakerList = await db
-                .select()
-                .from(speakers)
-                .orderBy(desc(speakers.createdAt));
-            return reply.send({ speakers: speakerList });
+            let speakerList;
+            let allowedEventIds: number[] | null = null;
+
+            // If user is not admin, get their assigned events
+            if (user && user.role !== 'admin') {
+                const assignments = await db
+                    .select({ eventId: staffEventAssignments.eventId })
+                    .from(staffEventAssignments)
+                    .where(eq(staffEventAssignments.staffId, user.id));
+
+                allowedEventIds = assignments.map(a => a.eventId);
+
+                if (allowedEventIds.length === 0) {
+                    return reply.send({ speakers: [], eventSpeakers: [] });
+                }
+            }
+
+            // Get all eventSpeakers relations (filtered by user permissions if not admin)
+            let eventSpeakersQuery = db.select().from(eventSpeakers);
+            if (allowedEventIds) {
+                const allEventSpeakers = await db
+                    .select()
+                    .from(eventSpeakers)
+                    .where(inArray(eventSpeakers.eventId, allowedEventIds));
+
+                // If filtering by specific eventId, also check it's in allowed list
+                const targetEventId = eventId && allowedEventIds.includes(eventId) ? eventId : null;
+
+                if (targetEventId) {
+                    const filtered = allEventSpeakers.filter(es => es.eventId === targetEventId);
+                    const speakerIds = [...new Set(filtered.map(es => es.speakerId))];
+
+                    if (speakerIds.length === 0) {
+                        return reply.send({ speakers: [], eventSpeakers: allEventSpeakers });
+                    }
+
+                    speakerList = await db
+                        .select()
+                        .from(speakers)
+                        .where(inArray(speakers.id, speakerIds))
+                        .orderBy(desc(speakers.createdAt));
+
+                    return reply.send({ speakers: speakerList, eventSpeakers: allEventSpeakers });
+                } else {
+                    // No specific eventId filter, show all allowed speakers
+                    const speakerIds = [...new Set(allEventSpeakers.map(es => es.speakerId))];
+
+                    if (speakerIds.length === 0) {
+                        return reply.send({ speakers: [], eventSpeakers: allEventSpeakers });
+                    }
+
+                    speakerList = await db
+                        .select()
+                        .from(speakers)
+                        .where(inArray(speakers.id, speakerIds))
+                        .orderBy(desc(speakers.createdAt));
+
+                    return reply.send({ speakers: speakerList, eventSpeakers: allEventSpeakers });
+                }
+            }
+
+            // Admin path - get all eventSpeakers
+            const allEventSpeakers = await db.select().from(eventSpeakers);
+
+            // If eventId specified, filter speakers by that event
+            if (eventId) {
+                const linkedSpeakers = await db
+                    .select({ speakerId: eventSpeakers.speakerId })
+                    .from(eventSpeakers)
+                    .where(eq(eventSpeakers.eventId, eventId));
+
+                const speakerIds = [...new Set(linkedSpeakers.map(s => s.speakerId))];
+
+                if (speakerIds.length === 0) {
+                    return reply.send({ speakers: [], eventSpeakers: allEventSpeakers });
+                }
+
+                speakerList = await db
+                    .select()
+                    .from(speakers)
+                    .where(inArray(speakers.id, speakerIds))
+                    .orderBy(desc(speakers.createdAt));
+            } else {
+                // No filter - return all speakers
+                speakerList = await db
+                    .select()
+                    .from(speakers)
+                    .orderBy(desc(speakers.createdAt));
+            }
+
+            return reply.send({ speakers: speakerList, eventSpeakers: allEventSpeakers });
         } catch (error) {
             fastify.log.error(error);
             return reply.status(500).send({ error: "Failed to fetch speakers" });
@@ -62,6 +159,11 @@ export default async function (fastify: FastifyInstance) {
     fastify.delete("/:id", async (request, reply) => {
         const { id } = request.params as { id: string };
         try {
+            // Delete related event assignments first (Foreign Key Constraint)
+            await db
+                .delete(eventSpeakers)
+                .where(eq(eventSpeakers.speakerId, parseInt(id)));
+
             const [deletedSpeaker] = await db
                 .delete(speakers)
                 .where(eq(speakers.id, parseInt(id)))
@@ -72,6 +174,68 @@ export default async function (fastify: FastifyInstance) {
         } catch (error) {
             fastify.log.error(error);
             return reply.status(500).send({ error: "Failed to delete speaker" });
+        }
+    });
+
+    // Assign Speaker to Events
+    fastify.post("/:id/events", async (request, reply) => {
+        const { id } = request.params as { id: string };
+        const speakerId = parseInt(id);
+
+        const bodySchema = z.object({
+            eventIds: z.array(z.number()),
+            speakerType: z.enum(["keynote", "panelist", "moderator", "guest"]).optional().default("guest"),
+        });
+
+        const result = bodySchema.safeParse(request.body);
+        if (!result.success) {
+            return reply.status(400).send({ error: "Invalid input", details: result.error.flatten() });
+        }
+
+        const { eventIds, speakerType } = result.data;
+
+        try {
+            // Check if speaker exists
+            const [existingSpeaker] = await db
+                .select()
+                .from(speakers)
+                .where(eq(speakers.id, speakerId));
+
+            if (!existingSpeaker) {
+                return reply.status(404).send({ error: "Speaker not found" });
+            }
+
+            // Delete existing event assignments for this speaker
+            await db
+                .delete(eventSpeakers)
+                .where(eq(eventSpeakers.speakerId, speakerId));
+
+            // Insert new assignments
+            if (eventIds.length > 0) {
+                const newAssignments = eventIds.map(eventId => ({
+                    speakerId,
+                    eventId,
+                    speakerType: speakerType as "keynote" | "panelist" | "moderator" | "guest",
+                    sortOrder: 0,
+                }));
+
+                await db.insert(eventSpeakers).values(newAssignments);
+            }
+
+            // Return updated eventSpeakers for this speaker
+            const updatedAssignments = await db
+                .select()
+                .from(eventSpeakers)
+                .where(eq(eventSpeakers.speakerId, speakerId));
+
+            return reply.send({
+                success: true,
+                message: "Speaker event assignments updated",
+                eventSpeakers: updatedAssignments,
+            });
+        } catch (error) {
+            fastify.log.error(error);
+            return reply.status(500).send({ error: "Failed to assign speaker to events" });
         }
     });
 }

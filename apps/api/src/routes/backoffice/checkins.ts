@@ -86,7 +86,8 @@ export default async function (fastify: FastifyInstance) {
         }
 
         const { regCode } = bodyResult.data;
-        const userId = request.user?.id; // Assuming auth middleware populates this
+        const user = request.user as any;
+        const userId = user?.id; // Assuming auth middleware populates this
 
         try {
             // Find registration
@@ -137,8 +138,8 @@ export default async function (fastify: FastifyInstance) {
                 checkin: newCheckin,
                 registration: {
                     ...registration,
-                    ticketName: registration.ticketType?.name,
-                    eventName: registration.event?.eventName
+                    ticketName: (registration.ticketType as any)?.name,
+                    eventName: (registration.event as any)?.eventName
                 }
             });
 

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
+    "dev": "dotenv -e ../../.env -- next dev -p 3000",
+    "build": "dotenv -e ../../.env -- next build",
     "start": "next start",
     "lint": "next lint",
     "sass": "sass --watch public/assets/scss/main.scss:styles/main.css"

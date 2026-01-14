@@ -48,7 +48,7 @@ interface Verification {
 // Helper to get proxy URL for Google Drive files
 function getProxyUrl(url: string | null | undefined): string {
     if (!url) return '';
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     return `${apiUrl}/upload/proxy?url=${encodeURIComponent(url)}`;
 }
 

@@ -7,7 +7,17 @@ import jwt from "@fastify/jwt";
 const fastify = Fastify({ logger: true });
 
 // Register plugins
-fastify.register(cors, { origin: "*" });
+// Parse CORS origins from environment variable (comma-separated) or use dev defaults
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001'];
+
+fastify.register(cors, { 
+  origin: corsOrigins,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-email'],
+  exposedHeaders: ['x-user-email'],
+  credentials: true
+});
 fastify.register(multipart, {
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -33,6 +43,8 @@ import backofficeTicketsRoutes from "./routes/backoffice/tickets.js";
 import backofficeSessionsRoutes from "./routes/backoffice/sessions.js";
 import backofficePromoCodesRoutes from "./routes/backoffice/promoCodes.js";
 import publicSpeakersRoutes from "./routes/public/speakers.js";
+import abstractSubmitRoutes from "./routes/public/abstracts/submit.js";
+import userProfileRoutes from "./routes/public/users/profile.js";
 
 fastify.register(authRoutes, { prefix: "/auth" });
 fastify.register(loginRoutes, { prefix: "/auth" });
@@ -51,6 +63,12 @@ fastify.register(backofficePromoCodesRoutes, { prefix: "/api/backoffice/promo-co
 
 // Public API routes (no auth required)
 fastify.register(publicSpeakersRoutes, { prefix: "/api/speakers" });
+fastify.register(abstractSubmitRoutes, { prefix: "/api/abstracts" });
+fastify.register(userProfileRoutes, { prefix: "/api/users" });
+
+// User abstracts route (requires authentication via cookies)
+import userAbstractsRoutes from "./routes/public/abstracts/user.js";
+fastify.register(userAbstractsRoutes, { prefix: "/api/abstracts/user" });
 
 // Health check
 fastify.get("/health", async () => ({

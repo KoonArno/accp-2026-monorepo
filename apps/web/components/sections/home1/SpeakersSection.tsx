@@ -44,7 +44,7 @@ const swiperOptions = {
     }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3002';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SpeakersSection() {
     const t = useTranslations();

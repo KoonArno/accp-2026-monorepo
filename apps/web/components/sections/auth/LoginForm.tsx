@@ -32,7 +32,8 @@ export default function LoginForm() {
             }
 
             // Real API Call
-            const response = await fetch('http://localhost:3002/auth/login', {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
+            const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })

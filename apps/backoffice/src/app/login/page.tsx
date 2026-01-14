@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -18,13 +19,8 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3002/backoffice/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await res.json();
+            console.log('Attempting login with API URL:', process.env.NEXT_PUBLIC_API_URL);
+            const data = await api.auth.login({ email, password });
 
             if (data.success) {
                 login(data.user, data.token);
@@ -43,8 +39,8 @@ export default function LoginPage() {
             } else {
                 setError(data.error || 'Login failed');
             }
-        } catch {
-            setError('Login failed. Please try again.');
+        } catch (err: any) {
+            setError(err.message || 'Login failed. Please try again.');
         } finally {
             setLoading(false);
         }

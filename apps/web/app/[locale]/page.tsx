@@ -4,7 +4,7 @@ import WelcomeSection from '@/components/sections/home1/WelcomeSection';
 import SpeakersSection from '@/components/sections/home1/SpeakersSection';
 import MemoriesSection from '@/components/sections/home1/MemoriesSection';
 import MapSection from '@/components/sections/home1/MapSection';
-import CtaSection from '@/components/sections/home1/CtaSection';
+import SponsorsList from '@/components/sections/sponsorship/SponsorsList';
 import MemorialPopup from '@/components/elements/MemorialPopup';
 import '@/styles/home-responsive.css';
 
@@ -18,7 +18,7 @@ export default function Home() {
                 <SpeakersSection />
                 <MemoriesSection />
                 <MapSection />
-                <CtaSection />
+                <SponsorsList />
                 <MemorialPopup />
             </Layout>
         </>

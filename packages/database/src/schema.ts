@@ -112,6 +112,7 @@ export const backofficeUsers = pgTable("backoffice_users", {
   role: staffRoleEnum("role").notNull(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
+  conferenceCode: varchar("conference_code", { length: 100 }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

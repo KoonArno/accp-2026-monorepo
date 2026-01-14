@@ -7,7 +7,7 @@ import jwt from "@fastify/jwt";
 const fastify = Fastify({ logger: true });
 
 // Register plugins
-fastify.register(cors, { origin: true });
+fastify.register(cors, { origin: "*" });
 fastify.register(multipart, {
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -31,6 +31,7 @@ import backofficeAbstractsRoutes from "./routes/backoffice/abstracts.js";
 import backofficeCheckinsRoutes from "./routes/backoffice/checkins.js";
 import backofficeTicketsRoutes from "./routes/backoffice/tickets.js";
 import backofficeSessionsRoutes from "./routes/backoffice/sessions.js";
+import publicSpeakersRoutes from "./routes/public/speakers.js";
 
 fastify.register(authRoutes, { prefix: "/auth" });
 fastify.register(loginRoutes, { prefix: "/auth" });
@@ -45,6 +46,9 @@ fastify.register(backofficeAbstractsRoutes, { prefix: "/api/backoffice/abstracts
 fastify.register(backofficeCheckinsRoutes, { prefix: "/api/backoffice/checkins" });
 fastify.register(backofficeTicketsRoutes, { prefix: "/api/backoffice/tickets" });
 fastify.register(backofficeSessionsRoutes, { prefix: "/api/backoffice/sessions" });
+
+// Public API routes (no auth required)
+fastify.register(publicSpeakersRoutes, { prefix: "/api/speakers" });
 
 // Health check
 fastify.get("/health", async () => ({

@@ -10,9 +10,11 @@ export async function fetchAPI<T>(
 ): Promise<T> {
   const { token, ...fetchOptions } = options;
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const headers: Record<string, string> = {};
+
+  if (fetchOptions.body && typeof fetchOptions.body === 'string') {
+    headers["Content-Type"] = "application/json";
+  }
 
   // Copy existing headers if any
   if (fetchOptions.headers) {

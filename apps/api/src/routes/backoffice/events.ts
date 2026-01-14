@@ -5,6 +5,7 @@ import {
     sessions,
     ticketTypes,
     eventImages,
+    staffEventAssignments,
 } from "@accp/database/schema";
 import {
     createEventSchema,
@@ -15,7 +16,7 @@ import {
     updateTicketTypeSchema,
     eventQuerySchema,
 } from "../../schemas/events.schema.js";
-import { eq, desc, ilike, and, sql, count } from "drizzle-orm";
+import { eq, desc, ilike, and, sql, count, inArray } from "drizzle-orm";
 
 export default async function (fastify: FastifyInstance) {
     // ============================================================================
@@ -34,9 +35,38 @@ export default async function (fastify: FastifyInstance) {
         const { status, eventType, search, page, limit } = queryResult.data;
         const offset = (page - 1) * limit;
 
+        // Get user from request (set by auth middleware)
+        const user = (request as any).user;
+
         try {
             // Build where conditions
             const conditions = [];
+
+            // If user is not admin, filter by assigned events only
+            if (user && user.role !== 'admin') {
+                const assignments = await db
+                    .select({ eventId: staffEventAssignments.eventId })
+                    .from(staffEventAssignments)
+                    .where(eq(staffEventAssignments.staffId, user.id));
+
+                const assignedEventIds = assignments.map(a => a.eventId);
+
+                if (assignedEventIds.length === 0) {
+                    // No assignments, return empty list
+                    return reply.send({
+                        events: [],
+                        pagination: {
+                            page,
+                            limit,
+                            total: 0,
+                            totalPages: 0,
+                        },
+                    });
+                }
+
+                conditions.push(inArray(events.id, assignedEventIds));
+            }
+
             if (status) {
                 conditions.push(eq(events.status, status));
             }

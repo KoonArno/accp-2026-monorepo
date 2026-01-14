@@ -48,6 +48,7 @@ export default async function (fastify: FastifyInstance) {
                     category: abstracts.category,
                     presentationType: abstracts.presentationType,
                     status: abstracts.status,
+                    fullPaperUrl: abstracts.fullPaperUrl,
                     createdAt: abstracts.createdAt,
                     author: {
                         firstName: users.firstName,

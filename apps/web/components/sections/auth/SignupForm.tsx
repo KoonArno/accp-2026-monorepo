@@ -111,23 +111,24 @@ export default function SignupForm() {
             const formData = new FormData();
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
-            formData.append('email', email);
-            formData.append('password', password);
-            formData.append('accountType', activeTab);
-            if (phone) formData.append('phone', phone);
-            if (organization) formData.append('organization', organization);
+            const formDataToSend = new FormData();
+            formDataToSend.append('firstName', firstName);
+            formDataToSend.append('lastName', lastName);
+            formDataToSend.append('email', email);
+            formDataToSend.append('password', password);
+            formDataToSend.append('accountType', activeTab);
+            if (phone) formDataToSend.append('phone', phone);
+            if (organization) formDataToSend.append('organization', organization);
             if (activeTab === 'thaiStudent' || activeTab === 'thaiProfessional') {
-                formData.append('idCard', idCard);
-            }
-            if (activeTab === 'thaiProfessional' && pharmacyLicenseId) {
-                formData.append('pharmacyLicenseId', pharmacyLicenseId);
+                if (idCard) formDataToSend.append('idCard', idCard);
+                if (pharmacyLicenseId) formDataToSend.append('pharmacyLicenseId', pharmacyLicenseId);
             }
             if (activeTab === 'internationalStudent' || activeTab === 'internationalProfessional') {
-                if (passportId) formData.append('passportId', passportId);
-                if (country) formData.append('country', country);
+                if (passportId) formDataToSend.append('passportId', passportId);
+                if (country) formDataToSend.append('country', country);
             }
             if (studentDocument) {
-                formData.append('verificationDoc', studentDocument);
+                formDataToSend.append('verificationDoc', studentDocument);
             }
 
             const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SIGNUP}`, {

@@ -20,40 +20,35 @@ export default function PlenarySchedule() {
                 <div className="row">
                     <div className="col-lg-10 m-auto">
                         <div className="pricing-boxarea" data-aos="fade-up" data-aos-duration={800}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#1a237e', color: 'white' }}>
-                                        <th style={{ padding: '15px 20px', textAlign: 'left' }}>Session</th>
-                                        <th style={{ padding: '15px 20px', textAlign: 'left' }}>Day</th>
-                                        <th style={{ padding: '15px 20px', textAlign: 'left' }}>Time</th>
-                                        <th style={{ padding: '15px 20px', textAlign: 'left' }}>Topic</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {plenarySchedule.map((item, index) => (
-                                        <tr key={index} style={{
-                                            borderBottom: '1px solid #eee',
-                                            backgroundColor: index % 2 !== 0 ? '#fafafa' : 'transparent'
-                                        }}>
-                                            <td style={{ padding: '18px 20px' }}>
-                                                <span style={{
-                                                    backgroundColor: item.color.light,
-                                                    color: item.color.bg,
-                                                    padding: '5px 12px',
-                                                    borderRadius: '15px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600'
-                                                }}>
-                                                    {item.session}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '18px 20px' }}>{item.day}</td>
-                                            <td style={{ padding: '18px 20px', fontWeight: '600' }}>{item.time}</td>
-                                            <td style={{ padding: '18px 20px' }}>{item.topic}</td>
+                            <div className="table-responsive-container">
+                                <table className="program-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Session</th>
+                                            <th>Day</th>
+                                            <th>Time</th>
+                                            <th>Topic</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {plenarySchedule.map((item, index) => (
+                                            <tr key={index} className={index % 2 !== 0 ? 'row-alt' : ''}>
+                                                <td>
+                                                    <span className="session-tag" style={{
+                                                        backgroundColor: item.color.light,
+                                                        color: item.color.bg,
+                                                    }}>
+                                                        {item.session}
+                                                    </span>
+                                                </td>
+                                                <td>{item.day}</td>
+                                                <td className="time-col">{item.time}</td>
+                                                <td>{item.topic}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

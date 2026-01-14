@@ -14,42 +14,25 @@ export default function PlenarySpeakers() {
                         <div className="col-lg-4 col-md-6" key={index} data-aos="fade-up" data-aos-duration={800} data-aos-delay={index * 100}>
                             <div className="team1-boxarea">
                                 <div className="img1">
-                                    <div style={{
-                                        width: '100%',
-                                        height: '280px',
-                                        background: 'linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <i className="fa-solid fa-user" style={{ fontSize: '80px', color: '#bbb' }} />
+                                    <div className="speaker-img-placeholder">
+                                        <i className="fa-solid fa-user speaker-placeholder-icon" />
                                     </div>
-                                    <div className="session-badge" style={{
-                                        position: 'absolute',
-                                        top: '15px',
-                                        left: '15px',
-                                        background: '#8B5CF6',
-                                        color: 'white',
-                                        padding: '5px 12px',
-                                        borderRadius: '20px',
-                                        fontSize: '12px',
-                                        fontWeight: '600'
-                                    }}>
+                                    <div className="session-badge">
                                         {speaker.session}
                                     </div>
                                 </div>
                                 <div className="content-area">
                                     <Link href="#">{speaker.name}</Link>
-                                    <p style={{ color: '#8B5CF6', fontWeight: '500', marginBottom: '5px' }}>{speaker.role}</p>
-                                    <p style={{ fontSize: '13px', color: '#888' }}>{speaker.affiliation}</p>
-                                    <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #eee' }}>
-                                        <p style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
-                                            <i className="fa-solid fa-quote-left" style={{ color: '#FFBA00', marginRight: '8px' }} />
+                                    <p className="speaker-role">{speaker.role}</p>
+                                    <p className="speaker-aff">{speaker.affiliation}</p>
+                                    <div className="speaker-topic-box">
+                                        <p className="speaker-topic">
+                                            <i className="fa-solid fa-quote-left" />
                                             {speaker.topic}
                                         </p>
-                                        <div style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#666' }}>
-                                            <span><i className="fa-regular fa-calendar" style={{ marginRight: '5px' }} />{speaker.day}</span>
-                                            <span><i className="fa-regular fa-clock" style={{ marginRight: '5px' }} />{speaker.time}</span>
+                                        <div className="speaker-meta">
+                                            <span><i className="fa-regular fa-calendar" />{speaker.day}</span>
+                                            <span><i className="fa-regular fa-clock" />{speaker.time}</span>
                                         </div>
                                     </div>
                                 </div>

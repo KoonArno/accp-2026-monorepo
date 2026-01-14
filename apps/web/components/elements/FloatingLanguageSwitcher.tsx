@@ -7,13 +7,11 @@ export default function FloatingLanguageSwitcher() {
     const locale = useLocale();
     const pathname = usePathname();
 
-    // Function to get the path without locale prefix
     const getPathWithoutLocale = () => {
         const segments = pathname.split('/');
         return '/' + segments.slice(2).join('/') || '/';
     }
 
-    // Function to switch locale
     const switchLocale = (newLocale: string) => {
         const pathWithoutLocale = getPathWithoutLocale();
         return `/${newLocale}${pathWithoutLocale}`;

@@ -25,14 +25,12 @@ export default function LoginForm() {
         setError('');
 
         try {
-            // Validation
             if (!email || !password) {
                 setError(locale === 'th' ? 'กรุณากรอกข้อมูลให้ครบถ้วน' : 'Please fill in all fields');
                 setIsLoading(false);
                 return;
             }
 
-            // Real API Call
             const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.LOGIN}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -42,7 +40,6 @@ export default function LoginForm() {
             const data = await response.json();
 
             if (!response.ok) {
-                // Handle specific errors
                 if (response.status === 401) {
                     setError(locale === 'th' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : 'Invalid email or password');
                 } else if (response.status === 403) {
@@ -60,7 +57,6 @@ export default function LoginForm() {
                 return;
             }
 
-            // Login Success
             login({
                 firstName: data.user.firstName,
                 lastName: data.user.lastName,
@@ -71,7 +67,6 @@ export default function LoginForm() {
                 idCard: data.user.idCard
             });
 
-            // Redirect
             router.push(`/${locale}`);
         } catch (err) {
             console.error('Login error:', err);

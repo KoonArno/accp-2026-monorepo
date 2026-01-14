@@ -10,6 +10,18 @@
    BASE STYLES (All Devices)
    ============================================ */
 
+/* Force Timer Text White Globally */
+.timer .time-box .time-value,
+.time-value {
+    color: #ffffff !important;
+    background: transparent !important;
+    background-image: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+    -webkit-background-clip: unset !important;
+    text-shadow: none !important;
+}
+
 /* Hero Section - Base already in consolidated-responsive.css */
 .hero1-section-area {
     position: relative;
@@ -131,43 +143,58 @@
     .hero1-section-area {
         min-height: 100vh !important;
         padding-top: 100px !important;
+        padding-bottom: 60px !important;
         display: flex;
         align-items: center;
+        background-position: 70% center !important;
+        /* Adjust bg focus for mobile */
     }
 
     .hero1-header {
         margin-left: 0 !important;
         margin-top: 0 !important;
         text-align: center;
-        padding: 0 15px;
+        padding: 0 20px;
+        width: 100%;
     }
 
     .hero1-header h1 {
-        font-size: 36px !important;
-        line-height: 1.2 !important;
+        font-size: 32px !important;
+        line-height: 1.3 !important;
+        margin: 15px 0 20px !important;
     }
 
     .hero1-header h5 {
-        font-size: 14px !important;
+        font-size: 13px !important;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 10px !important;
+        opacity: 0.9;
     }
 
     .hero1-header p {
-        font-size: 15px !important;
+        font-size: 16px !important;
         line-height: 1.6 !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 30px !important;
+        opacity: 0.9;
     }
 
+    /* Stack buttons on mobile for better touch targets */
     .btn-area1 {
         display: flex !important;
-        justify-content: center !important;
-        flex-wrap: wrap !important;
-        gap: 12px !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px !important;
+        width: 100%;
     }
 
     .btn-area1 a {
-        min-width: 160px !important;
-        font-size: 13px !important;
-        padding: 12px 20px !important;
+        width: 100% !important;
+        max-width: 280px;
+        font-size: 16px !important;
+        padding: 14px 20px !important;
+        justify-content: center;
+        text-align: center;
     }
 
     /* ===== WELCOME SECTION ===== */
@@ -266,24 +293,41 @@
 
     /* ===== HERO SECTION ===== */
     .hero1-section-area {
-        padding: 120px 0 80px !important;
+        padding: 140px 0 100px !important;
+        background-position: center;
+    }
+
+    .hero1-header {
+        text-align: center !important;
+        /* Center on tablet mostly looks better */
+        margin: 0 auto;
+        max-width: 700px;
     }
 
     .hero1-header h1 {
-        font-size: 48px !important;
+        font-size: 46px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 25px !important;
     }
 
     .hero1-header h5 {
-        font-size: 16px !important;
+        font-size: 15px !important;
+        letter-spacing: 1.5px;
     }
 
     .hero1-header p {
-        font-size: 16px !important;
+        font-size: 18px !important;
+        margin-bottom: 35px !important;
+    }
+
+    .btn-area1 {
+        justify-content: center !important;
+        gap: 20px !important;
     }
 
     .btn-area1 a {
         min-width: 170px !important;
-        font-size: 14px !important;
+        font-size: 15px !important;
     }
 
     /* ===== WELCOME SECTION ===== */
@@ -519,4 +563,235 @@
 .btn-area1 a:focus {
     outline: 3px solid #FFBA00;
     outline-offset: 3px;
+}
+
+/* ============================================
+   COUNTDOWN TIMER RESPONSIVE
+   ============================================ */
+
+.timer {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: nowrap;
+}
+
+.time-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 20px;
+    min-width: 120px;
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.time-box:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.time-value {
+    display: block;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    background: linear-gradient(45deg, #FFBA00, #FFE082);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(255, 186, 0, 0.3);
+}
+
+/* Mobile Devices (≤767px) */
+@media (max-width: 767px) {
+    .timer {
+        gap: 8px !important;
+        margin-bottom: 30px !important;
+    }
+
+    .time-box {
+        min-width: auto !important;
+        width: 75px !important;
+        padding: 12px 5px !important;
+        border-radius: 12px !important;
+        font-size: 10px !important;
+    }
+
+    .time-value {
+        font-size: 24px !important;
+        margin-bottom: 4px !important;
+    }
+}
+
+/* Tablet Devices (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .timer {
+        gap: 16px !important;
+    }
+
+    .time-box {
+        min-width: 100px !important;
+        padding: 15px !important;
+    }
+
+    .time-value {
+        font-size: 32px !important;
+    }
+}
+
+/* ============================================
+   TIMER RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile Devices */
+@media (max-width: 767px) {
+    .timer {
+        gap: 8px !important;
+        margin-top: 20px !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+    }
+
+    .time-box {
+        min-width: 65px !important;
+        padding: 8px 4px !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(5px) !important;
+    }
+
+    .timer .time-box .time-value,
+    .timer .time-box span.time-value {
+        font-size: 20px !important;
+        line-height: 1.2 !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        background: transparent !important;
+        background-image: none !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-clip: unset !important;
+        -webkit-background-clip: unset !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .time-box {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+    }
+}
+
+/* Tablet Devices */
+@media (min-width: 768px) and (max-width: 991px) {
+    .timer {
+        gap: 15px !important;
+        margin-top: 30px !important;
+    }
+
+    .time-box {
+        min-width: 80px !important;
+        padding: 12px 8px !important;
+    }
+
+    .time-value {
+        font-size: 28px !important;
+    }
+
+    .time-box {
+        font-size: 12px !important;
+    }
+}
+
+/* iPad Pro */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .timer {
+        gap: 20px !important;
+    }
+
+    .time-box {
+        min-width: 90px !important;
+        padding: 15px 10px !important;
+    }
+
+    .time-value {
+        font-size: 32px !important;
+    }
+}
+
+/* ============================================
+   TIMER POSITIONING FIX
+   ============================================ */
+
+/* Large Desktop (> 1400px) */
+@media (min-width: 1400px) {
+    .timer {
+        margin-right: 160px !important;
+        right: 160px !important;
+        position: relative;
+    }
+}
+
+/* Standard Desktop (1200px - 1399px) */
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .timer {
+        margin-right: 100px !important;
+        right: 100px !important;
+    }
+}
+
+/* Laptop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .timer {
+        margin-right: 60px !important;
+        right: 60px !important;
+    }
+}
+
+/* Note: Mobile (< 992px) styles are already centered/adjusted in previous blocks */
+/* ============================================
+   HEADER LOGO RESPONSIVE
+   ============================================ */
+
+.site-logo-img {
+    height: 160px;
+    width: auto;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-left: 20px;
+}
+
+.header-sticky.sticky .site-logo-img {
+    height: 80px;
+    padding: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-logo-img {
+    height: 60px;
+    width: auto;
+    background: white;
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 992px) and (max-width: 1399px) {
+    .site-logo-img {
+        height: 90px;
+    }
+
+    .header-sticky.sticky .site-logo-img {
+        height: 60px;
+    }
 }

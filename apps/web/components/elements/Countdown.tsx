@@ -31,14 +31,12 @@ export default function Countdown({ style }: any) {
 			setTimeDif(difference > 0 ? difference : 0)
 		}
 
-		updateTime() // Initial update
-
+		updateTime()
 		const interval = setInterval(updateTime, 1000)
 
 		return () => clearInterval(interval)
 	}, [])
 
-	// Don't render until client-side hydration is complete
 	if (timeDif === null) {
 		return null
 	}

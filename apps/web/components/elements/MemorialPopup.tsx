@@ -9,17 +9,11 @@ export default function MemorialPopup() {
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
-        // Show popup on mount
-        // Optional: Check sessionStorage if we want to show it only once per session
-        // const hasSeenPopup = sessionStorage.getItem('hasSeenMemorialPopup')
-        // if (!hasSeenPopup) {
         setIsVisible(true)
-        // }
     }, [])
 
     const handleClose = () => {
         setIsVisible(false)
-        // sessionStorage.setItem('hasSeenMemorialPopup', 'true')
     }
 
     if (!isVisible) return null

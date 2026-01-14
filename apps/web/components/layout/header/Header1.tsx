@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Switch from 'react-switch';
 import { US, TH } from 'country-flag-icons/react/3x2'
 
-// Cast to any to avoid TypeScript error with React 18 types
+
 const LanguageSwitch = Switch as any;
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
@@ -32,19 +32,16 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
     };
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-    // Function to get the path without locale prefix
     const getPathWithoutLocale = () => {
         const segments = pathname.split('/');
         return '/' + segments.slice(2).join('/') || '/';
     }
 
-    // Function to switch locale
     const switchLocale = (newLocale: string) => {
         const pathWithoutLocale = getPathWithoutLocale();
         return `/${newLocale}${pathWithoutLocale}`;
     }
 
-    // Function to check if link is active
     const isActive = (path: string) => {
         if (path === `/${locale}` || path === `/${locale}/`) {
             return pathname === `/${locale}` || pathname === `/${locale}/`;
@@ -52,7 +49,6 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
         return pathname.startsWith(path);
     }
 
-    // Unified Dropdown Handler
     const handleDropdownInteraction = (menuName: string, type: 'enter' | 'leave' | 'click', e?: React.MouseEvent) => {
         if (type === 'click') {
             e?.preventDefault();
@@ -64,10 +60,8 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
         }
     };
 
-    // Calculate IsHeaderWhite based on scroll or headerBgWhite prop
     const isHeaderWhite = scroll || headerBgWhite;
 
-    // Helper to get link styles
     const getLinkStyle = (path: string, menuName?: string) => {
         const isActiveLink = isActive(path);
         const isOpen = menuName && openDropdown === menuName;
@@ -78,7 +72,6 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
         };
     };
 
-    // Helper for dropdown menu styles
     const getDropdownStyle = (menuName: string): React.CSSProperties => {
         const isOpen = openDropdown === menuName;
         return {
@@ -110,9 +103,9 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                     <div className="site-logo">
                                         <Link href={`/${locale}`}>
                                             <img
-                                                src="/assets/img/logo/ACCP-BANGKOK-2026-04.png"
+                                                src="/assets/img/logo/accp_logo_main.png"
                                                 alt="ACCP 2026"
-                                                style={{ height: '55px', width: 'auto', marginLeft: '20px' }}
+                                                className="site-logo-img"
                                             />
                                         </Link>
                                     </div>
@@ -334,7 +327,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                         <div className="mobile-header-elements">
                             <div className="mobile-logo">
                                 <Link href={`/${locale}`}>
-                                    <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
+                                    <img src="/assets/img/logo/accp_logo_main.png" alt="ACCP 2026" className="mobile-logo-img" />
                                 </Link>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

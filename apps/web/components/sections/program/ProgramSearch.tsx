@@ -2,7 +2,7 @@
 import { useTranslations } from 'next-intl';
 
 export default function ProgramSearch() {
-    const t = useTranslations('program'); // Potentially add specific keys later
+    const t = useTranslations('program');
 
     return (
         <div className="container" style={{ marginBottom: '40px' }}>

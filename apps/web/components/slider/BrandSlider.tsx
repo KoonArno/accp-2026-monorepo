@@ -15,13 +15,11 @@ const swiperOptions = {
 	},
 	loop: true,
 
-	// Navigation
 	navigation: {
 		nextEl: '.h1n',
 		prevEl: '.h1p',
 	},
 
-	// Pagination
 	pagination: {
 		el: '.swiper-pagination',
 		clickable: true,

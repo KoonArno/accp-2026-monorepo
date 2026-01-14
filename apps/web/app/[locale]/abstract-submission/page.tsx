@@ -9,7 +9,6 @@ export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')
     const tCommon = useTranslations('common')
 
-    // Categories for abstract submission
     const categories = [
         t('categories.clinicalPharmacy'),
         t('categories.socialAdministrative'),
@@ -25,7 +24,6 @@ export default function AbstractSubmission() {
         { value: "either", label: t('presentationTypes.either') }
     ]
     const [formData, setFormData] = useState({
-        // Author Information
         firstName: '',
         lastName: '',
         email: '',
@@ -33,29 +31,24 @@ export default function AbstractSubmission() {
         country: '',
         phone: '',
 
-        // Abstract Details
         title: '',
         category: '',
         presentationType: '',
         keywords: '',
 
-        // Abstract Content
         background: '',
         methods: '',
         results: '',
         conclusions: '',
 
-        // File Upload
         abstractFile: null as File | null,
 
-        // Declaration
         coi: 'no',
         coiDetails: '',
         agreeTerms: false,
         confirmOriginal: false
     })
 
-    // Co-Authors state - separate for easier management
     const [coAuthors, setCoAuthors] = useState<Array<{
         id: string;
         firstName: string;
@@ -92,7 +85,6 @@ export default function AbstractSubmission() {
 
     const [trackingId, setTrackingId] = useState('')
 
-    // Scroll to top when form is submitted successfully
     useEffect(() => {
         if (submitStatus === 'success') {
             setTrackingId(`ACCP2026-${Date.now().toString().slice(-6)}`)
@@ -116,9 +108,7 @@ export default function AbstractSubmission() {
             setFormData(prev => ({ ...prev, [name]: value }))
         }
 
-        // Calculate word count for abstract sections
         if (['background', 'methods', 'results', 'conclusions'].includes(name)) {
-            // Create updated form data with the new value
             const updatedData = {
                 background: name === 'background' ? value : formData.background,
                 methods: name === 'methods' ? value : formData.methods,
@@ -126,7 +116,6 @@ export default function AbstractSubmission() {
                 conclusions: name === 'conclusions' ? value : formData.conclusions
             }
 
-            // Calculate total words from all sections
             const totalText = [
                 updatedData.background,
                 updatedData.methods,
@@ -139,7 +128,6 @@ export default function AbstractSubmission() {
         }
     }
 
-    // Multiple files state
     const [uploadedFiles, setUploadedFiles] = useState<Array<{
         id: string;
         file: File;
@@ -154,7 +142,6 @@ export default function AbstractSubmission() {
                 alert('Please upload only PDF files')
                 return
             }
-            // Check for duplicate filename
             const isDuplicate = uploadedFiles.some(f => f.file.name === file.name)
             if (isDuplicate) {
                 alert('This file has already been uploaded!')
@@ -164,7 +151,6 @@ export default function AbstractSubmission() {
                 id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 file: file
             }])
-            // Reset input value to allow re-selecting the same file
             e.target.value = ''
         }
     }
@@ -177,7 +163,6 @@ export default function AbstractSubmission() {
         e.preventDefault()
         setIsSubmitting(true)
 
-        // Validate word count
         if (wordCount < 250 || wordCount > 300) {
             alert(`Abstract word count must be between 250-300 words. Current: ${wordCount} words`)
             setIsSubmitting(false)
@@ -185,10 +170,8 @@ export default function AbstractSubmission() {
         }
 
         try {
-            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 2000))
 
-            // Here you would send to your backend API
             console.log('Form Data:', formData)
 
             setSubmitStatus('success')

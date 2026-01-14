@@ -2,11 +2,11 @@
 import React, { useEffect, useRef } from "react"
 
 interface CircleTextProps {
-	text: string // Define the type for the text prop
+	text: string
 }
 
 const CircleText: React.FC<CircleTextProps> = ({ text }) => {
-	const circleRef = useRef<HTMLDivElement | null>(null) // Explicitly type the ref
+	const circleRef = useRef<HTMLDivElement | null>(null)
 
 	useEffect(() => {
 		if (circleRef.current) {
@@ -15,9 +15,8 @@ const CircleText: React.FC<CircleTextProps> = ({ text }) => {
 				element.style.transform = `rotate(${i * 17}deg)`
 			})
 		}
-	}, [text]) // Dependency on text to reapply effect if text changes
+	}, [text])
 
-	// Create span elements for each character
 	const children = text.split("").map((char, i) =>
 		React.createElement(
 			"span",
@@ -26,7 +25,6 @@ const CircleText: React.FC<CircleTextProps> = ({ text }) => {
 		)
 	)
 
-	// Return the main container
 	return React.createElement(
 		"div",
 		{ className: "circle rotateme", ref: circleRef },

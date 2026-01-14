@@ -19,14 +19,11 @@ export default function Payment() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
-	// Use checkout data from hook instead of URL params
 	const { checkoutData } = useCheckoutWizard();
 
-	// Determine currency based on payment country (Thailand = THB, Others = USD)
 	const isThaiPayment = checkoutData.country?.trim().toLowerCase() === 'thailand';
 	const currencySymbol = isThaiPayment ? '฿' : '$';
 
-	// Calculate total amount from checkout data
 	const currentPackage = registrationPackages.find(p => p.id === checkoutData.selectedPackage);
 	const packagePrice = isThaiPayment ? currentPackage?.priceTHB || 0 : currentPackage?.priceUSD || 0;
 	const addOnsPrice = addOns
@@ -34,15 +31,12 @@ export default function Payment() {
 		.reduce((sum, a) => (isThaiPayment ? sum + a.priceTHB : sum + a.priceUSD), 0);
 	const totalAmount = packagePrice + addOnsPrice;
 
-	// Use data from hook
 	const amount = totalAmount.toString();
 	const packageType = checkoutData.selectedPackage || 'professional';
 	const orderNumber = `ACCP2026-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-	// Get payment method from URL, default to 'qr' if not specified
 	const methodParam = searchParams.get('method') as 'qr' | 'card' | null;
-	const [paymentMethod, setPaymentMethod] = useState<'qr' | 'card'>(methodParam || 'qr'); // Fallback to URL or default
-	// Use checkoutData method if available
+	const [paymentMethod, setPaymentMethod] = useState<'qr' | 'card'>(methodParam || 'qr');
 	useEffect(() => {
 		if (checkoutData.paymentMethod) {
 			setPaymentMethod(checkoutData.paymentMethod);
@@ -51,9 +45,8 @@ export default function Payment() {
 
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [showSuccess, setShowSuccess] = useState(false);
-	const [qrTimer, setQrTimer] = useState(300); // 5 minutes
+	const [qrTimer, setQrTimer] = useState(300);
 
-	// Card form states
 	const [cardData, setCardData] = useState({
 		cardNumber: '',
 		cardholderName: '',
@@ -62,7 +55,6 @@ export default function Payment() {
 	});
 	const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
 
-	// QR Timer countdown
 	useEffect(() => {
 		if (paymentMethod === 'qr' && qrTimer > 0 && !showSuccess) {
 			const timer = setInterval(() => {
@@ -72,7 +64,6 @@ export default function Payment() {
 		}
 	}, [paymentMethod, qrTimer, showSuccess]);
 
-	// Check authentication
 	useEffect(() => {
 		if (!isAuthenticated) {
 			router.push(`/${locale}/login`);
@@ -89,13 +80,11 @@ export default function Payment() {
 		const { name, value } = e.target;
 		let formattedValue = value;
 
-		// Format card number with spaces
 		if (name === 'cardNumber') {
 			formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
 			if (formattedValue.length > 19) return;
 		}
 
-		// Format expiry date
 		if (name === 'expiryDate') {
 			formattedValue = value.replace(/\D/g, '');
 			if (formattedValue.length >= 2) {
@@ -104,7 +93,6 @@ export default function Payment() {
 			if (formattedValue.length > 5) return;
 		}
 
-		// Limit CVV to 4 digits
 		if (name === 'cvv' && value.length > 4) return;
 
 		setCardData(prev => ({ ...prev, [name]: formattedValue }));
@@ -137,7 +125,6 @@ export default function Payment() {
 
 		setIsProcessing(true);
 
-		// Simulate payment processing
 		setTimeout(() => {
 			setIsProcessing(false);
 			setShowSuccess(true);

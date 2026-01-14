@@ -87,7 +87,7 @@ export default function AbstractSubmission() {
     const [showSuccessModal, setShowSuccessModal] = useState(false)
 
     const [trackingId, setTrackingId] = useState('')
-    const { user, isAuthenticated } = useAuth()
+
 
     // Autofill user data when logged in
     useEffect(() => {

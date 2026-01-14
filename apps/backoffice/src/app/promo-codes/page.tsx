@@ -256,6 +256,24 @@ export default function PromoCodesPage() {
 
     return (
         <AdminLayout title="Promo Codes">
+            {/* Event Filter - Above Content */}
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                    <IconCalendarEvent className="text-blue-600" size={20} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Select Event:</span>
+                <select
+                    value={eventFilter}
+                    onChange={(e) => setEventFilter(e.target.value ? Number(e.target.value) : '')}
+                    className="input-field pr-8 min-w-[250px] font-semibold bg-white"
+                >
+                    <option value="">All Events</option>
+                    {accessibleEvents.map((event) => (
+                        <option key={event.id} value={event.id}>{event.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="card py-4">
@@ -307,7 +325,9 @@ export default function PromoCodesPage() {
             {/* Main Card */}
             <div className="card">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800">All Promo Codes</h2>
+                    <h2 className="text-lg font-semibold text-gray-800">
+                        {eventFilter ? `Promo Codes for ${accessibleEvents.find(e => e.id === eventFilter)?.name || 'Event'}` : 'All Promo Codes'}
+                    </h2>
                     <button
                         onClick={() => { resetForm(); setShowCreateModal(true); }}
                         className="btn-primary flex items-center gap-2"
@@ -320,7 +340,7 @@ export default function PromoCodesPage() {
                 {/* Filters */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="relative flex-1 max-w-md">
-                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none" size={18} />
                         <input
                             type="text"
                             placeholder="Search by code or description..."
@@ -329,17 +349,6 @@ export default function PromoCodesPage() {
                             className="input-field pl-10"
                         />
                     </div>
-
-                    <select
-                        value={eventFilter}
-                        onChange={(e) => setEventFilter(e.target.value ? Number(e.target.value) : '')}
-                        className="input-field w-auto"
-                    >
-                        <option value="">All Events</option>
-                        {accessibleEvents.map((event) => (
-                            <option key={event.id} value={event.id}>{event.code}</option>
-                        ))}
-                    </select>
 
                     <select
                         value={statusFilter}

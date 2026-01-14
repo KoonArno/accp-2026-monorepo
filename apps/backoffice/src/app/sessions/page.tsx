@@ -18,7 +18,10 @@ import {
     IconVideo,
     IconLoader2,
     IconX,
+    IconMicrophone,
 } from '@tabler/icons-react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 interface Session {
     id: number;
@@ -41,10 +44,18 @@ interface EventOption {
     name: string;
 }
 
+interface Speaker {
+    id: number;
+    firstName: string;
+    lastName: string;
+    organization: string | null;
+}
+
 export default function SessionsPage() {
     const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
     const [sessions, setSessions] = useState<Session[]>([]);
     const [events, setEvents] = useState<EventOption[]>([]);
+    const [speakers, setSpeakers] = useState<Speaker[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,12 +81,13 @@ export default function SessionsPage() {
         room: '',
         startTime: '',
         endTime: '',
-        speakers: '', // Comma separated string for input
+        selectedSpeakerIds: [] as number[],
         maxCapacity: 100,
     });
 
     useEffect(() => {
         fetchEvents();
+        fetchSpeakers();
     }, []);
 
     useEffect(() => {
@@ -96,6 +108,19 @@ export default function SessionsPage() {
             }
         } catch (error) {
             console.error('Failed to fetch events:', error);
+        }
+    };
+
+    const fetchSpeakers = async () => {
+        try {
+            const token = localStorage.getItem('backoffice_token') || '';
+            const res = await fetch(`${API_URL}/api/backoffice/speakers`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            setSpeakers(data.speakers || []);
+        } catch (error) {
+            console.error('Failed to fetch speakers:', error);
         }
     };
 
@@ -158,9 +183,14 @@ export default function SessionsPage() {
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
+            // Get speaker names from selected IDs
+            const speakerNames = formData.selectedSpeakerIds.map(id => {
+                const speaker = speakers.find(s => s.id === id);
+                return speaker ? `${speaker.firstName} ${speaker.lastName}` : '';
+            }).filter(Boolean);
             const payload = {
                 ...formData,
-                speakers: formData.speakers.split(',').map(s => s.trim()).filter(Boolean),
+                speakers: speakerNames,
             };
             await api.backofficeEvents.createSession(token, formData.eventId, payload);
             alert('Session created successfully!');
@@ -179,9 +209,14 @@ export default function SessionsPage() {
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
+            // Get speaker names from selected IDs
+            const speakerNames = formData.selectedSpeakerIds.map(id => {
+                const speaker = speakers.find(s => s.id === id);
+                return speaker ? `${speaker.firstName} ${speaker.lastName}` : '';
+            }).filter(Boolean);
             const payload = {
                 ...formData,
-                speakers: formData.speakers.split(',').map(s => s.trim()).filter(Boolean),
+                speakers: speakerNames,
             };
             await api.backofficeEvents.updateSession(token, formData.eventId, selectedSession.id, payload);
             alert('Session updated successfully!');
@@ -214,19 +249,19 @@ export default function SessionsPage() {
 
     const openEditModal = (session: Session) => {
         setSelectedSession(session);
-        // Date formatting for input datetime-local
-        // session.startTime is ISO string or similar.
-        // datetime-local needs YYYY-MM-DDThh:mm
         const formatDateTime = (dateStr: string) => {
             if (!dateStr) return '';
             const d = new Date(dateStr);
-            // Adjust for timezone offset for input value? 
-            // Or use toISOString().slice(0, 16) but that's UTC.
-            // Better to use local time for the form.
             const offset = d.getTimezoneOffset() * 60000;
             const localISOTime = (new Date(d.getTime() - offset)).toISOString().slice(0, 16);
             return localISOTime;
         };
+
+        // Match speaker names to IDs
+        const speakerIds = (session.speakers || []).map(name => {
+            const speaker = speakers.find(s => `${s.firstName} ${s.lastName}` === name);
+            return speaker?.id;
+        }).filter((id): id is number => id !== undefined);
 
         setFormData({
             eventId: session.eventId,
@@ -236,7 +271,7 @@ export default function SessionsPage() {
             room: session.room,
             startTime: formatDateTime(session.startTime),
             endTime: formatDateTime(session.endTime),
-            speakers: (session.speakers || []).join(', '),
+            selectedSpeakerIds: speakerIds,
             maxCapacity: session.maxCapacity || 100,
         });
         setShowEditModal(true);
@@ -251,28 +286,51 @@ export default function SessionsPage() {
             room: '',
             startTime: '',
             endTime: '',
-            speakers: '',
+            selectedSpeakerIds: [],
             maxCapacity: 100,
         });
     };
 
     return (
         <AdminLayout title="Session Management">
+            {/* Event Filter - Above Content */}
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                    <IconCalendarEvent className="text-blue-600" size={20} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Select Event:</span>
+                <select
+                    value={eventFilter}
+                    onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
+                    className="input-field pr-8 min-w-[250px] font-semibold bg-white"
+                >
+                    <option value="">All Events</option>
+                    {events.map((event) => (
+                        <option key={event.id} value={event.id}>{event.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                    <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        <IconLayoutList size={20} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('timeline')}
-                        className={`p-2 rounded-md transition-colors ${viewMode === 'timeline' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        <IconTimeline size={20} />
-                    </button>
+                <div className="flex items-center gap-4">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                        {eventFilter ? `Sessions for ${events.find(e => e.id === eventFilter)?.name || 'Event'}` : 'All Sessions'}
+                    </h2>
+                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            <IconLayoutList size={20} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('timeline')}
+                            className={`p-2 rounded-md transition-colors ${viewMode === 'timeline' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            <IconTimeline size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex gap-4 w-full md:w-auto">
@@ -286,16 +344,6 @@ export default function SessionsPage() {
                             className="input-field pl-10 h-10"
                         />
                     </div>
-                    <select
-                        value={eventFilter}
-                        onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
-                        className="input-field w-auto h-10"
-                    >
-                        <option value="">All Events</option>
-                        {events.map((event) => (
-                            <option key={event.id} value={event.id}>{event.code}</option>
-                        ))}
-                    </select>
                     <button
                         onClick={() => { resetForm(); setShowCreateModal(true); }}
                         className="btn-primary flex items-center gap-2 whitespace-nowrap h-10"
@@ -505,14 +553,39 @@ export default function SessionsPage() {
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Speakers</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="John Doe, Jane Smith (comma separated)"
-                                    value={formData.speakers}
-                                    onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
-                                />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <IconMicrophone size={16} className="inline mr-1" /> Speakers
+                                </label>
+                                <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                                    {speakers.length === 0 ? (
+                                        <p className="p-3 text-sm text-gray-400">No speakers available</p>
+                                    ) : (
+                                        speakers.map(speaker => (
+                                            <label key={speaker.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.selectedSpeakerIds.includes(speaker.id)}
+                                                    onChange={() => {
+                                                        const ids = formData.selectedSpeakerIds.includes(speaker.id)
+                                                            ? formData.selectedSpeakerIds.filter(id => id !== speaker.id)
+                                                            : [...formData.selectedSpeakerIds, speaker.id];
+                                                        setFormData({ ...formData, selectedSpeakerIds: ids });
+                                                    }}
+                                                    className="w-4 h-4 text-blue-600 rounded"
+                                                />
+                                                <div>
+                                                    <p className="font-medium text-sm">{speaker.firstName} {speaker.lastName}</p>
+                                                    {speaker.organization && (
+                                                        <p className="text-xs text-gray-500">{speaker.organization}</p>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Selected: {formData.selectedSpeakerIds.length} speaker(s)
+                                </p>
                             </div>
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>

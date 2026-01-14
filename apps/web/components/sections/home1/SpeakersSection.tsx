@@ -79,6 +79,18 @@ export default function SpeakersSection() {
         { id: 3, firstName: "Patricia", lastName: "Wilkinson", position: "HR Consultant", photoUrl: "/assets/img/all-images/team/team-img3.png" },
     ];
 
+    // Helper to get reliable image URL from Google Drive via our proxy
+    const getSpeakerImageUrl = (url: string | undefined, fallbackIndex: number) => {
+        if (!url) return `/assets/img/all-images/team/team-img${(fallbackIndex % 3) + 1}.png`;
+
+        // If it's a Google Drive URL, use our proxy
+        if (url.includes('drive.google.com')) {
+            return `${API_URL}/upload/proxy?url=${encodeURIComponent(url)}`;
+        }
+
+        return url;
+    };
+
     return (
         <>
             <div className="team1-section-area sp1">
@@ -102,7 +114,7 @@ export default function SpeakersSection() {
                                         <SwiperSlide key={index} className="team-widget-boxarea">
                                             <div className="img1 image-anime">
                                                 <img
-                                                    src={speaker.photoUrl || `/assets/img/all-images/team/team-img${(index % 3) + 1}.png`}
+                                                    src={getSpeakerImageUrl(speaker.photoUrl, index)}
                                                     alt={`${speaker.firstName} ${speaker.lastName}`}
                                                 />
                                                 <ul>

@@ -75,9 +75,12 @@ export default async function (fastify: FastifyInstance) {
                     eventId: sessions.eventId,
                     sessionCode: sessions.sessionCode,
                     sessionName: sessions.sessionName,
+                    description: sessions.description,
                     startTime: sessions.startTime,
                     endTime: sessions.endTime,
                     room: sessions.room,
+                    speakers: sessions.speakers,
+                    maxCapacity: sessions.maxCapacity,
                     eventCode: events.eventCode,
                 })
                 .from(sessions)

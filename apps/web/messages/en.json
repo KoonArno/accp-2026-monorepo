@@ -222,7 +222,9 @@
     "pageTitle": "Plenary & Keynotes",
     "description": "Distinguished speakers from around the world",
     "keynoteSpeakers": "Keynote Speakers",
-    "plenarySessions": "Plenary Sessions"
+    "plenarySessions": "Plenary Sessions",
+    "mainSessions": "Main Sessions",
+    "distinguishedSpeakers": "Distinguished Speakers"
   },
   "symposia": {
     "pageTitle": "Symposia",

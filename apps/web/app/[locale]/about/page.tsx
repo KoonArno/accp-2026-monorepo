@@ -1,7 +1,7 @@
 'use client'
 import { useTranslations, useLocale } from 'next-intl';
 import Layout from "@/components/layout/Layout"
-import BrandSlider from '@/components/slider/BrandSlider'
+
 import Link from "next/link"
 import CommitteeSection from '@/components/sections/about/CommitteeSection';
 
@@ -153,28 +153,7 @@ export default function About() {
 					<CommitteeSection />
 					{/* COMMITTEE SECTION ENDS */}
 
-					{/* SPONSORS SECTION STARTS */}
-					<div className="brands3-section-area sp2">
-						<div className="container">
-							<div className="row">
-								<div className="col-lg-6 m-auto">
-									<div className="heading2 text-center space-margin60">
-										<h5 style={{ color: '#FFBA00' }}>{t('ourPartners')}</h5>
-										<div className="space16" />
-										<h2>{t('conferenceSponsors')}</h2>
-										<div className="space16" />
-										<p>{t('thankSponsors')}</p>
-									</div>
-								</div>
-							</div>
-							<div className="row">
-								<div className="col-lg-12" data-aos="zoom-in" data-aos-duration={800}>
-									<BrandSlider />
-								</div>
-							</div>
-						</div>
-					</div>
-					{/* SPONSORS SECTION ENDS */}
+
 				</div>
 			</Layout>
 		</>

@@ -1,0 +1,727 @@
+/*
+ * ============================================
+ * ACCP 2026 - Misc Pages Responsive Styles
+ * ============================================
+ * Covers: /welcome-messages, /memories, /gallery, /blog, /blog-single,
+ *         /my-tickets, /pricing-plan, /speakers-single, /event-single,
+ *         /event-schedule, /signup
+ */
+
+/* ============================================
+   BASE STYLES (All Devices)
+   ============================================ */
+
+/* Welcome Message Cards */
+.welcome-message-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.welcome-message-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+/* Memory Box */
+.memory3-boxarea {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.memory3-boxarea:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.memory3-boxarea .img1 img {
+    width: 100%;
+    height: auto;
+    transition: all 0.3s ease;
+}
+
+.memory3-boxarea:hover .img1 img {
+    transform: scale(1.05);
+}
+
+.memory3-boxarea .content-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+}
+
+/* Gallery Grid */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+/* Blog Cards */
+.blog-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.blog-card-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.blog-card-content {
+    padding: 25px;
+}
+
+/* Single Event/Speaker/Blog Detail */
+.detail-hero {
+    padding: 60px 0;
+}
+
+.detail-content {
+    padding: 40px 0;
+}
+
+.detail-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Tickets Card */
+.ticket-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    border-left: 4px solid #FFBA00;
+}
+
+/* Pricing Cards */
+.pricing-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-card.featured {
+    border: 3px solid #FFBA00;
+    transform: scale(1.05);
+}
+
+/* Memory Inner Section */
+.memory-inner-section-area {
+    padding: 80px 0;
+}
+
+/* Event Schedule - Page */
+.choose-section-area {
+    padding: 80px 0;
+}
+
+.choose-widget-boxarea {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.choose-widget-boxarea:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.choose-widget-boxarea .icons {
+    width: 70px;
+    height: 70px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.schedule-section-area {
+    padding: 80px 0;
+}
+
+.schedule {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+    /* Ensure table is scrollable on small screens */
+}
+
+.schedule table {
+    width: 100%;
+    min-width: 600px;
+    /* Force minimum width for table */
+    border-collapse: collapse;
+}
+
+.schedule table th,
+.schedule table td {
+    padding: 20px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.schedule table th {
+    background: #f9f9f9;
+    font-weight: 700;
+    color: #1a237e;
+}
+
+
+/* Event Schedule - Page */
+.choose-section-area {
+    padding: 80px 0;
+}
+
+.choose-widget-boxarea {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.choose-widget-boxarea:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.choose-widget-boxarea .icons {
+    width: 70px;
+    height: 70px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.schedule-section-area {
+    padding: 80px 0;
+}
+
+.schedule {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+    /* Ensure table is scrollable on small screens */
+}
+
+.schedule table {
+    width: 100%;
+    min-width: 600px;
+    /* Force minimum width for table */
+    border-collapse: collapse;
+}
+
+.schedule table th,
+.schedule table td {
+    padding: 20px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.schedule table th {
+    background: #f9f9f9;
+    font-weight: 700;
+    color: #1a237e;
+}
+
+/* Speakers Details - Single Page */
+.team-details-section-area {
+    padding: 80px 0;
+}
+
+.speakers-details-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.our-team-boxarea {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.our-team-boxarea .img1 img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.speakesr-details-content {
+    background: #fcfcfc;
+    border-radius: 16px;
+    padding: 30px;
+    height: 100%;
+}
+
+.speakesr-details-content h2,
+.speakesr-details-content h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a237e;
+}
+
+.details-content h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 8px;
+}
+
+/* ============================================
+   MOBILE DEVICES (≤767px)
+   ============================================ */
+@media (max-width: 767px) {
+
+    /* ===== WELCOME MESSAGES ===== */
+    .welcome-message-card {
+        padding: 25px 20px !important;
+        text-align: center !important;
+    }
+
+    .welcome-message-image {
+        width: 150px !important;
+        height: 150px !important;
+        margin: 0 auto 20px !important;
+    }
+
+    /* ===== MEMORY GRID ===== */
+    .memory-inner-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .memory3-boxarea {
+        margin-bottom: 20px !important;
+        border-radius: 12px !important;
+    }
+
+    .memory3-boxarea .content-area {
+        padding: 15px !important;
+    }
+
+    .memory3-boxarea .content-area a {
+        font-size: 16px !important;
+    }
+
+    /* ===== GALLERY ===== */
+    .gallery-item {
+        border-radius: 10px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .gallery-item img {
+        height: 180px !important;
+    }
+
+    /* ===== BLOG CARDS ===== */
+    .blog-card {
+        margin-bottom: 20px !important;
+    }
+
+    .blog-card-image {
+        height: 180px !important;
+    }
+
+    .blog-card-content {
+        padding: 18px !important;
+    }
+
+    /* ===== TICKET CARDS ===== */
+    .ticket-card {
+        padding: 20px 15px !important;
+    }
+
+    /* ===== PRICING CARDS ===== */
+    .pricing-card {
+        padding: 25px 20px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .pricing-card.featured {
+        transform: none !important;
+    }
+
+    /* ===== DETAIL PAGES ===== */
+    .detail-hero {
+        padding: 40px 0 !important;
+    }
+
+    .detail-sidebar {
+        padding: 20px 15px !important;
+        margin-top: 20px !important;
+    }
+
+
+    /* ===== PAGINATION ===== */
+    .pagination-area {
+        margin-top: 20px !important;
+    }
+
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        font-size: 13px !important;
+    }
+
+
+    /* ===== EVENT SCHEDULE ===== */
+    .choose-section-area,
+    .schedule-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .choose-widget-boxarea {
+        padding: 25px 20px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .schedule {
+        padding: 20px !important;
+    }
+
+    .schedule table th,
+    .schedule table td {
+        padding: 15px !important;
+        font-size: 14px !important;
+    }
+
+    /* ===== SPEAKER DETAILS ===== */
+    .team-details-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .speakers-details-box {
+        padding: 20px !important;
+    }
+
+    .speakesr-details-content {
+        padding: 20px !important;
+        margin-top: 30px !important;
+    }
+
+    .speakesr-details-content h2,
+    .speakesr-details-content h3 {
+        font-size: 22px !important;
+    }
+
+    .our-team-boxarea {
+        margin-bottom: 0 !important;
+    }
+}
+
+/* ============================================
+   TABLET DEVICES (768px - 991px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 991px) {
+
+    .welcome-message-card {
+        padding: 32px !important;
+    }
+
+    .memory3-boxarea {
+        margin-bottom: 24px !important;
+    }
+
+    .gallery-item img {
+        height: 200px !important;
+    }
+
+    .pricing-card {
+        padding: 28px !important;
+    }
+}
+
+/* ============================================
+   IPAD PRO (992px - 1199px)
+   FOCUS: Optimal layout for iPad Pro dimensions
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199px) {
+
+    /* ===== WELCOME MESSAGES ===== */
+    .welcome-message-card {
+        padding: 48px !important;
+        border-radius: 18px !important;
+    }
+
+    .welcome-message-image {
+        width: 220px !important;
+        height: 220px !important;
+    }
+
+    /* ===== MEMORY GRID ===== */
+    .memory-inner-section-area {
+        padding: 90px 0 !important;
+    }
+
+    .memory3-boxarea {
+        border-radius: 18px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .memory3-boxarea .content-area {
+        padding: 25px !important;
+    }
+
+    .memory3-boxarea .content-area a {
+        font-size: 20px !important;
+    }
+
+    /* ===== GALLERY ===== */
+    .gallery-item {
+        border-radius: 14px !important;
+        margin-bottom: 22px !important;
+    }
+
+    .gallery-item img {
+        height: 280px !important;
+    }
+
+    /* ===== BLOG CARDS ===== */
+    .blog-card {
+        border-radius: 18px !important;
+        margin-bottom: 32px !important;
+    }
+
+    .blog-card-image {
+        height: 240px !important;
+    }
+
+    .blog-card-content {
+        padding: 30px !important;
+    }
+
+    /* ===== TICKET CARDS ===== */
+    .ticket-card {
+        padding: 30px !important;
+        border-radius: 18px !important;
+    }
+
+    /* ===== PRICING CARDS ===== */
+    .pricing-card {
+        padding: 42px !important;
+        border-radius: 18px !important;
+    }
+
+    .pricing-card h2 {
+        font-size: 48px !important;
+    }
+
+    /* ===== DETAIL PAGES ===== */
+    .detail-hero {
+        padding: 70px 0 !important;
+    }
+
+    .detail-content {
+        padding: 50px 0 !important;
+    }
+
+    .detail-sidebar {
+        padding: 35px !important;
+        border-radius: 18px !important;
+    }
+
+    /* ===== PAGINATION ===== */
+    .pagination-area {
+        margin-top: 35px !important;
+    }
+
+
+    .pagination .page-link {
+        padding: 12px 18px !important;
+        font-size: 15px !important;
+    }
+
+
+    /* ===== EVENT SCHEDULE ===== */
+    .choose-section-area,
+    .schedule-section-area {
+        padding: 80px 0 !important;
+    }
+
+    .schedule {
+        padding: 40px !important;
+        border-radius: 18px !important;
+    }
+
+    /* ===== SPEAKER DETAILS ===== */
+    .team-details-section-area {
+        padding: 80px 0 !important;
+    }
+
+    .speakers-details-box {
+        padding: 40px !important;
+        border-radius: 18px !important;
+    }
+
+    .speakesr-details-content {
+        padding: 35px !important;
+        border-radius: 18px !important;
+    }
+
+    .speakesr-details-content h2,
+    .speakesr-details-content h3 {
+        font-size: 30px !important;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (1200px - 1439px)
+   ============================================ */
+@media (min-width: 1200px) and (max-width: 1439px) {
+
+    .welcome-message-card {
+        padding: 52px !important;
+    }
+
+    .memory3-boxarea {
+        margin-bottom: 30px !important;
+    }
+
+    .gallery-item img {
+        height: 300px !important;
+    }
+
+    .pricing-card {
+        padding: 45px !important;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE DESKTOP (≥1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+
+    .welcome-message-card {
+        padding: 60px !important;
+    }
+
+    .welcome-message-image {
+        width: 250px !important;
+        height: 250px !important;
+    }
+
+    .memory-inner-section-area {
+        padding: 100px 0 !important;
+    }
+
+    .memory3-boxarea {
+        border-radius: 20px !important;
+    }
+
+    .gallery-item img {
+        height: 320px !important;
+    }
+
+    .blog-card-image {
+        height: 280px !important;
+    }
+
+    .pricing-card {
+        padding: 50px !important;
+    }
+
+    .detail-hero {
+        padding: 80px 0 !important;
+    }
+}
+
+/* ============================================
+   UTILITIES & ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.memory3-boxarea a:focus,
+.gallery-item a:focus,
+.blog-card a:focus,
+.pagination .page-link:focus {
+    outline: 3px solid #FFBA00;
+    outline-offset: 2px;
+}
+
+/* Smooth transitions */
+.welcome-message-card,
+.memory3-boxarea,
+.gallery-item,
+.blog-card,
+.ticket-card,
+.pricing-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .memory3-boxarea,
+    .gallery-item,
+    .blog-card,
+    .pricing-card {
+        transition: none;
+    }
+
+    .memory3-boxarea:hover,
+    .gallery-item:hover img,
+    .pricing-card:hover {
+        transform: none;
+    }
+}

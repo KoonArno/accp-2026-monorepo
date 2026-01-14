@@ -160,6 +160,7 @@
         "scientificTracks": "หัวข้อวิชาการ",
         "navigation": "เมนูนำทาง",
         "exploreProgram": "สำรวจโปรแกรม",
+        "exploreDesc": "ค้นพบกิจกรรมและเซสชันที่น่าตื่นเต้นที่วางแผนไว้สำหรับ ACCP 2026",
         "registrationWelcome": "ลงทะเบียน",
         "register": "ลงทะเบียน",
         "registrationAllDay": "ลงทะเบียน",
@@ -222,6 +223,8 @@
         "pageTitle": "คำปราศรัย",
         "description": "วิทยากรผู้ทรงคุณวุฒิจากทั่วโลก",
         "keynoteSpeakers": "วิทยากรหลัก",
+        "distinguishedSpeakers": "วิทยากรผู้ทรงคุณวุฒิ",
+        "mainSessions": "การประชุมหลัก",
         "plenarySessions": "คำปราศรัย"
     },
     "symposia": {
@@ -804,29 +807,6 @@
         "dressCode": "การแต่งกาย",
         "formalAttire": "ชุดสุภาพ"
     },
-    "abstracts": {
-        "pageTitle": "สถานะการส่ง Abstracts",
-        "pageDescription": "ติดตามสถานะของ abstracts ที่คุณส่ง",
-        "submitNew": "ส่ง Abstract ใหม่",
-        "totalSubmitted": "ส่งทั้งหมด",
-        "accepted": "ได้รับการตอบรับ",
-        "underReview": "กำลังพิจารณา",
-        "rejected": "ไม่ผ่าน",
-        "abstractId": "หมายเลข Abstract",
-        "submittedDate": "วันที่ส่ง",
-        "presentationSchedule": "ตารางการนำเสนอ",
-        "session": "Session",
-        "room": "ห้อง",
-        "date": "วันที่",
-        "time": "เวลา",
-        "reviewerComments": "ความคิดเห็นจากผู้ทรงคุณวุฒิ",
-        "viewFullAbstract": "ดู Abstract ฉบับเต็ม",
-        "downloadCertificate": "ดาวน์โหลดใบรับรอง",
-        "clinicalPharmacy": "เภสัชกรรมคลินิก",
-        "pharmacoeconomics": "เภสัชเศรษฐศาสตร์",
-        "oralPresentation": "การนำเสนอแบบบรรยาย",
-        "posterPresentation": "การนำเสนอแบบโปสเตอร์"
-    },
     "abstractSubmission": {
         "pageTitle": "ส่งบทคัดย่อ",
         "breadcrumb": "ส่งบทคัดย่อ",
@@ -1059,6 +1039,11 @@
         "time": "เวลา",
         "reviewerComments": "ความคิดเห็นผู้ตรวจสอบ",
         "viewFullAbstract": "ดูบทคัดย่อฉบับเต็ม",
-        "downloadCertificate": "ดาวน์โหลดใบรับรอง"
+        "downloadCertificate": "ดาวน์โหลดใบรับรอง",
+        "rejected": "ไม่ผ่าน",
+        "clinicalPharmacy": "เภสัชกรรมคลินิก",
+        "pharmacoeconomics": "เภสัชเศรษฐศาสตร์",
+        "oralPresentation": "การนำเสนอแบบบรรยาย",
+        "posterPresentation": "การนำเสนอแบบโปสเตอร์"
     }
 }

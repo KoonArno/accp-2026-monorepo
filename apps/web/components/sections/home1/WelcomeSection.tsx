@@ -92,7 +92,7 @@ export default function WelcomeSection() {
     ];
 
     return (
-        <div className="welcome-section-area sp1" style={welcomeStyles.section}>
+        <div className="welcome-section-area sp1">
             <div className="container">
                 {/* Header */}
                 <div className="text-center mb-5">
@@ -103,30 +103,21 @@ export default function WelcomeSection() {
                 <div className="row justify-content-center g-4">
                     {organizers.map((person, index) => (
                         <div key={index} className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay={index * 100}>
-                            <div style={welcomeStyles.card}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-10px)';
-                                    e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.15)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.08)';
-                                }}>
+                            <div className="welcome-card">
                                 {/* Name */}
-                                <h4 style={welcomeStyles.cardName}>{person.name}</h4>
+                                <h4>{person.name}</h4>
 
                                 {/* Photo */}
-                                <div style={welcomeStyles.imageContainer}>
+                                <div className="welcome-image-container">
                                     <img
                                         src={person.image}
                                         alt={person.name}
-                                        style={welcomeStyles.image}
                                     />
                                 </div>
 
                                 {/* Title & Position */}
-                                <p style={welcomeStyles.roleTitle}>{t(person.titleKey)}</p>
-                                <p style={welcomeStyles.rolePosition}>{person.position}</p>
+                                <p className="welcome-role-title">{t(person.titleKey)}</p>
+                                <p className="welcome-role-position">{person.position}</p>
                             </div>
                         </div>
                     ))}

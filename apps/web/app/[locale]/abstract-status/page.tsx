@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Layout from '@/components/layout/Layout';
+import '@/styles/abstracts-responsive.css';
 
 export default function AbstractStatus() {
     const t = useTranslations('abstracts');

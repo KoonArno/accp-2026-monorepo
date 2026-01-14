@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import PlenarySpeakers from '@/components/sections/program/PlenarySpeakers';
 import PlenarySchedule from '@/components/sections/program/PlenarySchedule';
+import '@/styles/program-responsive.css';
 
 export default function PlenaryKeynotes() {
     const tCommon = useTranslations('common');

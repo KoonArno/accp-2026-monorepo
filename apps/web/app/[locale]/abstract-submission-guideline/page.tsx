@@ -2,6 +2,7 @@
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
+import '@/styles/abstracts-responsive.css';
 
 export default function AbstractSubmissionGuideline() {
     const tCommon = useTranslations('common')

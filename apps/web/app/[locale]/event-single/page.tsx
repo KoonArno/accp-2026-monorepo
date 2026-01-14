@@ -3,6 +3,7 @@ import Countdown from '@/components/elements/Countdown'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useState } from "react"
+import '@/styles/events-responsive.css';
 export default function EventSingle() {
 	const [isTab, setIsTab] = useState(1)
 	const handleTab = (i: number) => {

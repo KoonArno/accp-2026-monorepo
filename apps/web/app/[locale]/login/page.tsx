@@ -2,6 +2,7 @@
 import Layout from "@/components/layout/Layout"
 import { useTranslations } from 'next-intl';
 import LoginForm from '@/components/sections/auth/LoginForm';
+import '@/styles/auth-responsive.css';
 
 export default function Login() {
     const t = useTranslations('login');

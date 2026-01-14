@@ -13,6 +13,7 @@ import { useCheckoutWizard } from "@/hooks/checkout/useCheckoutWizard";
 import FormInput from "@/components/common/FormInput";
 import Button from "@/components/common/Button";
 import { formatCurrency } from "@/utils/currency";
+import "@/styles/registration-responsive.css";
 
 import {
   registrationPackages,

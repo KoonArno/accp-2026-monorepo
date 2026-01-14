@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import FaqSection from "@/components/sections/faq/FaqSection"
+import '@/styles/general-pages-responsive.css';
 
 export default function Faq() {
 	const t = useTranslations('faq');

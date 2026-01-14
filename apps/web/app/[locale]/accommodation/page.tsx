@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import { hotels } from "@/data/hotelData"
 import HotelCard from "@/components/sections/accommodation/HotelCard"
+import '@/styles/travel-responsive.css';
 
 export default function Accommodation() {
     const t = useTranslations('accommodation')

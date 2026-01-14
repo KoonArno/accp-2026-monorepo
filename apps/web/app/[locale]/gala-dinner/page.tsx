@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import { galaHighlights, galaMenu } from '@/data/galaData';
+import '@/styles/events-responsive.css';
 
 export default function GalaDinner() {
     const tCommon = useTranslations('common');

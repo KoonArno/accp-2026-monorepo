@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useCheckoutWizard } from '@/hooks/checkout/useCheckoutWizard'
 import { registrationPackages, addOns } from '@/data/checkout'
+import '@/styles/registration-responsive.css';
 
 export default function Payment() {
 	const t = useTranslations('payment');

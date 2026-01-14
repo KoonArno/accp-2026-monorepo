@@ -10,6 +10,7 @@ import VisaInfo from "@/components/sections/travel/VisaInfo"
 import TransportationInfo from "@/components/sections/travel/TransportationInfo"
 import AdditionalInfo from "@/components/sections/travel/AdditionalInfo"
 import EmergencyNumbers from "@/components/sections/travel/EmergencyNumbers"
+import '@/styles/travel-responsive.css';
 
 export default function TravelVisa() {
     const t = useTranslations('travelVisa')

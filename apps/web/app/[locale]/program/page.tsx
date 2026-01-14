@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import ProgramSchedule from '@/components/sections/program/ProgramSchedule';
 import ProgramNavigation from '@/components/sections/program/ProgramNavigation';
+import '@/styles/program-responsive.css';
 
 export default function ProgramOverview() {
     const tCommon = useTranslations('common');

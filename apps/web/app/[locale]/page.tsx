@@ -6,6 +6,8 @@ import MemoriesSection from '@/components/sections/home1/MemoriesSection';
 import MapSection from '@/components/sections/home1/MapSection';
 import CtaSection from '@/components/sections/home1/CtaSection';
 import MemorialPopup from '@/components/elements/MemorialPopup';
+import '@/styles/home-responsive.css';
+
 
 export default function Home() {
     return (

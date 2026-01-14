@@ -160,6 +160,7 @@
     "scientificTracks": "Scientific Tracks",
     "navigation": "Navigation",
     "exploreProgram": "Explore the Program",
+    "exploreDesc": "Discover all the exciting sessions and events planned for ACCP 2026",
     "registrationWelcome": "Registration",
     "register": "Register",
     "registrationAllDay": "Registration",
@@ -222,6 +223,8 @@
     "pageTitle": "Plenary & Keynotes",
     "description": "Distinguished speakers from around the world",
     "keynoteSpeakers": "Keynote Speakers",
+    "distinguishedSpeakers": "Distinguished Speakers",
+    "mainSessions": "Main Sessions",
     "plenarySessions": "Plenary Sessions"
   },
   "symposia": {
@@ -773,29 +776,6 @@
     "dressCode": "Dress Code",
     "formalAttire": "Formal Attire"
   },
-  "abstracts": {
-    "pageTitle": "Abstract Status",
-    "pageDescription": "Track the status of your submitted abstracts",
-    "submitNew": "Submit New Abstract",
-    "totalSubmitted": "Total Submitted",
-    "accepted": "Accepted",
-    "underReview": "Under Review",
-    "rejected": "Rejected",
-    "abstractId": "Abstract ID",
-    "submittedDate": "Submitted Date",
-    "presentationSchedule": "Presentation Schedule",
-    "session": "Session",
-    "room": "Room",
-    "date": "Date",
-    "time": "Time",
-    "reviewerComments": "Reviewer Comments",
-    "viewFullAbstract": "View Full Abstract",
-    "downloadCertificate": "Download Certificate",
-    "clinicalPharmacy": "Clinical Pharmacy",
-    "pharmacoeconomics": "Pharmacoeconomics",
-    "oralPresentation": "Oral Presentation",
-    "posterPresentation": "Poster Presentation"
-  },
   "abstractSubmission": {
     "pageTitle": "Abstract Submission",
     "breadcrumb": "Abstract Submission",
@@ -1028,6 +1008,11 @@
     "time": "Time",
     "reviewerComments": "Reviewer Comments",
     "viewFullAbstract": "View Full Abstract",
-    "downloadCertificate": "Download Certificate"
+    "downloadCertificate": "Download Certificate",
+    "rejected": "Rejected",
+    "clinicalPharmacy": "Clinical Pharmacy",
+    "pharmacoeconomics": "Pharmacoeconomics",
+    "oralPresentation": "Oral Presentation",
+    "posterPresentation": "Poster Presentation"
   }
 }

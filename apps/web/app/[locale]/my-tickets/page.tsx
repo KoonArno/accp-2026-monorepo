@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Layout from '@/components/layout/Layout';
+import '@/styles/misc-pages-responsive.css';
 
 export default function MyTickets() {
     const t = useTranslations('tickets');

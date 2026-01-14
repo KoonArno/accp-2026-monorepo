@@ -9,6 +9,7 @@ import AbstractTopicList from "@/components/sections/abstracts/AbstractTopicList
 import AbstractCallInstructions from "@/components/sections/abstracts/AbstractCallInstructions"
 import CallSubmissionSteps from "@/components/sections/abstracts/CallSubmissionSteps"
 import AbstractExample from "@/components/sections/abstracts/AbstractExample"
+import '@/styles/abstracts-responsive.css';
 
 export default function CallForAbstracts() {
     const t = useTranslations('callForAbstracts')

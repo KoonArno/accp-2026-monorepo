@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import { speakersData } from '@/data/speakersData'
 import SpeakerCard from '@/components/sections/speakers/SpeakerCard'
+import '@/styles/general-pages-responsive.css';
 
 export default function Speakers() {
 	const tCommon = useTranslations('common');

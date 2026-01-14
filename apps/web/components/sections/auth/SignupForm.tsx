@@ -8,6 +8,7 @@ import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 import { Hourglass } from 'react-loader-spinner';
+import { API_BASE_URL, API_ENDPOINTS } from '@/utils/constants';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -92,12 +93,11 @@ export default function SignupForm() {
                     setIsLoading(false);
                     return;
                 }
-                // TODO: Re-enable validation for production
-                // if (!validateThaiId(idCard)) {
-                //     alert(locale === 'th' ? 'เลขบัตรประชาชนไม่ถูกต้อง' : 'Invalid Thai ID card number');
-                //     setIsLoading(false);
-                //     return;
-                // }
+                if (!validateThaiId(idCard)) {
+                    alert(locale === 'th' ? 'เลขบัตรประชาชนไม่ถูกต้อง' : 'Invalid Thai ID card number');
+                    setIsLoading(false);
+                    return;
+                }
             } else if (!country) {
                 alert(locale === 'th' ? 'กรุณาระบุประเทศ' : 'Please enter country');
                 setIsLoading(false);
@@ -135,7 +135,7 @@ export default function SignupForm() {
                 formData.append('verificationDoc', studentDocument);
             }
 
-            const response = await fetch('http://localhost:3002/auth/register', {
+            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SIGNUP}`, {
                 method: 'POST',
                 body: formData, // No Content-Type header - browser sets it automatically
             });

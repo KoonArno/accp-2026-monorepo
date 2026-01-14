@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
+import '@/styles/abstracts-responsive.css';
 
 export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')

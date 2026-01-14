@@ -10,7 +10,7 @@ const fastify = Fastify({ logger: true });
 // Parse CORS origins from environment variable (comma-separated) or use dev defaults
 const corsOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001'];
 
 fastify.register(cors, { 
   origin: corsOrigins,

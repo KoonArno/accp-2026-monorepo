@@ -35,6 +35,7 @@ interface Abstract {
     category: string;
     presentationType: string | null;
     status: string;
+    fullPaperUrl: string | null;
     createdAt: string;
     author: {
         firstName: string;
@@ -311,7 +312,25 @@ export default function AbstractsPage() {
                             */}
                             <div className="bg-gray-50 p-4 rounded-lg">
                                 <h5 className="font-semibold mb-2">Abstract Content:</h5>
-                                <p className="text-gray-600 italic">Content loading not implemented in list view for performance.</p>
+                                {selectedAbstract.fullPaperUrl ? (
+                                    <div className="flex flex-col gap-3">
+                                        <p className="text-gray-600">Full paper is available (PDF/Doc).</p>
+                                        <a 
+                                            href={selectedAbstract.fullPaperUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="btn-primary inline-flex items-center gap-2 self-start"
+                                        >
+                                            <IconFileText size={20} />
+                                            View Full Paper
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 italic flex items-center gap-2">
+                                        <IconX size={18} />
+                                        No abstract file uploaded.
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">

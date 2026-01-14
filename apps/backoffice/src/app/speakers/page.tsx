@@ -99,11 +99,9 @@ export default function SpeakersPage() {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
-            const query = eventFilter ? `?eventId=${eventFilter}` : '';
-            const res = await fetch(`${API_URL}/api/backoffice/speakers${query}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const query = eventFilter ? `eventId=${eventFilter}` : undefined;
+            
+            const data = await api.speakers.list(token, query);
             setSpeakers(data.speakers || []);
 
             // Build speaker -> eventIds map
@@ -123,25 +121,9 @@ export default function SpeakersPage() {
     const handleImageUpload = async (file: File) => {
         setIsUploading(true);
         try {
-            const formDataUpload = new FormData();
-            formDataUpload.append('file', file);
-            formDataUpload.append('folder', 'speakers');
-
             const token = localStorage.getItem('backoffice_token') || '';
-            const response = await fetch(`${API_URL}/upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: formDataUpload,
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setFormData({ ...formData, photoUrl: data.url || data.fileUrl });
-            } else {
-                alert('Failed to upload image');
-            }
+            const data = await api.upload(token, file, 'speakers');
+            setFormData({ ...formData, photoUrl: data.url || data.fileUrl });
         } catch (error) {
             console.error('Upload error:', error);
             alert('Failed to upload image');

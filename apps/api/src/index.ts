@@ -7,7 +7,17 @@ import jwt from "@fastify/jwt";
 const fastify = Fastify({ logger: true });
 
 // Register plugins
-fastify.register(cors, { origin: "*" });
+// Parse CORS origins from environment variable (comma-separated) or use dev defaults
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+fastify.register(cors, { 
+  origin: corsOrigins,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-email'],
+  exposedHeaders: ['x-user-email'],
+  credentials: true
+});
 fastify.register(multipart, {
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -53,6 +63,10 @@ fastify.register(backofficeSessionsRoutes, { prefix: "/api/backoffice/sessions" 
 fastify.register(publicSpeakersRoutes, { prefix: "/api/speakers" });
 fastify.register(abstractSubmitRoutes, { prefix: "/api/abstracts" });
 fastify.register(userProfileRoutes, { prefix: "/api/users" });
+
+// User abstracts route (requires authentication via cookies)
+import userAbstractsRoutes from "./routes/public/abstracts/user.js";
+fastify.register(userAbstractsRoutes, { prefix: "/api/abstracts/user" });
 
 // Health check
 fastify.get("/health", async () => ({

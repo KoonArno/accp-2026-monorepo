@@ -47,7 +47,9 @@
     "phone": "Phone",
     "address": "Address",
     "faq": "FAQ",
-    "speakers": "Speakers"
+    "speakers": "Speakers",
+    "loading": "Loading...",
+    "backToHome": "Back to Home"
   },
   "hero": {
     "subtitle": "The 25th Asian Conference on Clinical Pharmacy",
@@ -773,29 +775,6 @@
     "dressCode": "Dress Code",
     "formalAttire": "Formal Attire"
   },
-  "abstracts": {
-    "pageTitle": "Abstract Status",
-    "pageDescription": "Track the status of your submitted abstracts",
-    "submitNew": "Submit New Abstract",
-    "totalSubmitted": "Total Submitted",
-    "accepted": "Accepted",
-    "underReview": "Under Review",
-    "rejected": "Rejected",
-    "abstractId": "Abstract ID",
-    "submittedDate": "Submitted Date",
-    "presentationSchedule": "Presentation Schedule",
-    "session": "Session",
-    "room": "Room",
-    "date": "Date",
-    "time": "Time",
-    "reviewerComments": "Reviewer Comments",
-    "viewFullAbstract": "View Full Abstract",
-    "downloadCertificate": "Download Certificate",
-    "clinicalPharmacy": "Clinical Pharmacy",
-    "pharmacoeconomics": "Pharmacoeconomics",
-    "oralPresentation": "Oral Presentation",
-    "posterPresentation": "Poster Presentation"
-  },
   "abstractSubmission": {
     "pageTitle": "Abstract Submission",
     "breadcrumb": "Abstract Submission",
@@ -857,6 +836,9 @@
     "submitting": "Submitting...",
     "successTitle": "Abstract Submitted Successfully!",
     "successMessage": "Thank you for your submission. You will receive a confirmation email with your tracking ID shortly.",
+    "successWaitMessage": "Please wait for the abstract review results on",
+    "successDate": "April 10, 2026",
+    "trackingIdLabel": "Tracking ID",
     "trackingId": "Tracking ID:",
     "returnHome": "Return to Home",
     "viewGuidelines": "View Guidelines",
@@ -998,13 +980,28 @@
   "abstracts": {
     "title": "Abstract Status",
     "subtitle": "Track the status of your submitted abstracts",
+    "pageTitle": "Abstract Status",
+    "pageDescription": "View the status and presentation details of your submitted abstracts",
     "submitNew": "Submit New Abstract",
     "yourAbstracts": "Your Abstracts",
     "totalSubmitted": "Total Submitted",
     "accepted": "Accepted",
     "underReview": "Under Review",
-    "pageTitle": "Abstract Status",
-    "pageDescription": "View the status and presentation details of your submitted abstracts",
+    "rejected": "Rejected",
+    "abstractId": "Abstract ID",
+    "submittedDate": "Submitted Date",
+    "presentationSchedule": "Presentation Schedule",
+    "session": "Session",
+    "room": "Room",
+    "date": "Date",
+    "time": "Time",
+    "reviewerComments": "Reviewer Comments",
+    "viewFullAbstract": "View Full Abstract",
+    "downloadCertificate": "Download Certificate",
+    "clinicalPharmacy": "Clinical Pharmacy",
+    "pharmacoeconomics": "Pharmacoeconomics",
+    "oralPresentation": "Oral Presentation",
+    "posterPresentation": "Poster Presentation",
     "status": {
       "accepted": "Accepted",
       "underReview": "Under Review",
@@ -1019,15 +1016,16 @@
       "oralPresentation": "Oral Presentation",
       "posterPresentation": "Poster Presentation"
     },
-    "abstractId": "Abstract ID",
-    "submittedDate": "Submitted Date",
-    "presentationSchedule": "Presentation Schedule",
-    "session": "Session",
-    "room": "Room",
-    "date": "Date",
-    "time": "Time",
-    "reviewerComments": "Reviewer Comments",
-    "viewFullAbstract": "View Full Abstract",
-    "downloadCertificate": "Download Certificate"
+    "emptyState": {
+      "title": "No Abstracts Submitted Yet",
+      "message": "You haven't submitted any abstracts. Start by submitting your first abstract!",
+      "submitButton": "Submit Your First Abstract"
+    },
+    "status": {
+      "pending": "Under Review",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "under_review": "Under Review"
+    }
   }
 }

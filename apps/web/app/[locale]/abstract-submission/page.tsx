@@ -98,25 +98,27 @@ export default function AbstractSubmission() {
     // Autofill user data when logged in
     useEffect(() => {
         const autofillUserData = async () => {
-            if (isAuthenticated && user && user.email) {
+            if (user) {
+                // Fetch detailed user profile
                 try {
-                    const response = await fetch(`http://localhost:3002/api/users/profile/${encodeURIComponent(user.email)}`)
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+                    const response = await fetch(`${API_URL}/api/users/profile/${encodeURIComponent(user.email)}`)
                     if (response.ok) {
-                        const data = await response.json()
-                        if (data.success && data.user) {
+                        const userData = await response.json()
+                        if (userData.success && userData.user) {
                             setFormData(prev => ({
                                 ...prev,
-                                firstName: data.user.firstName || '',
-                                lastName: data.user.lastName || '',
-                                email: data.user.email || '',
-                                affiliation: data.user.institution || '',
-                                country: data.user.country || '',
-                                phone: data.user.phone || '',
+                                firstName: userData.user.firstName || '',
+                                lastName: userData.user.lastName || '',
+                                email: userData.user.email || '',
+                                affiliation: userData.user.institution || '',
+                                country: userData.user.country || '',
+                                phone: userData.user.phone || '',
                             }))
                         }
                     }
                 } catch (error) {
-                    console.error('Failed to fetch user profile:', error)
+                    console.error('Error fetching user profile:', error)
                 }
             }
         }
@@ -226,6 +228,7 @@ export default function AbstractSubmission() {
 
         try {
             // Prepare FormData for multipart submission
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
             const formDataToSend = new FormData()
             
             // Add basic fields
@@ -257,7 +260,7 @@ export default function AbstractSubmission() {
             formDataToSend.append('abstractFile', uploadedFiles[0].file)
 
             // Submit to API
-            const response = await fetch('http://localhost:3002/api/abstracts/submit', {
+            const response = await fetch(`${API_URL}/api/abstracts/submit`, {
                 method: 'POST',
                 body: formDataToSend,
             })
@@ -492,16 +495,16 @@ export default function AbstractSubmission() {
                             </div>
                             <div style={{ fontSize: '48px', marginBottom: '24px' }}>✅</div>
                             <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#1a1a1a', marginBottom: '16px' }}>
-                                {t('successTitle') || 'Abstract Submitted Successfully!'}
+                                {t('successTitle')}
                             </h3>
                             <p style={{ color: '#666', fontSize: '16px', marginBottom: '16px', lineHeight: '1.7' }}>
-                                ขอบคุณสำหรับการส่ง Abstract ของคุณ
+                                {t('successMessage')}
                             </p>
                             <p style={{ color: '#666', fontSize: '16px', marginBottom: '24px', lineHeight: '1.7' }}>
-                                กรุณารอผลการคัดเลือก Abstract<br />ในวันที่ <strong style={{ color: '#FFBA00' }}>10 เมษายน 2026</strong>
+                                {t('successWaitMessage')}<br />{t('successDate')}
                             </p>
                             <p style={{ color: '#999', fontSize: '14px', marginBottom: '32px' }}>
-                                Tracking ID: <strong style={{ color: '#FFBA00' }}>{trackingId}</strong>
+                                {t('trackingIdLabel')}: <strong style={{ color: '#FFBA00' }}>{trackingId}</strong>
                             </p>
                             <button
                                 onClick={() => window.location.href = '/'}

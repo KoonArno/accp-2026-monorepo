@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import '@/styles/abstracts-responsive.css';
 import { useAuth } from '@/context/AuthContext';
+import { Hourglass } from 'react-loader-spinner';
 
 export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')

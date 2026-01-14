@@ -1,32 +1,26 @@
-import nodemailer from "nodemailer";
-import type { Transporter } from "nodemailer";
+import { Resend } from "resend";
 
-// Lazy transporter initialization
-let transporter: Transporter | null = null;
+// Lazy Resend initialization
+let resendClient: Resend | null = null;
 
-function getTransporter(): Transporter {
-  if (!transporter) {
-    // Debug: log SMTP config
-    console.log("SMTP_USER present:", !!process.env.SMTP_USER);
-    console.log("SMTP_PASS present:", !!process.env.SMTP_PASS);
-
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+function getResendClient(): Resend {
+  if (!resendClient) {
+    if (!process.env.RESEND_API_KEY) {
       throw new Error(
-        "SMTP credentials not configured. Set SMTP_USER and SMTP_PASS in .env"
+        "RESEND_API_KEY not configured. Set RESEND_API_KEY in .env"
       );
     }
-
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    resendClient = new Resend(process.env.RESEND_API_KEY);
   }
-  return transporter;
+  return resendClient;
+}
+
+/**
+ * Get the sender email address
+ * Uses EMAIL_FROM or falls back to Resend's testing domain
+ */
+function getFromEmail(): string {
+  return process.env.EMAIL_FROM || "ACCP Conference <onboarding@resend.dev>";
 }
 
 /**
@@ -40,9 +34,9 @@ export async function sendAbstractSubmissionEmail(
   abstractTitle: string
 ): Promise<void> {
   try {
-    const mailOptions = {
-      from: process.env.SMTP_FROM,
-      to: email,
+    const { error } = await getResendClient().emails.send({
+      from: getFromEmail(),
+      to: [email],
       subject: "Abstract Submission Confirmation - ACCP 2026",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -95,9 +89,12 @@ export async function sendAbstractSubmissionEmail(
           </div>
         </div>
       `,
-    };
+    });
 
-    await getTransporter().sendMail(mailOptions);
+    if (error) {
+      console.error("Error sending abstract submission email:", error);
+      throw error;
+    }
     console.log(`Abstract submission email sent to ${email}`);
   } catch (error) {
     console.error("Error sending abstract submission email:", error);
@@ -117,9 +114,9 @@ export async function sendCoAuthorNotificationEmail(
   abstractTitle: string
 ): Promise<void> {
   try {
-    const mailOptions = {
-      from: process.env.SMTP_FROM,
-      to: email,
+    const { error } = await getResendClient().emails.send({
+      from: getFromEmail(),
+      to: [email],
       subject: "You've been added as Co-Author - ACCP 2026 Abstract",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -172,9 +169,12 @@ export async function sendCoAuthorNotificationEmail(
           </div>
         </div>
       `,
-    };
+    });
 
-    await getTransporter().sendMail(mailOptions);
+    if (error) {
+      console.error("Error sending co-author notification email:", error);
+      throw error;
+    }
     console.log(`Co-author notification email sent to ${email}`);
   } catch (error) {
     console.error("Error sending co-author notification email:", error);
@@ -191,9 +191,9 @@ export async function sendPendingApprovalEmail(
   firstName: string,
   lastName: string
 ): Promise<void> {
-  const mailOptions = {
-    from: process.env.SMTP_FROM || "ACCP Conference <noreply@accp.com>",
-    to: email,
+  const { error } = await getResendClient().emails.send({
+    from: getFromEmail(),
+    to: [email],
     subject: "Registration Received - Pending Verification",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -213,9 +213,12 @@ export async function sendPendingApprovalEmail(
         <p style="color: #374151;">Best regards,<br/><strong>ACCP Conference Team</strong></p>
       </div>
     `,
-  };
+  });
 
-  await getTransporter().sendMail(mailOptions);
+  if (error) {
+    console.error("Error sending pending approval email:", error);
+    throw error;
+  }
 }
 
 /**
@@ -230,9 +233,9 @@ export async function sendVerificationApprovedEmail(
     ? `${process.env.BASE_URL}/login`
     : "http://localhost:3000/login";
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM || "ACCP Conference <noreply@accp.com>",
-    to: email,
+  const { error } = await getResendClient().emails.send({
+    from: getFromEmail(),
+    to: [email],
     subject: "Account Approved - ACCP Conference 2026",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -252,7 +255,10 @@ export async function sendVerificationApprovedEmail(
         <p style="color: #374151;">Best regards,<br/><strong>ACCP Conference Team</strong></p>
       </div>
     `,
-  };
+  });
 
-  await getTransporter().sendMail(mailOptions);
+  if (error) {
+    console.error("Error sending verification approved email:", error);
+    throw error;
+  }
 }

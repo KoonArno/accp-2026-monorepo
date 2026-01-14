@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 interface FetchOptions extends RequestInit {
   token?: string;
@@ -42,7 +42,7 @@ export async function fetchAPI<T>(
 // API Functions
 export const api = {
   auth: {
-    login: (credentials: any) => fetchAPI<{ token: string; user: any }>('/backoffice/login', { method: 'POST', body: JSON.stringify(credentials) }),
+    login: (credentials: any) => fetchAPI<{ success: boolean; token: string; user: any; error?: string }>('/backoffice/login', { method: 'POST', body: JSON.stringify(credentials) }),
     me: (token: string) => fetchAPI<{ user: any }>('/backoffice/me', { token }),
   },
 
@@ -93,7 +93,7 @@ export const api = {
   },
 
   speakers: {
-    list: (token: string) => fetchAPI<{ speakers: any[] }>('/api/backoffice/speakers', { token }),
+    list: (token: string, query?: string) => fetchAPI<{ speakers: any[]; eventSpeakers?: any[] }>(`/api/backoffice/speakers${query ? `?${query}` : ''}`, { token }),
     create: (token: string, data: any) => fetchAPI<{ speaker: any }>('/api/backoffice/speakers', { method: 'POST', body: JSON.stringify(data), token }),
     update: (token: string, id: number, data: any) => fetchAPI<{ speaker: any }>(`/api/backoffice/speakers/${id}`, { method: 'PATCH', body: JSON.stringify(data), token }),
     delete: (token: string, id: number) => fetchAPI<void>(`/api/backoffice/speakers/${id}`, { method: 'DELETE', token }),
@@ -125,4 +125,24 @@ export const api = {
   payments: {
     list: (token: string) => fetchAPI<{ payments: any[] }>("/api/payments", { token }),
   },
+
+  // File Upload
+  upload: (token: string, file: File, folder: string = 'general') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+
+    // We use raw fetch here because fetchAPI handles JSON body logic
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+    return fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    }).then(async (res) => {
+        if (!res.ok) throw new Error('Upload failed');
+        return res.json();
+    });
+  }
 };

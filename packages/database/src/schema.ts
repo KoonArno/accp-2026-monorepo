@@ -10,6 +10,7 @@ import {
   jsonb,
   pgEnum,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // --------------------------------------------------------------------------
 // 1. ENUMS
@@ -51,11 +52,12 @@ export const registrationStatusEnum = pgEnum("registration_status", [
   "cancelled",
 ]);
 export const abstractCategoryEnum = pgEnum("abstract_category", [
-  "clinical",
-  "social",
-  "experimental",
-  "education",
-  "other",
+  "clinical_pharmacy",
+  "social_administrative",
+  "pharmaceutical_sciences",
+  "pharmacology_toxicology",
+  "pharmacy_education",
+  "digital_pharmacy"
 ]);
 export const presentationTypeEnum = pgEnum("presentation_type", [
   "oral",
@@ -362,7 +364,6 @@ export const eventSpeakers = pgTable("event_speakers", {
 export const abstracts = pgTable("abstracts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
-    .notNull()
     .references(() => users.id),
   eventId: integer("event_id")
     .notNull()
@@ -438,3 +439,41 @@ export type NewBackofficeUser = typeof backofficeUsers.$inferInsert;
 
 export type StaffEventAssignment = typeof staffEventAssignments.$inferSelect;
 export type NewStaffEventAssignment = typeof staffEventAssignments.$inferInsert;
+
+// --------------------------------------------------------------------------
+// 8. RELATIONS
+// --------------------------------------------------------------------------
+
+export const registrationsRelations = relations(registrations, ({ one }) => ({
+	event: one(events, {
+		fields: [registrations.eventId],
+		references: [events.id],
+	}),
+	ticketType: one(ticketTypes, {
+		fields: [registrations.ticketTypeId],
+		references: [ticketTypes.id],
+	}),
+	user: one(users, {
+		fields: [registrations.userId],
+		references: [users.id],
+	}),
+}));
+
+export const checkInsRelations = relations(checkIns, ({ one }) => ({
+	registration: one(registrations, {
+		fields: [checkIns.registrationId],
+		references: [registrations.id],
+	}),
+	scannedBy: one(users, {
+		fields: [checkIns.scannedBy],
+		references: [users.id],
+	}),
+}));
+
+export const eventsRelations = relations(events, ({ many }) => ({
+	registrations: many(registrations),
+}));
+
+export const ticketTypesRelations = relations(ticketTypes, ({ many }) => ({
+	registrations: many(registrations),
+}));

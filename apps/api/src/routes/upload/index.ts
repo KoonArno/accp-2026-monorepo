@@ -7,6 +7,7 @@ const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/jpg",
   "image/png",
+  "image/webp",
 ];
 
 // Max file size: 10MB
@@ -126,6 +127,23 @@ export async function uploadRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: "Failed to upload abstract. Please try again.",
+      });
+    }
+  });
+
+  /**
+   * POST /upload/venue-image
+   * Upload venue image to Google Drive (venue_images folder)
+   */
+  fastify.post("/venue-image", async (request, reply) => {
+    try {
+      const result = await handleFileUpload(request, "venue_images");
+      return reply.status(result.status).send(result);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({
+        success: false,
+        error: "Failed to upload venue image",
       });
     }
   });

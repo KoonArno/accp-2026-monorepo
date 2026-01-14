@@ -162,6 +162,7 @@
     "scientificTracks": "Scientific Tracks",
     "navigation": "Navigation",
     "exploreProgram": "Explore the Program",
+    "exploreDesc": "Discover all the exciting sessions and events",
     "registrationWelcome": "Registration",
     "register": "Register",
     "registrationAllDay": "Registration",
@@ -224,7 +225,9 @@
     "pageTitle": "Plenary & Keynotes",
     "description": "Distinguished speakers from around the world",
     "keynoteSpeakers": "Keynote Speakers",
-    "plenarySessions": "Plenary Sessions"
+    "plenarySessions": "Plenary Sessions",
+    "mainSessions": "Main Sessions",
+    "distinguishedSpeakers": "Distinguished Speakers"
   },
   "symposia": {
     "pageTitle": "Symposia",

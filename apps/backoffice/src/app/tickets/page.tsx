@@ -13,6 +13,7 @@ import {
     IconX,
     IconCopy,
     IconLoader2,
+    IconCalendarEvent,
 } from '@tabler/icons-react';
 
 const categoryColors: { [key: string]: { bg: string; text: string } } = {
@@ -31,8 +32,6 @@ const typeColors: { [key: string]: string } = {
 interface Ticket {
     id: number;
     eventId: number;
-    code: string; // mapped from groupName or similar? schema says groupName
-    groupName: string;
     name: string; // ticketTypes.name
     category: string;
     price: number;
@@ -63,6 +62,7 @@ export default function TicketsPage() {
     // Filters & Pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [eventFilter, setEventFilter] = useState<number | ''>('');
+    const [categoryFilter, setCategoryFilter] = useState<'primary' | 'addon' | ''>('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -76,7 +76,6 @@ export default function TicketsPage() {
     // Form state
     const [formData, setFormData] = useState({
         eventId: 0,
-        groupName: '', // treating as code
         name: '',
         category: 'primary',
         price: 0,
@@ -93,7 +92,7 @@ export default function TicketsPage() {
 
     useEffect(() => {
         fetchTickets();
-    }, [page, searchTerm, eventFilter]);
+    }, [page, searchTerm, eventFilter, categoryFilter]);
 
     const fetchEvents = async () => {
         try {
@@ -119,18 +118,17 @@ export default function TicketsPage() {
             const params: any = { page, limit: 10 };
             if (eventFilter) params.eventId = eventFilter;
             if (searchTerm) params.search = searchTerm;
+            if (categoryFilter) params.category = categoryFilter;
 
             const res = await api.tickets.list(token, new URLSearchParams(params).toString());
 
             const mappedTickets = res.tickets.map((t: any) => ({
                 id: t.id,
                 eventId: t.eventId,
-                code: t.code || t.groupName, // Schema in tickets.ts maps groupName to code
-                groupName: t.code || t.groupName,
                 name: t.name,
                 category: t.category,
                 price: parseFloat(t.price),
-                currency: 'THB', // Default or from DB if available (tickets.ts didn't select it, wait, checked schema it selects currency? No, checks tickets.ts select fields... wait it wasn't selected in Step 327 view. Adding it might be required for full correctness but I'll default to THB for now).
+                currency: t.currency || 'THB',
                 quota: t.quota,
                 sold: t.sold,
                 startDate: t.startDate,
@@ -152,6 +150,10 @@ export default function TicketsPage() {
 
     const handleCreate = async () => {
         if (!formData.eventId) return alert('Please select an event');
+        if (formData.quota < 1) {
+            alert('Quota must be at least 1');
+            return;
+        }
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
@@ -173,6 +175,10 @@ export default function TicketsPage() {
 
     const handleEdit = async () => {
         if (!selectedTicket || !formData.eventId) return;
+        if (formData.quota < 1) {
+            alert('Quota must be at least 1');
+            return;
+        }
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('backoffice_token') || '';
@@ -209,7 +215,6 @@ export default function TicketsPage() {
     const handleDuplicate = (ticket: Ticket) => {
         setFormData({
             eventId: ticket.eventId,
-            groupName: ticket.code + '-COPY',
             name: ticket.name + ' (Copy)',
             category: ticket.category,
             price: ticket.price,
@@ -226,7 +231,6 @@ export default function TicketsPage() {
         setSelectedTicket(ticket);
         setFormData({
             eventId: ticket.eventId,
-            groupName: ticket.code, // groupName is code
             name: ticket.name,
             category: ticket.category,
             price: ticket.price,
@@ -242,7 +246,6 @@ export default function TicketsPage() {
     const resetForm = () => {
         setFormData({
             eventId: events[0]?.id || 1,
-            groupName: '',
             name: '',
             category: 'primary',
             price: 0,
@@ -263,6 +266,24 @@ export default function TicketsPage() {
 
     return (
         <AdminLayout title="Ticket Management">
+            {/* Event Filter - Above Content */}
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                    <IconCalendarEvent className="text-blue-600" size={20} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Select Event:</span>
+                <select
+                    value={eventFilter}
+                    onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
+                    className="input-field pr-8 min-w-[250px] font-semibold bg-white"
+                >
+                    <option value="">All Events</option>
+                    {events.map((event) => (
+                        <option key={event.id} value={event.id}>{event.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="card py-4">
@@ -281,7 +302,9 @@ export default function TicketsPage() {
             {/* Main Card */}
             <div className="card">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800">All Tickets</h2>
+                    <h2 className="text-lg font-semibold text-gray-800">
+                        {eventFilter ? `Tickets for ${events.find(e => e.id === eventFilter)?.name || 'Event'}` : 'All Tickets'}
+                    </h2>
                     <button
                         onClick={() => { resetForm(); setShowCreateModal(true); }}
                         className="btn-primary flex items-center gap-2"
@@ -291,28 +314,26 @@ export default function TicketsPage() {
                     </button>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                {/* Search & Category Filter */}
+                <div className="mb-6 flex items-center gap-4">
                     <div className="relative flex-1 max-w-md">
-                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none" size={18} />
                         <input
                             type="text"
-                            placeholder="Search by name or code..."
+                            placeholder="Search by name..."
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                             className="input-field pl-10"
                         />
                     </div>
-
                     <select
-                        value={eventFilter}
-                        onChange={(e) => { setEventFilter(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
-                        className="input-field w-auto"
+                        value={categoryFilter}
+                        onChange={(e) => { setCategoryFilter(e.target.value as 'primary' | 'addon' | ''); setPage(1); }}
+                        className="input-field min-w-[150px]"
                     >
-                        <option value="">All Events</option>
-                        {events.map((event) => (
-                            <option key={event.id} value={event.id}>{event.code} - {event.name}</option>
-                        ))}
+                        <option value="">All Categories</option>
+                        <option value="primary">Primary</option>
+                        <option value="addon">Add-on</option>
                     </select>
                 </div>
 
@@ -365,7 +386,7 @@ export default function TicketsPage() {
                                             </td>
                                             <td>
                                                 <div>
-                                                    <p className="font-semibold text-gray-800">฿{ticket.price.toLocaleString()}</p>
+                                                    <p className="font-semibold text-gray-800">{ticket.currency === 'USD' ? '$' : '฿'}{ticket.price.toLocaleString()}</p>
                                                 </div>
                                             </td>
                                             <td>
@@ -505,26 +526,15 @@ export default function TicketsPage() {
                                 </select>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Code (Group) *</label>
-                                    <input
-                                        type="text"
-                                        className="input-field font-mono"
-                                        placeholder="EARLY-MEM"
-                                        value={formData.groupName}
-                                        onChange={(e) => setFormData({ ...formData, groupName: e.target.value.toUpperCase() })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        value={formData.quota}
-                                        onChange={(e) => setFormData({ ...formData, quota: Number(e.target.value) })}
-                                    />
-                                </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Quota *</label>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    value={formData.quota || ''}
+                                    onChange={(e) => setFormData({ ...formData, quota: Number(e.target.value) || 0 })}
+                                    placeholder="100"
+                                />
                             </div>
 
                             <div className="mb-4">
@@ -541,7 +551,18 @@ export default function TicketsPage() {
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency *</label>
+                                    <select
+                                        className="input-field"
+                                        value={formData.currency}
+                                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                    >
+                                        <option value="THB">THB (฿)</option>
+                                        <option value="USD">USD ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
                                     <input
                                         type="number"
                                         className="input-field"
@@ -549,7 +570,6 @@ export default function TicketsPage() {
                                         onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                     />
                                 </div>
-                                {/* Original Price logic omitted for now as not in schema */}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -606,7 +626,6 @@ export default function TicketsPage() {
                         <div className="p-6 text-center">
                             <p className="mb-2">Are you sure you want to delete this ticket?</p>
                             <p className="font-semibold text-gray-800">{selectedTicket.name}</p>
-                            <p className="text-sm text-gray-500 font-mono">{selectedTicket.code}</p>
                             {selectedTicket.sold > 0 && (
                                 <p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded">
                                     ⚠️ Warning: {selectedTicket.sold} tickets have been sold!

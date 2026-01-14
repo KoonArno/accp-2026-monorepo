@@ -251,14 +251,46 @@ export default function SpeakersPage() {
         }
     };
 
+    // Helper to get reliable image URL from Google Drive via our proxy
+    const getSpeakerImageUrl = (url: string) => {
+        if (!url) return '';
+
+        // If it's a Google Drive URL, use our proxy
+        if (url.includes('drive.google.com')) {
+            return `${API_URL}/upload/proxy?url=${encodeURIComponent(url)}`;
+        }
+
+        return url;
+    };
+
     return (
         <AdminLayout title="Speakers">
+            {/* Event Filter - Above Card */}
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                    <IconCalendarEvent className="text-blue-600" size={20} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Select Event:</span>
+                <select
+                    value={eventFilter || ''}
+                    onChange={(e) => setEventFilter(e.target.value ? parseInt(e.target.value) : null)}
+                    className="input-field pr-8 min-w-[250px] font-semibold bg-white"
+                >
+                    <option value="">All Events</option>
+                    {events.map(event => (
+                        <option key={event.id} value={event.id}>
+                            {event.eventName}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
             {/* Main Content */}
             <div className="card">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                     <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                         <IconMicrophone size={20} className="text-blue-600" />
-                        All Speakers
+                        {eventFilter ? `Speakers for ${events.find(e => e.id === eventFilter)?.eventName || 'Event'}` : 'All Speakers'}
                     </h2>
                     <button
                         onClick={() => { resetForm(); setShowCreateModal(true); }}
@@ -268,10 +300,10 @@ export default function SpeakersPage() {
                     </button>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="relative flex-1 max-w-md">
-                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                {/* Search Filter */}
+                <div className="mb-6">
+                    <div className="relative max-w-md">
+                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none" size={18} />
                         <input
                             type="text"
                             placeholder="Search speakers..."
@@ -279,21 +311,6 @@ export default function SpeakersPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="input-field pl-10"
                         />
-                    </div>
-                    <div className="relative">
-                        <IconCalendarEvent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <select
-                            value={eventFilter || ''}
-                            onChange={(e) => setEventFilter(e.target.value ? parseInt(e.target.value) : null)}
-                            className="input-field pl-10 pr-8 min-w-[200px]"
-                        >
-                            <option value="">All Events</option>
-                            {events.map(event => (
-                                <option key={event.id} value={event.id}>
-                                    {event.eventCode} - {event.eventName}
-                                </option>
-                            ))}
-                        </select>
                     </div>
                 </div>
 
@@ -311,10 +328,31 @@ export default function SpeakersPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredSpeakers.map((speaker) => (
                             <div key={speaker.id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                                {/* Event badges - at top for visibility */}
+                                {speakerEventMap[speaker.id]?.length > 0 && (
+                                    <div className="mb-3 flex flex-wrap gap-1">
+                                        {speakerEventMap[speaker.id].map(eventId => {
+                                            const event = events.find(e => e.id === eventId);
+                                            return event ? (
+                                                <span
+                                                    key={eventId}
+                                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full"
+                                                >
+                                                    <IconCalendarEvent size={12} />
+                                                    {event.eventCode}
+                                                </span>
+                                            ) : null;
+                                        })}
+                                    </div>
+                                )}
                                 <div className="flex items-start gap-4">
                                     <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 overflow-hidden">
                                         {speaker.photoUrl ? (
-                                            <img src={speaker.photoUrl} alt={speaker.firstName} className="w-full h-full object-cover" />
+                                            <img
+                                                src={getSpeakerImageUrl(speaker.photoUrl)}
+                                                alt={speaker.firstName}
+                                                className="w-full h-full object-cover"
+                                            />
                                         ) : (
                                             speaker.firstName.charAt(0)
                                         )}
@@ -332,23 +370,6 @@ export default function SpeakersPage() {
                                 <div className="mt-4">
                                     <p className="text-sm text-gray-600 line-clamp-2">{speaker.bio}</p>
                                 </div>
-                                {/* Event badges */}
-                                {speakerEventMap[speaker.id]?.length > 0 && (
-                                    <div className="mt-3 flex flex-wrap gap-1">
-                                        {speakerEventMap[speaker.id].map(eventId => {
-                                            const event = events.find(e => e.id === eventId);
-                                            return event ? (
-                                                <span
-                                                    key={eventId}
-                                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full"
-                                                >
-                                                    <IconCalendarEvent size={12} />
-                                                    {event.eventCode}
-                                                </span>
-                                            ) : null;
-                                        })}
-                                    </div>
-                                )}
                                 <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                                     <div className="flex gap-2">
                                         {/* Social links placeholders */}

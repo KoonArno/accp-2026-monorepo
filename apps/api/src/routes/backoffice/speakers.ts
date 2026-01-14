@@ -37,7 +37,6 @@ export default async function (fastify: FastifyInstance) {
             }
 
             // Get all eventSpeakers relations (filtered by user permissions if not admin)
-            let eventSpeakersQuery = db.select().from(eventSpeakers);
             if (allowedEventIds) {
                 const allEventSpeakers = await db
                     .select()

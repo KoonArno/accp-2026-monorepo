@@ -162,6 +162,7 @@
         "scientificTracks": "หัวข้อวิชาการ",
         "navigation": "เมนูนำทาง",
         "exploreProgram": "สำรวจโปรแกรม",
+        "exploreDesc": "สำรวจการประชุมและกิจกรรมที่น่าสนใจทั้งหมด",
         "registrationWelcome": "ลงทะเบียน",
         "register": "ลงทะเบียน",
         "registrationAllDay": "ลงทะเบียน",
@@ -224,7 +225,9 @@
         "pageTitle": "คำปราศรัย",
         "description": "วิทยากรผู้ทรงคุณวุฒิจากทั่วโลก",
         "keynoteSpeakers": "วิทยากรหลัก",
-        "plenarySessions": "คำปราศรัย"
+        "plenarySessions": "คำปราศรัย",
+        "mainSessions": "การประชุมหลัก",
+        "distinguishedSpeakers": "วิทยากรผู้ทรงคุณวุฒิ"
     },
     "symposia": {
         "pageTitle": "การประชุมวิชาการ",

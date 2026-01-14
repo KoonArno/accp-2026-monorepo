@@ -25,12 +25,13 @@ function getDriveClient() {
 }
 
 // Folder type mapping
-export type UploadFolderType = "student_docs" | "abstracts" | "speakers";
+export type UploadFolderType = "student_docs" | "abstracts" | "speakers" | "venue_images";
 
 const FOLDER_ENV_MAP: Record<UploadFolderType, string> = {
   student_docs: "GOOGLE_DRIVE_FOLDER_STUDENT_DOCS",
   abstracts: "GOOGLE_DRIVE_FOLDER_ABSTRACTS",
   speakers: "GOOGLE_DRIVE_FOLDER_SPEAKERS",
+  venue_images: "GOOGLE_DRIVE_FOLDER_VENUE_IMAGES",
 };
 
 /**
@@ -84,8 +85,9 @@ export async function uploadToGoogleDrive(
     },
   });
 
-  // Return the web view link
-  return response.data.webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
+  // Return the thumbnail link (reliable for <img> tags)
+  // sz=w1000 requests a large thumbnail (width 1000px)
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
 }
 
 /**
@@ -97,11 +99,18 @@ export async function deleteFromGoogleDrive(fileId: string): Promise<void> {
 }
 
 /**
- * Extract file ID from Google Drive URL
+ * Extract file ID from Google Drive URL (supports multiple formats)
  */
 export function extractFileIdFromUrl(url: string): string | null {
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  return match ? match[1] : null;
+  // Format: /d/FILE_ID/
+  const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (dMatch) return dMatch[1];
+
+  // Format: id=FILE_ID (used in thumbnail and uc links)
+  const idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (idMatch) return idMatch[1];
+
+  return null;
 }
 
 /**

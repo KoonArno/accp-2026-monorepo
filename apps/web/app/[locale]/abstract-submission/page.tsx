@@ -226,12 +226,35 @@ export default function AbstractSubmission() {
         }
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000))
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
+            const submitData = new FormData();
 
-            console.log('Form Data:', formData)
+            // Append all form fields
+            Object.keys(formData).forEach(key => {
+                if (key === 'abstractFile') {
+                    if (uploadedFiles.length > 0) {
+                        submitData.append('abstractFile', uploadedFiles[0].file);
+                    }
+                } else {
+                    // @ts-ignore
+                    submitData.append(key, formData[key]);
+                }
+            });
+
+            // Append co-authors as JSON string
+            if (coAuthors.length > 0) {
+                submitData.append('coAuthors', JSON.stringify(coAuthors));
+            }
+
+            const response = await fetch(`${API_URL}/api/abstracts/submit`, {
+                method: 'POST',
+                body: submitData,
+            });
+
+            const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error || 'Failed to submit abstract')
+                throw new Error(result.error || 'Failed to submit abstract');
             }
 
             // Set tracking ID from response

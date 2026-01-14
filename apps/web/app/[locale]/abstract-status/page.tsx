@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Hourglass } from 'react-loader-spinner';
 import Layout from '@/components/layout/Layout';
+import '@/styles/abstracts-responsive.css';
 
 export default function AbstractStatus() {
     const t = useTranslations('abstracts');

@@ -72,7 +72,6 @@ export default function SpeakersSection() {
         fetchSpeakers();
     }, []);
 
-    // Fallback data if no speakers from API
     const displaySpeakers = speakers.length > 0 ? speakers : [
         { id: 1, firstName: "Kendra", lastName: "Cremin", position: "Business Consultant", photoUrl: "/assets/img/all-images/team/team-img2.png" },
         { id: 2, firstName: "Dennis", lastName: "Jacobson", position: "Finance Consultant", photoUrl: "/assets/img/all-images/team/team-img1.png" },

@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import { workshops } from '@/data/workshopData';
+import '@/styles/events-responsive.css';
 
 export default function PreconferenceWorkshops() {
     const tCommon = useTranslations('common');

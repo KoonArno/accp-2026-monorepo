@@ -1,0 +1,470 @@
+/*
+ * ============================================
+ * ACCP 2026 - Auth Pages Responsive Styles
+ * ============================================
+ * Covers: /login, /register
+ * Components: Login form, Multi-step registration, Progress indicator
+ */
+
+/* ============================================
+   BASE STYLES (All Devices)
+   ============================================ */
+
+/* Auth Container */
+.auth-container {
+    background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 80px 0;
+    min-height: 60vh;
+}
+
+/* Auth Card */
+.auth-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.auth-card h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Auth Form Inputs */
+.auth-input {
+    width: 100%;
+    padding: 15px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.auth-input:focus {
+    border-color: #FFBA00;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 186, 0, 0.1);
+}
+
+/* Auth Label */
+.auth-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+}
+
+/* Auth Button */
+.auth-button {
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #FFBA00 0%, #f4a100 100%);
+    color: #1a237e;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 186, 0, 0.3);
+}
+
+/* Progress Steps */
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.progress-step:last-child {
+    flex: none;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.step-number.active {
+    background-color: #FFBA00;
+    color: #1a1a2e;
+}
+
+.step-number.inactive {
+    background-color: #e0e0e0;
+    color: #999;
+}
+
+.step-label {
+    margin-left: 12px;
+    font-size: 14px;
+}
+
+.step-line {
+    flex: 1;
+    height: 2px;
+    margin: 0 16px;
+    transition: all 0.3s ease;
+}
+
+.step-line.active {
+    background-color: #FFBA00;
+}
+
+.step-line.inactive {
+    background-color: #e0e0e0;
+}
+
+/* Registration Section Card */
+.registration-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.registration-section h3 {
+    margin-bottom: 24px;
+    color: #1a1a2e;
+    border-bottom: 3px solid #FFBA00;
+    padding-bottom: 12px;
+    display: inline-block;
+}
+
+/* Order Summary Sidebar */
+.order-summary-sidebar {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 100px;
+}
+
+.order-summary-sidebar h4 {
+    margin-bottom: 20px;
+    color: #1a1a2e;
+    border-bottom: 2px solid #FFBA00;
+    padding-bottom: 12px;
+}
+
+/* Delegate Type Cards */
+.delegate-type-card {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #fff;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.delegate-type-card.selected {
+    border: 2px solid #FFBA00;
+    background: #fffbf0;
+}
+
+/* ============================================
+   MOBILE DEVICES (≤767px)
+   ============================================ */
+@media (max-width: 767px) {
+
+    /* ===== AUTH CONTAINER ===== */
+    .auth-container,
+    div[style*="padding: '80px 0'"] {
+        padding: 50px 0 !important;
+    }
+
+    /* ===== AUTH CARD ===== */
+    .auth-card {
+        padding: 25px 20px !important;
+        margin: 0 10px !important;
+    }
+
+    .auth-card h3 {
+        font-size: 22px !important;
+    }
+
+    .auth-input {
+        padding: 12px 14px !important;
+        font-size: 14px !important;
+    }
+
+    .auth-button {
+        padding: 14px 20px !important;
+        font-size: 15px !important;
+    }
+
+    /* ===== PROGRESS STEPS ===== */
+    .progress-steps {
+        padding: 16px 0 !important;
+        overflow-x: auto !important;
+    }
+
+    .step-number {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 13px !important;
+    }
+
+    .step-label {
+        display: none !important;
+    }
+
+    .step-line {
+        margin: 0 8px !important;
+        min-width: 20px !important;
+    }
+
+    /* ===== REGISTRATION SECTION ===== */
+    .registration-section,
+    div[style*="padding: '30px'"][style*="borderRadius: '16px'"] {
+        padding: 20px 15px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .registration-section h3 {
+        font-size: 18px !important;
+    }
+
+    /* ===== ORDER SUMMARY ===== */
+    .order-summary-sidebar,
+    .col-lg-4>div[style*="position: 'sticky'"] {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 20px !important;
+        padding: 20px 15px !important;
+    }
+
+    /* ===== DELEGATE CARDS ===== */
+    .delegate-type-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        padding: 14px !important;
+    }
+}
+
+/* ============================================
+   TABLET DEVICES (768px - 991px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 991px) {
+
+    .auth-card {
+        padding: 35px 30px !important;
+    }
+
+    .registration-section {
+        padding: 25px 22px !important;
+    }
+
+    .step-label {
+        font-size: 12px !important;
+    }
+}
+
+/* ============================================
+   IPAD PRO (992px - 1199px)
+   FOCUS: Optimal layout for iPad Pro dimensions
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199px) {
+
+    /* ===== AUTH CONTAINER ===== */
+    .auth-container,
+    div[style*="padding: '80px 0'"] {
+        padding: 90px 0 !important;
+    }
+
+    /* ===== AUTH CARD ===== */
+    .auth-card {
+        padding: 50px 45px !important;
+        border-radius: 18px !important;
+    }
+
+    .auth-card h3 {
+        font-size: 32px !important;
+        margin-bottom: 35px !important;
+    }
+
+    .auth-input {
+        padding: 17px 20px !important;
+        font-size: 16px !important;
+        border-radius: 12px !important;
+        margin-bottom: 22px !important;
+    }
+
+    .auth-label {
+        font-size: 15px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .auth-button {
+        padding: 18px 28px !important;
+        font-size: 17px !important;
+        border-radius: 12px !important;
+    }
+
+    /* ===== PROGRESS STEPS ===== */
+    .progress-steps {
+        padding: 28px 0 !important;
+    }
+
+    .step-number {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 17px !important;
+    }
+
+    .step-label {
+        font-size: 15px !important;
+        margin-left: 14px !important;
+    }
+
+    .step-line {
+        margin: 0 18px !important;
+    }
+
+    /* ===== REGISTRATION SECTION ===== */
+    .registration-section,
+    div[style*="padding: '30px'"][style*="borderRadius: '16px'"] {
+        padding: 38px 35px !important;
+        border-radius: 18px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .registration-section h3 {
+        font-size: 22px !important;
+        margin-bottom: 28px !important;
+    }
+
+    /* ===== ORDER SUMMARY ===== */
+    .order-summary-sidebar {
+        padding: 30px !important;
+        border-radius: 18px !important;
+    }
+
+    .order-summary-sidebar h4 {
+        font-size: 20px !important;
+        margin-bottom: 24px !important;
+    }
+
+    /* ===== DELEGATE CARDS ===== */
+    .delegate-type-card {
+        padding: 20px 24px !important;
+        border-radius: 14px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .delegate-type-card strong {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (1200px - 1439px)
+   ============================================ */
+@media (min-width: 1200px) and (max-width: 1439px) {
+
+    .auth-card {
+        padding: 55px 50px !important;
+    }
+
+    .registration-section {
+        padding: 40px 38px !important;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE DESKTOP (≥1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+
+    .auth-container {
+        padding: 100px 0 !important;
+    }
+
+    .auth-card {
+        padding: 60px 55px !important;
+    }
+
+    .auth-card h3 {
+        font-size: 36px !important;
+    }
+
+    .auth-input {
+        padding: 18px 22px !important;
+        font-size: 17px !important;
+    }
+
+    .registration-section {
+        padding: 45px 42px !important;
+    }
+
+    .step-number {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 18px !important;
+    }
+}
+
+/* ============================================
+   UTILITIES & ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.auth-input:focus,
+.auth-button:focus,
+.delegate-type-card:focus-within {
+    outline: 3px solid #FFBA00;
+    outline-offset: 2px;
+}
+
+/* Smooth transitions */
+.auth-card,
+.registration-section,
+.delegate-type-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .auth-card,
+    .registration-section,
+    .delegate-type-card,
+    .auth-button {
+        transition: none;
+    }
+
+    .auth-button:hover {
+        transform: none;
+    }
+}

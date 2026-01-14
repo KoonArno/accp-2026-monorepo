@@ -4,6 +4,8 @@ import Layout from "@/components/layout/Layout"
 
 import Link from "next/link"
 import CommitteeSection from '@/components/sections/about/CommitteeSection';
+import '@/styles/about-responsive.css';
+
 
 export default function About() {
 	const t = useTranslations('about');

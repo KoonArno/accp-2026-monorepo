@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import RegistrationImportantDates from '@/components/sections/registration/RegistrationImportantDates';
 import RegistrationInternationalFees from '@/components/sections/registration/RegistrationInternationalFees';
 import RegistrationThaiFees from '@/components/sections/registration/RegistrationThaiFees';
+import '@/styles/registration-responsive.css';
 
 export default function Registration() {
     const t = useTranslations('registration');

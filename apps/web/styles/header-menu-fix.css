@@ -25,12 +25,12 @@
     padding: 0 !important;
 }
 
-.header-area.homepage1 .main-menu ul > li {
+.header-area.homepage1 .main-menu ul>li {
     white-space: nowrap !important;
     margin: 0 !important;
 }
 
-.header-area.homepage1 .main-menu ul > li > a {
+.header-area.homepage1 .main-menu ul>li>a {
     font-size: 14px !important;
     padding: 8px 12px !important;
 }

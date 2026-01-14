@@ -31,14 +31,12 @@ export default function Countdown({ style }: any) {
 			setTimeDif(difference > 0 ? difference : 0)
 		}
 
-		updateTime() // Initial update
-
+		updateTime()
 		const interval = setInterval(updateTime, 1000)
 
 		return () => clearInterval(interval)
 	}, [])
 
-	// Don't render until client-side hydration is complete
 	if (timeDif === null) {
 		return null
 	}
@@ -50,25 +48,37 @@ export default function Countdown({ style }: any) {
 
 
 			{!style && <>
-				<div className="timer">
+				<div className="timer" style={style}>
 					<div className="time-box">
-						<span id="days1" className="time-value">{timeParts.days}</span>
-						<br />Days
+						<span id="days1" className="time-value">
+							{timeDif !== null ? getPartsOfTimeDuration(timeDif).days : '0'}
+						</span>
+						<br />
+						{timeDif !== null && getPartsOfTimeDuration(timeDif).days > 1 ? 'Days' : 'Day'}
 					</div>
-					<div className="space14" />
+
 					<div className="time-box">
-						<span id="hours1" className="time-value">{timeParts.hours}</span>
-						<br />Hours
+						<span id="hours1" className="time-value">
+							{timeDif !== null ? getPartsOfTimeDuration(timeDif).hours : '0'}
+						</span>
+						<br />
+						{timeDif !== null && getPartsOfTimeDuration(timeDif).hours > 1 ? 'Hours' : 'Hour'}
 					</div>
-					<div className="space14" />
+
 					<div className="time-box">
-						<span id="minutes1" className="time-value">{timeParts.minutes}</span>
-						<br />Minutes
+						<span id="minutes1" className="time-value">
+							{timeDif !== null ? getPartsOfTimeDuration(timeDif).minutes : '00'}
+						</span>
+						<br />
+						{timeDif !== null && getPartsOfTimeDuration(timeDif).minutes > 1 ? 'Minutes' : 'Minute'}
 					</div>
-					<div className="space14" />
+
 					<div className="time-box">
-						<span id="seconds1" className="time-value">{timeParts.seconds}</span>
-						<br />Seconds
+						<span id="seconds1" className="time-value">
+							{timeDif !== null ? getPartsOfTimeDuration(timeDif).seconds : '00'}
+						</span>
+						<br />
+						{timeDif !== null && getPartsOfTimeDuration(timeDif).seconds > 1 ? 'Seconds' : 'Second'}
 					</div>
 				</div>
 			</>}

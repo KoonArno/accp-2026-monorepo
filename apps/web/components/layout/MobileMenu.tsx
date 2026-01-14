@@ -14,7 +14,6 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu }: any) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
 
-    // Function to get the path without locale prefix
     const getPathWithoutLocale = () => {
         const segments = pathname.split('/');
         return '/' + segments.slice(2).join('/') || '/';

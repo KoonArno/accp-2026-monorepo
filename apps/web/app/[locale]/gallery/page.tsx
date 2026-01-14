@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import GallerySection from "@/components/sections/gallery/GallerySection"
+import '@/styles/misc-pages-responsive.css';
 
 export default function Gallery() {
     const t = useTranslations('gallery')

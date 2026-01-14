@@ -162,6 +162,7 @@
         "scientificTracks": "หัวข้อวิชาการ",
         "navigation": "เมนูนำทาง",
         "exploreProgram": "สำรวจโปรแกรม",
+        "exploreDesc": "ค้นพบกิจกรรมและเซสชันที่น่าตื่นเต้นที่วางแผนไว้สำหรับ ACCP 2026",
         "registrationWelcome": "ลงทะเบียน",
         "register": "ลงทะเบียน",
         "registrationAllDay": "ลงทะเบียน",
@@ -224,6 +225,8 @@
         "pageTitle": "คำปราศรัย",
         "description": "วิทยากรผู้ทรงคุณวุฒิจากทั่วโลก",
         "keynoteSpeakers": "วิทยากรหลัก",
+        "distinguishedSpeakers": "วิทยากรผู้ทรงคุณวุฒิ",
+        "mainSessions": "การประชุมหลัก",
         "plenarySessions": "คำปราศรัย"
     },
     "symposia": {
@@ -1032,16 +1035,20 @@
             "oralPresentation": "นำเสนอแบบปากเปล่า",
             "posterPresentation": "นำเสนอแบบโปสเตอร์"
         },
-        "emptyState": {
-            "title": "ยังไม่มีบทคัดย่อที่ส่ง",
-            "message": "คุณยังไม่ได้ส่งบทคัดย่อใด ๆ เริ่มต้นด้วยการส่งบทคัดย่อแรกของคุณ!",
-            "submitButton": "ส่งบทคัดย่อแรกของคุณ"
-        },
-        "status": {
-            "pending": "กำลังพิจารณา",
-            "accepted": "ตอบรับ",
-            "rejected": "ปฏิเสธ",
-            "under_review": "กำลังพิจารณา"
-        }
+        "abstractId": "รหัสบทคัดย่อ",
+        "submittedDate": "วันที่ส่ง",
+        "presentationSchedule": "กำหนดการนำเสนอ",
+        "session": "เซสชัน",
+        "room": "ห้อง",
+        "date": "วันที่",
+        "time": "เวลา",
+        "reviewerComments": "ความคิดเห็นผู้ตรวจสอบ",
+        "viewFullAbstract": "ดูบทคัดย่อฉบับเต็ม",
+        "downloadCertificate": "ดาวน์โหลดใบรับรอง",
+        "rejected": "ไม่ผ่าน",
+        "clinicalPharmacy": "เภสัชกรรมคลินิก",
+        "pharmacoeconomics": "เภสัชเศรษฐศาสตร์",
+        "oralPresentation": "การนำเสนอแบบบรรยาย",
+        "posterPresentation": "การนำเสนอแบบโปสเตอร์"
     }
 }

@@ -1,0 +1,493 @@
+/*
+ * ============================================
+ * ACCP 2026 - General Pages Responsive Styles
+ * ============================================
+ * Covers: /contact, /speakers, /sponsorship, /faq, /welcome-messages
+ * Components: Contact form, Speaker cards, Sponsor list, FAQ accordion
+ */
+
+/* ============================================
+   BASE STYLES (All Devices)
+   ============================================ */
+
+/* Contact Section */
+.contact-inner-section {
+    padding: 80px 0;
+}
+
+.contact-info-area {
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    height: 100%;
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.contact-info-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Contact Form */
+.contact-form-area {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.contact-form-area h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 25px;
+}
+
+.contact-form-area input,
+.contact-form-area textarea {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.contact-form-area input:focus,
+.contact-form-area textarea:focus {
+    border-color: #FFBA00;
+    outline: none;
+}
+
+/* Speakers Section */
+.team-sperkers-section-area {
+    padding: 80px 0;
+}
+
+.speaker-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.speaker-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.speaker-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.speaker-info {
+    padding: 25px;
+    text-align: center;
+}
+
+.speaker-info h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 5px;
+}
+
+.speaker-info p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* FAQ Section */
+.faq-section-area {
+    padding: 80px 0;
+}
+
+.faq-item {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 20px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-answer {
+    padding: 0 25px 20px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #666;
+}
+
+/* Sponsor Section */
+.sponsor-section-area {
+    padding: 80px 0;
+}
+
+.sponsor-tier {
+    margin-bottom: 50px;
+}
+
+.sponsor-tier h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.sponsor-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.sponsor-logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   MOBILE DEVICES (≤767px)
+   ============================================ */
+@media (max-width: 767px) {
+
+    /* ===== CONTACT ===== */
+    .contact-inner-section {
+        padding: 50px 0 !important;
+    }
+
+    .contact-form-area {
+        padding: 25px 20px !important;
+        margin-top: 30px !important;
+    }
+
+    .contact-form-area h3 {
+        font-size: 22px !important;
+    }
+
+    .contact-form-area input,
+    .contact-form-area textarea {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+    }
+
+    .contact-info-area {
+        padding: 25px 20px !important;
+    }
+
+    .contact-info-icon {
+        width: 42px !important;
+        height: 42px !important;
+    }
+
+    /* ===== SPEAKERS ===== */
+    .team-sperkers-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .speaker-card {
+        margin-bottom: 20px !important;
+    }
+
+    .speaker-image {
+        height: 200px !important;
+    }
+
+    .speaker-info {
+        padding: 18px 15px !important;
+    }
+
+    .speaker-info h4 {
+        font-size: 16px !important;
+    }
+
+    /* ===== FAQ ===== */
+    .faq-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .faq-question {
+        padding: 16px 18px !important;
+        font-size: 14px !important;
+    }
+
+    .faq-answer {
+        padding: 0 18px 16px !important;
+        font-size: 14px !important;
+    }
+
+    /* ===== SPONSORS ===== */
+    .sponsor-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .sponsor-tier h3 {
+        font-size: 20px !important;
+    }
+
+    .sponsor-logo {
+        padding: 20px !important;
+    }
+}
+
+/* ============================================
+   TABLET DEVICES (768px - 991px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 991px) {
+
+    .contact-inner-section {
+        padding: 60px 0 !important;
+    }
+
+    .contact-form-area {
+        padding: 30px !important;
+    }
+
+    .team-sperkers-section-area {
+        padding: 60px 0 !important;
+    }
+
+    .speaker-image {
+        height: 220px !important;
+    }
+}
+
+/* ============================================
+   IPAD PRO (992px - 1199px)
+   FOCUS: Optimal layout for iPad Pro dimensions
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199px) {
+
+    /* ===== CONTACT ===== */
+    .contact-inner-section {
+        padding: 80px 0 !important;
+    }
+
+    .contact-form-area {
+        padding: 45px !important;
+        border-radius: 18px !important;
+    }
+
+    .contact-form-area h3 {
+        font-size: 30px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .contact-form-area input,
+    .contact-form-area textarea {
+        padding: 17px 22px !important;
+        font-size: 16px !important;
+        border-radius: 12px !important;
+    }
+
+    .contact-info-area {
+        padding: 40px !important;
+        border-radius: 18px !important;
+    }
+
+    .contact-info-icon {
+        width: 55px !important;
+        height: 55px !important;
+    }
+
+    .contact-info-item {
+        margin-bottom: 28px !important;
+    }
+
+    /* ===== SPEAKERS ===== */
+    .team-sperkers-section-area {
+        padding: 80px 0 !important;
+    }
+
+    .speaker-card {
+        border-radius: 18px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .speaker-image {
+        height: 260px !important;
+    }
+
+    .speaker-info {
+        padding: 28px !important;
+    }
+
+    .speaker-info h4 {
+        font-size: 20px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .speaker-info p {
+        font-size: 15px !important;
+    }
+
+    /* ===== FAQ ===== */
+    .faq-section-area {
+        padding: 80px 0 !important;
+    }
+
+    .faq-item {
+        border-radius: 14px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .faq-question {
+        padding: 24px 28px !important;
+        font-size: 17px !important;
+    }
+
+    .faq-answer {
+        padding: 0 28px 24px !important;
+        font-size: 16px !important;
+    }
+
+    /* ===== SPONSORS ===== */
+    .sponsor-section-area {
+        padding: 80px 0 !important;
+    }
+
+    .sponsor-tier {
+        margin-bottom: 55px !important;
+    }
+
+    .sponsor-tier h3 {
+        font-size: 26px !important;
+        margin-bottom: 35px !important;
+    }
+
+    .sponsor-logo {
+        padding: 30px !important;
+        border-radius: 14px !important;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (1200px - 1439px)
+   ============================================ */
+@media (min-width: 1200px) and (max-width: 1439px) {
+
+    .contact-form-area {
+        padding: 48px !important;
+    }
+
+    .speaker-image {
+        height: 270px !important;
+    }
+
+    .sponsor-logo {
+        padding: 32px !important;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE DESKTOP (≥1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+
+    .contact-inner-section {
+        padding: 100px 0 !important;
+    }
+
+    .contact-form-area {
+        padding: 55px !important;
+    }
+
+    .contact-form-area h3 {
+        font-size: 34px !important;
+    }
+
+    .team-sperkers-section-area {
+        padding: 100px 0 !important;
+    }
+
+    .speaker-image {
+        height: 300px !important;
+    }
+
+    .speaker-info {
+        padding: 32px !important;
+    }
+
+    .speaker-info h4 {
+        font-size: 22px !important;
+    }
+
+    .faq-section-area {
+        padding: 100px 0 !important;
+    }
+
+    .sponsor-section-area {
+        padding: 100px 0 !important;
+    }
+
+    .sponsor-tier h3 {
+        font-size: 28px !important;
+    }
+}
+
+/* ============================================
+   UTILITIES & ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.contact-form-area input:focus,
+.contact-form-area textarea:focus,
+.faq-question:focus {
+    outline: 3px solid #FFBA00;
+    outline-offset: 2px;
+}
+
+/* Smooth hover transitions */
+.speaker-card,
+.sponsor-logo,
+.faq-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .speaker-card,
+    .sponsor-logo,
+    .faq-item {
+        transition: none;
+    }
+
+    .speaker-card:hover,
+    .sponsor-logo:hover {
+        transform: none;
+    }
+}

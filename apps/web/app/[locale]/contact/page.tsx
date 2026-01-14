@@ -4,6 +4,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import ContactForm from '@/components/sections/contact/ContactForm';
 import ContactInfo from '@/components/sections/contact/ContactInfo';
+import '@/styles/general-pages-responsive.css';
 
 export default function Contact() {
 	const t = useTranslations('contact');

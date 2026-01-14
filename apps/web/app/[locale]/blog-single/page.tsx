@@ -6,6 +6,7 @@ import "@/node_modules/react-modal-video/css/modal-video.css"
 import Countdown from '@/components/elements/Countdown'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
+import '@/styles/misc-pages-responsive.css';
 export default function BlogSingle() {
 
 	const [isOpen, setOpen] = useState(false)

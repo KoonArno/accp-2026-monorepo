@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import WelcomeMessageList from "@/components/sections/welcome/WelcomeMessageList"
+import '@/styles/misc-pages-responsive.css';
 
 export default function WelcomeMessages() {
     const t = useTranslations('welcomeMessages')

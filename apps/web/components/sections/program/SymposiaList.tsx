@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { symposiaData } from '@/data/symposiaData';
 
 export default function SymposiaList() {
-    const t = useTranslations('program'); // Or specialized translation file
+    const t = useTranslations('program');
 
     return (
         <div className="service2-section-area sp2" style={{ backgroundColor: '#f8f9fa' }}>

@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import SponsorsList from '@/components/sections/sponsorship/SponsorsList';
+import '@/styles/general-pages-responsive.css';
 
 export default function Sponsorship() {
     const tCommon = useTranslations('common');

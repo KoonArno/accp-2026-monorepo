@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import { useEffect } from 'react'
+import '@/styles/misc-pages-responsive.css';
 
 export default function PricingPlan() {
 	const { isAuthenticated } = useAuth()

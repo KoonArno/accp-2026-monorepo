@@ -42,7 +42,6 @@ export default function ProgramSchedule() {
         document.body.removeChild(link);
     };
 
-    // Group events by time
     const groupEventsByTime = (events: Event[]): GroupedEvent[] => {
         const grouped: { [key: string]: Event[] } = {};
         events.forEach(event => {
@@ -96,7 +95,7 @@ export default function ProgramSchedule() {
                                             <span className="day-label">{t(day.dayKey)}</span>
                                             <span className="date-label">{day.date}</span>
                                         </div>
-                                        <button 
+                                        <button
                                             className="download-btn"
                                             onClick={handleDownload}
                                             aria-label="Download Agenda"
@@ -109,7 +108,7 @@ export default function ProgramSchedule() {
                                         {groupedEvents.map((group, groupIndex) => {
                                             const isParallel = group.events.length > 1;
                                             const firstEventStyle = getEventStyle(group.events[0].type);
-                                            
+
                                             return (
                                                 <div key={groupIndex} className={`schedule-row ${isParallel ? 'parallel' : ''}`} style={{
                                                     backgroundColor: groupIndex % 2 === 0 ? '#fff' : '#fafafa'
@@ -119,7 +118,7 @@ export default function ProgramSchedule() {
                                                         <i className={`fa-solid ${group.events[0].icon}`} style={{ color: firstEventStyle.bg }} />
                                                         <span>{group.time}</span>
                                                     </div>
-                                                    
+
                                                     {/* Events Column(s) */}
                                                     <div className={`schedule-events ${isParallel ? 'multi-column' : ''}`}>
                                                         {group.events.map((event, eventIndex) => {

@@ -41,7 +41,8 @@ export default function HeroSection() {
 
     return (
         <>
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 /* Mobile Responsive Fixes */
                 @media (max-width: 991px) {
                     .hero1-section-area {
@@ -114,9 +115,6 @@ export default function HeroSection() {
                                     ACCP <span className="gold-text">2026</span> <br className="d-lg-block d-none" />
                                     {t('hero.location')}
                                 </h1>
-                                <h2 style={heroStyles.subtitle}>
-                                    {t('hero.location')}
-                                </h2>
                                 <p data-aos="fade-left" data-aos-duration={900} style={heroStyles.description}>
                                     {t('hero.theme')}
                                 </p>

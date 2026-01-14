@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import OralPresentations from '@/components/sections/program/OralPresentations';
 import PosterSession from '@/components/sections/program/PosterSession';
 import ProgramSearch from '@/components/sections/program/ProgramSearch';
+import '@/styles/program-responsive.css';
 
 export default function OralPoster() {
     const tCommon = useTranslations('common');

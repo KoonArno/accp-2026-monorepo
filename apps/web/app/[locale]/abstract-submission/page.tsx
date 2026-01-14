@@ -3,14 +3,15 @@ import { useState, useEffect } from 'react'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
-import { useAuth } from '@/context/AuthContext'
-import { Hourglass } from 'react-loader-spinner'
+import '@/styles/abstracts-responsive.css';
+import { useAuth } from '@/context/AuthContext';
+import { Hourglass } from 'react-loader-spinner';
 
 export default function AbstractSubmission() {
     const t = useTranslations('abstractSubmission')
     const tCommon = useTranslations('common')
+    const { user, isAuthenticated } = useAuth()
 
-    // Categories for abstract submission
     const categories = [
         t('categories.clinicalPharmacy'),
         t('categories.socialAdministrative'),
@@ -26,7 +27,6 @@ export default function AbstractSubmission() {
         { value: "either", label: t('presentationTypes.either') }
     ]
     const [formData, setFormData] = useState({
-        // Author Information
         firstName: '',
         lastName: '',
         email: '',
@@ -34,29 +34,24 @@ export default function AbstractSubmission() {
         country: '',
         phone: '',
 
-        // Abstract Details
         title: '',
         category: '',
         presentationType: '',
         keywords: '',
 
-        // Abstract Content
         background: '',
         methods: '',
         results: '',
         conclusions: '',
 
-        // File Upload
         abstractFile: null as File | null,
 
-        // Declaration
         coi: 'no',
         coiDetails: '',
         agreeTerms: false,
         confirmOriginal: false
     })
 
-    // Co-Authors state - separate for easier management
     const [coAuthors, setCoAuthors] = useState<Array<{
         id: string;
         firstName: string;
@@ -93,7 +88,7 @@ export default function AbstractSubmission() {
     const [showSuccessModal, setShowSuccessModal] = useState(false)
 
     const [trackingId, setTrackingId] = useState('')
-    const { user, isAuthenticated } = useAuth()
+
 
     // Autofill user data when logged in
     useEffect(() => {
@@ -126,13 +121,25 @@ export default function AbstractSubmission() {
         autofillUserData()
     }, [isAuthenticated, user])
 
-    // Scroll to top when form is submitted successfully
     useEffect(() => {
         if (submitStatus === 'success') {
             setTrackingId(`ACCP2026-${Date.now().toString().slice(-6)}`)
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
     }, [submitStatus])
+
+    // Autofill user data
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.firstName || prev.firstName,
+                lastName: user.lastName || prev.lastName,
+                email: user.email || prev.email,
+                country: user.country || prev.country
+            }))
+        }
+    }, [isAuthenticated, user])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target
@@ -150,9 +157,7 @@ export default function AbstractSubmission() {
             setFormData(prev => ({ ...prev, [name]: value }))
         }
 
-        // Calculate word count for abstract sections
         if (['background', 'methods', 'results', 'conclusions'].includes(name)) {
-            // Create updated form data with the new value
             const updatedData = {
                 background: name === 'background' ? value : formData.background,
                 methods: name === 'methods' ? value : formData.methods,
@@ -160,7 +165,6 @@ export default function AbstractSubmission() {
                 conclusions: name === 'conclusions' ? value : formData.conclusions
             }
 
-            // Calculate total words from all sections
             const totalText = [
                 updatedData.background,
                 updatedData.methods,
@@ -173,7 +177,6 @@ export default function AbstractSubmission() {
         }
     }
 
-    // Multiple files state
     const [uploadedFiles, setUploadedFiles] = useState<Array<{
         id: string;
         file: File;
@@ -188,7 +191,6 @@ export default function AbstractSubmission() {
                 alert('Please upload only PDF files')
                 return
             }
-            // Check for duplicate filename
             const isDuplicate = uploadedFiles.some(f => f.file.name === file.name)
             if (isDuplicate) {
                 alert('This file has already been uploaded!')
@@ -198,7 +200,6 @@ export default function AbstractSubmission() {
                 id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 file: file
             }])
-            // Reset input value to allow re-selecting the same file
             e.target.value = ''
         }
     }
@@ -212,7 +213,6 @@ export default function AbstractSubmission() {
         setIsSubmitting(true)
         setSubmitStatus('idle')
 
-        // Validate word count
         if (wordCount < 250 || wordCount > 300) {
             alert(`Abstract word count must be between 250-300 words. Current: ${wordCount} words`)
             setIsSubmitting(false)
@@ -227,48 +227,35 @@ export default function AbstractSubmission() {
         }
 
         try {
-            // Prepare FormData for multipart submission
             const API_URL = process.env.NEXT_PUBLIC_API_URL;
-            const formDataToSend = new FormData()
-            
-            // Add basic fields
-            formDataToSend.append('firstName', formData.firstName)
-            formDataToSend.append('lastName', formData.lastName)
-            formDataToSend.append('email', formData.email)
-            formDataToSend.append('affiliation', formData.affiliation)
-            formDataToSend.append('country', formData.country)
-            if (formData.phone) formDataToSend.append('phone', formData.phone)
-            
-            // Add abstract details
-            formDataToSend.append('title', formData.title)
-            formDataToSend.append('category', formData.category)
-            formDataToSend.append('presentationType', formData.presentationType)
-            formDataToSend.append('keywords', formData.keywords)
-            
-            // Add abstract content
-            formDataToSend.append('background', formData.background)
-            formDataToSend.append('methods', formData.methods)
-            formDataToSend.append('results', formData.results)
-            formDataToSend.append('conclusion', formData.conclusions)
-            
-            // Add co-authors as JSON string
-            if (coAuthors.length > 0) {
-                formDataToSend.append('coAuthors', JSON.stringify(coAuthors))
-            }
-            
-            // Add file
-            formDataToSend.append('abstractFile', uploadedFiles[0].file)
+            const submitData = new FormData();
 
-            // Submit to API
+            // Append all form fields
+            Object.keys(formData).forEach(key => {
+                if (key === 'abstractFile') {
+                    if (uploadedFiles.length > 0) {
+                        submitData.append('abstractFile', uploadedFiles[0].file);
+                    }
+                } else {
+                    // @ts-ignore
+                    submitData.append(key, formData[key]);
+                }
+            });
+
+            // Append co-authors as JSON string
+            if (coAuthors.length > 0) {
+                submitData.append('coAuthors', JSON.stringify(coAuthors));
+            }
+
             const response = await fetch(`${API_URL}/api/abstracts/submit`, {
                 method: 'POST',
-                body: formDataToSend,
-            })
+                body: submitData,
+            });
 
-            const result = await response.json()
+            const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error || 'Failed to submit abstract')
+                throw new Error(result.error || 'Failed to submit abstract');
             }
 
             // Set tracking ID from response

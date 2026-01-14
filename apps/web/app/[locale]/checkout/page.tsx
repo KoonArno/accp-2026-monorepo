@@ -13,6 +13,7 @@ import { useCheckoutWizard } from "@/hooks/checkout/useCheckoutWizard";
 import FormInput from "@/components/common/FormInput";
 import Button from "@/components/common/Button";
 import { formatCurrency } from "@/utils/currency";
+import "@/styles/registration-responsive.css";
 
 import {
   registrationPackages,
@@ -49,7 +50,6 @@ export default function Registration() {
     if (!isAuthenticated) {
       router.push(`/${locale}/login`);
     } else {
-      // Pre-fill user data
       updateCheckoutData({
         firstName: user?.firstName || "",
         lastName: user?.lastName || "",
@@ -71,7 +71,6 @@ export default function Registration() {
       if (!checkoutData.phone.trim()) newErrors.phone = t("validation.phoneRequired");
       if (!checkoutData.country.trim()) newErrors.country = t("validation.countryRequired");
 
-      // Workshop validation
       if (checkoutData.selectedAddOns.includes('workshop') && !checkoutData.selectedWorkshopTopic) {
         newErrors.workshop = t("validation.workshopRequired");
       }
@@ -295,7 +294,6 @@ export default function Registration() {
                               ? [...checkoutData.selectedAddOns, addon.id]
                               : checkoutData.selectedAddOns.filter(id => id !== addon.id);
 
-                            // Clear workshop topic if unchecked
                             const updates: Partial<typeof checkoutData> = { selectedAddOns: newAddOns };
                             if (addon.id === 'workshop' && !e.target.checked) {
                               updates.selectedWorkshopTopic = '';

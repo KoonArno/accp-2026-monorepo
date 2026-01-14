@@ -18,10 +18,11 @@ export const VALIDATION_MESSAGES = {
 };
 
 // API endpoints (for future use)
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 export const API_ENDPOINTS = {
-  LOGIN: '/api/auth/login',
-  SIGNUP: '/api/auth/signup',
-  LOGOUT: '/api/auth/logout',
+  LOGIN: '/auth/login',
+  SIGNUP: '/auth/register',
+  LOGOUT: '/auth/logout',
   CHECKOUT: '/api/checkout',
   PAYMENT: '/api/payment'
 };

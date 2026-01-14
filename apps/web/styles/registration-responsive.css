@@ -1,0 +1,492 @@
+/*
+ * ============================================
+ * ACCP 2026 - Registration Pages Responsive Styles
+ * ============================================
+ * Covers: /registration, /registration-policies, /checkout/*
+ * Components: Pricing boxes, Policy details, Checkout forms
+ */
+
+/* ============================================
+   BASE STYLES (All Devices)
+   ============================================ */
+
+/* Pricing Section */
+.pricing-lan-section-area {
+    padding: 60px 0;
+    background-color: #f5f5f5;
+}
+
+/* Pricing Cards */
+.pricing-boxarea {
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.pricing-boxarea:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.pricing-boxarea h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a237e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pricing-boxarea h2 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #1a237e;
+    margin: 15px 0 10px;
+}
+
+.pricing-boxarea h2 span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #00C853;
+    background: #e8f5e9;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-left: 10px;
+}
+
+.pricing-boxarea ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.pricing-boxarea ul li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #666;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pricing-boxarea ul li:last-child {
+    border-bottom: none;
+}
+
+/* Checkout Card */
+.checkout-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.checkout-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+}
+
+/* Checkout Grid */
+.checkout-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* Package Display */
+.checkout-package-locked {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.checkout-package-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.checkout-package-icon {
+    font-size: 24px;
+    color: #888;
+}
+
+.checkout-package-text h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+
+.checkout-package-text p {
+    font-size: 13px;
+    color: #888;
+    margin: 4px 0 0;
+}
+
+.checkout-package-price-box {
+    text-align: right;
+}
+
+.checkout-package-original-price {
+    font-size: 14px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.checkout-package-current-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00C853;
+}
+
+/* ============================================
+   MOBILE DEVICES (≤767px)
+   ============================================ */
+@media (max-width: 767px) {
+
+    /* ===== PRICING SECTION ===== */
+    .pricing-lan-section-area {
+        padding: 40px 0 !important;
+    }
+
+    .pricing-lan-section-area .heading2 h2 {
+        font-size: 24px !important;
+    }
+
+    .pricing-lan-section-area .heading2 h5 {
+        font-size: 13px !important;
+    }
+
+    /* ===== PRICING CARDS ===== */
+    .pricing-boxarea {
+        padding: 25px 20px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .pricing-boxarea h2 {
+        font-size: 32px !important;
+    }
+
+    .pricing-boxarea h2 span {
+        display: block !important;
+        margin: 10px 0 0 0 !important;
+        font-size: 12px !important;
+    }
+
+    .pricing-boxarea ul li {
+        font-size: 13px !important;
+        padding: 8px 0 !important;
+    }
+
+    .pricing-boxarea .btn-area1 .vl-btn1 {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* ===== CHECKOUT ===== */
+    .checkout-card {
+        padding: 20px 15px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .checkout-card h3 {
+        font-size: 16px !important;
+    }
+
+    .checkout-grid-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .checkout-package-locked {
+        flex-direction: column !important;
+        gap: 15px !important;
+        text-align: center !important;
+        padding: 15px !important;
+    }
+
+    .checkout-package-info {
+        flex-direction: column !important;
+    }
+
+    .checkout-package-text {
+        text-align: center !important;
+    }
+
+    .checkout-package-price-box {
+        text-align: center !important;
+    }
+
+    .checkout-package-current-price {
+        font-size: 22px !important;
+    }
+
+    .checkout-option-label {
+        padding: 10px !important;
+    }
+
+    /* ===== ORDER SUMMARY ===== */
+    .col-lg-4>div[style*="sticky"] {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 20px;
+    }
+
+    /* ===== POLICY SECTIONS ===== */
+    .sp1 .heading2 h2 {
+        font-size: 24px !important;
+    }
+}
+
+/* ============================================
+   TABLET DEVICES (768px - 991px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 991px) {
+
+    /* ===== PRICING SECTION ===== */
+    .pricing-lan-section-area {
+        padding: 50px 0 !important;
+    }
+
+    .pricing-boxarea {
+        padding: 30px 25px !important;
+    }
+
+    .pricing-boxarea h2 {
+        font-size: 36px !important;
+    }
+
+    /* ===== CHECKOUT ===== */
+    .checkout-card {
+        padding: 25px 20px !important;
+    }
+
+    .checkout-grid-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .checkout-package-locked {
+        padding: 18px !important;
+    }
+}
+
+/* ============================================
+   IPAD PRO (992px - 1199px)
+   FOCUS: Optimal layout for iPad Pro dimensions
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199px) {
+
+    /* ===== PRICING SECTION ===== */
+    .pricing-lan-section-area {
+        padding: 70px 0 !important;
+    }
+
+    .pricing-lan-section-area .heading2 h2 {
+        font-size: 38px !important;
+    }
+
+    .pricing-lan-section-area .heading2 h5 {
+        font-size: 16px !important;
+    }
+
+    /* ===== PRICING CARDS ===== */
+    .pricing-boxarea {
+        padding: 35px 28px !important;
+        border-radius: 18px !important;
+    }
+
+    .pricing-boxarea h5 {
+        font-size: 17px !important;
+    }
+
+    .pricing-boxarea h2 {
+        font-size: 46px !important;
+    }
+
+    .pricing-boxarea h2 span {
+        font-size: 14px !important;
+        padding: 5px 14px !important;
+    }
+
+    .pricing-boxarea ul li {
+        font-size: 15px !important;
+        padding: 12px 0 !important;
+    }
+
+    .pricing-boxarea .btn-area1 .vl-btn1 {
+        font-size: 15px !important;
+        padding: 14px 28px !important;
+    }
+
+    /* ===== CHECKOUT ===== */
+    .checkout-card {
+        padding: 35px 30px !important;
+        border-radius: 18px !important;
+        margin-bottom: 25px !important;
+    }
+
+    .checkout-card h3 {
+        font-size: 20px !important;
+        margin-bottom: 24px !important;
+    }
+
+    .checkout-grid-2 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+    }
+
+    .checkout-package-locked {
+        padding: 24px !important;
+        border-radius: 14px !important;
+        margin-bottom: 30px !important;
+    }
+
+    .checkout-package-text h3 {
+        font-size: 20px !important;
+    }
+
+    .checkout-package-text p {
+        font-size: 14px !important;
+    }
+
+    .checkout-package-current-price {
+        font-size: 28px !important;
+    }
+
+    .checkout-package-original-price {
+        font-size: 15px !important;
+    }
+
+    .checkout-option-label {
+        padding: 14px !important;
+        border-radius: 10px !important;
+    }
+
+    .checkout-option-label span {
+        font-size: 14px !important;
+    }
+
+    /* ===== FORM INPUTS ===== */
+    .checkout-card input[type="text"],
+    .checkout-card input[type="email"],
+    .checkout-card input[type="tel"] {
+        padding: 14px !important;
+        font-size: 15px !important;
+    }
+
+    /* ===== POLICY SECTIONS ===== */
+    .sp1 {
+        padding: 70px 0 !important;
+    }
+
+    .sp1 .heading2 h2 {
+        font-size: 38px !important;
+    }
+
+    .sp1 .heading2 h5 {
+        font-size: 16px !important;
+    }
+
+    .sp1 .heading2 p {
+        font-size: 17px !important;
+        line-height: 1.8 !important;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOP (1200px - 1439px)
+   ============================================ */
+@media (min-width: 1200px) and (max-width: 1439px) {
+
+    .pricing-lan-section-area .heading2 h2 {
+        font-size: 42px !important;
+    }
+
+    .pricing-boxarea h2 {
+        font-size: 48px !important;
+    }
+
+    .checkout-card {
+        padding: 35px !important;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE DESKTOP (≥1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+
+    .pricing-lan-section-area {
+        padding: 90px 0 !important;
+    }
+
+    .pricing-lan-section-area .heading2 h2 {
+        font-size: 48px !important;
+    }
+
+    .pricing-boxarea {
+        padding: 45px 40px !important;
+    }
+
+    .pricing-boxarea h2 {
+        font-size: 52px !important;
+    }
+
+    .pricing-boxarea ul li {
+        font-size: 16px !important;
+    }
+
+    .checkout-card {
+        padding: 40px !important;
+    }
+
+    .checkout-package-current-price {
+        font-size: 32px !important;
+    }
+}
+
+/* ============================================
+   UTILITIES & ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.pricing-boxarea .vl-btn1:focus,
+.checkout-card input:focus,
+.checkout-option-label:focus-within {
+    outline: 3px solid #FFBA00;
+    outline-offset: 2px;
+}
+
+/* Smooth hover transitions */
+.pricing-boxarea,
+.checkout-card,
+.checkout-option-label {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Highlight border for selected pricing */
+.pricing-boxarea[style*="border: 2px solid"] {
+    box-shadow: 0 8px 30px rgba(255, 186, 0, 0.2) !important;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .pricing-boxarea,
+    .checkout-card,
+    .checkout-option-label {
+        transition: none;
+    }
+}

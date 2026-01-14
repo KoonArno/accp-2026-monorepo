@@ -18,13 +18,10 @@ export default function LanguageSwitcher() {
         const newLang = language === 'th' ? 'en' : 'th'
         setLanguage(newLang)
         localStorage.setItem('accp-language', newLang)
-        // Dispatch custom event to notify other components
         window.dispatchEvent(new CustomEvent('languageChange', { detail: newLang }))
-        // Reload page to apply changes
         window.location.reload()
     }
 
-    // Prevent hydration mismatch
     if (!mounted) {
         return null
     }

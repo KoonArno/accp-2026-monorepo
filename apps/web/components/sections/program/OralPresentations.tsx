@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { oralSessions } from '@/data/oralPosterData';
 
 export default function OralPresentations() {
-    const t = useTranslations('program'); // Or 'oralPoster' if you separate keys
+    const t = useTranslations('program');
 
     return (
         <div className="service2-section-area sp2" style={{ backgroundColor: '#f8f9fa' }}>

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Switch from 'react-switch';
 import { US, TH } from 'country-flag-icons/react/3x2'
 
-// Cast to any to avoid TypeScript error with React 18 types
+
 const LanguageSwitch = Switch as any;
 import { useAuth } from '@/context/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
@@ -32,19 +32,16 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
     };
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-    // Function to get the path without locale prefix
     const getPathWithoutLocale = () => {
         const segments = pathname.split('/');
         return '/' + segments.slice(2).join('/') || '/';
     }
 
-    // Function to switch locale
     const switchLocale = (newLocale: string) => {
         const pathWithoutLocale = getPathWithoutLocale();
         return `/${newLocale}${pathWithoutLocale}`;
     }
 
-    // Function to check if link is active
     const isActive = (path: string) => {
         if (path === `/${locale}` || path === `/${locale}/`) {
             return pathname === `/${locale}` || pathname === `/${locale}/`;
@@ -52,58 +49,51 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
         return pathname.startsWith(path);
     }
 
-    // Toggle dropdown function
-    const toggleDropdown = (menuName: string, e: React.MouseEvent) => {
-        e.preventDefault();
-        setOpenDropdown(openDropdown === menuName ? null : menuName);
-    }
+    const handleDropdownInteraction = (menuName: string, type: 'enter' | 'leave' | 'click', e?: React.MouseEvent) => {
+        if (type === 'click') {
+            e?.preventDefault();
+            setOpenDropdown(prev => prev === menuName ? null : menuName);
+        } else if (type === 'enter') {
+            setOpenDropdown(menuName);
+        } else if (type === 'leave') {
+            setOpenDropdown(null);
+        }
+    };
 
-    // Dropdown styles - completely override CSS hover
-    const getDropdownStyle = (menuName: string): React.CSSProperties => {
-        const isOpen = openDropdown === menuName;
+    const isHeaderWhite = scroll || headerBgWhite;
+
+    const getLinkStyle = (path: string, menuName?: string) => {
+        const isActiveLink = isActive(path);
+        const isOpen = menuName && openDropdown === menuName;
         return {
-            visibility: isOpen ? 'visible' : 'hidden',
-            opacity: isOpen ? 1 : 0,
-            position: 'absolute',
-            top: isOpen ? '50px' : '100px',
-            zIndex: 9,
-            transition: 'all 0.3s ease-in-out',
-            pointerEvents: isOpen ? 'auto' : 'none',
+            color: isActiveLink || isOpen ? '#FFBA00' : isHeaderWhite ? '#333' : '#fff',
+            fontWeight: isActiveLink ? '600' : 'normal',
+            cursor: 'pointer'
         };
     };
 
-    // Calculate IsHeaderWhite based on scroll or headerBgWhite prop
-    // This prop seems to handle the visual state of the header
-    const isHeaderWhite = scroll || headerBgWhite;
-
-    // Define switch colors based on header state
-    // When header is white (scrolled), we want a darker background for the switch to see it
-    // When header is transparent (top), we want a light/transparent background
-    const switchOffColor = isHeaderWhite ? "#e4e4e4" : "#ffba00"; // TH background
-    const switchOnColor = isHeaderWhite ? "#e4e4e4" : "#ffba00";  // EN background
-    const switchHandleColor = "#fff"; // Handle is always white to show the flag clearly (if we put flag in handle) - or keep color handle?
-
-    // User requested: "header เป็นสีขาวให้พื้นหลังของปุ่ม toggle switch เปลี่ยนภาษา"
-    // And: "พื้นหลังตัวย่อภาษาเป็น icon ธงภาษา" -> This likely means uncheckedIcon/checkedIcon should be flags
-
+    const getDropdownStyle = (menuName: string): React.CSSProperties => {
+        const isOpen = openDropdown === menuName;
+        return {
+            display: isOpen ? 'block' : 'none',
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            zIndex: 999,
+            minWidth: '220px',
+            backgroundColor: '#fff',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+            padding: '15px 0',
+            borderRadius: '0 0 8px 8px',
+            // Ensure visibility properties are not overridden
+            visibility: 'visible',
+            opacity: 1,
+            pointerEvents: 'auto',
+        };
+    };
 
     return (
         <>
-            {/* Override CSS hover for dropdown - click only behavior */}
-            <style jsx global>{`
-                .header-area.homepage1 .main-menu ul > li:hover > ul.dropdown-padding {
-                    visibility: hidden !important;
-                    opacity: 0 !important;
-                    pointer-events: none !important;
-                }
-                .header-area.homepage1 .main-menu ul > li.dropdown-open > ul.dropdown-padding {
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    pointer-events: auto !important;
-                    top: 50px !important;
-                    z-index: 9 !important;
-                }
-            `}</style>
             <header>
                 <div className={`header-area homepage1 header header-sticky d-none d-lg-block ${scroll ? 'sticky' : ''}`} id="header" style={headerBgWhite ? { background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' } : {}}>
                     <div className="container-fluid">
@@ -113,22 +103,26 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                     <div className="site-logo">
                                         <Link href={`/${locale}`}>
                                             <img
-                                                src="/assets/img/logo/ACCP-BANGKOK-2026-04.png"
+                                                src="/assets/img/logo/accp_logo_main.png"
                                                 alt="ACCP 2026"
-                                                style={{ height: '55px', width: 'auto', marginLeft: '20px' }}
+                                                className="site-logo-img"
                                             />
                                         </Link>
                                     </div>
 
-                                    <div className="main-menu">
-                                        <ul>
-                                            <li><Link href={`/${locale}`} style={{ color: isActive(`/${locale}`) ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}`) ? '600' : 'normal' }}>{t('home')}</Link></li>
-                                            <li className={openDropdown === 'about' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('about', e)}
-                                                    style={{ color: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) || openDropdown === 'about' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/about`) || isActive(`/${locale}/welcome-messages`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+                                    <div className="main-menu" style={{ overflow: 'visible' }}>
+                                        <ul style={{ overflow: 'visible' }}>
+                                            <li>
+                                                <Link href={`/${locale}`} style={getLinkStyle(`/${locale}`)}>{t('home')}</Link>
+                                            </li>
+
+                                            <li
+                                                className={openDropdown === 'about' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('about', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('about', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'about' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('about', 'click', e)} style={getLinkStyle(`/${locale}/about`, 'about')}>
                                                     {t('about')} <i className={`fa-solid ${openDropdown === 'about' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('about')}>
@@ -136,12 +130,14 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                     <li><Link href={`/${locale}/welcome-messages`}>{t('welcomeMessages')}</Link></li>
                                                 </ul>
                                             </li>
-                                            <li className={openDropdown === 'program' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('program', e)}
-                                                    style={{ color: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) || openDropdown === 'program' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/program`) || isActive(`/${locale}/gala-dinner`) || isActive(`/${locale}/preconference-workshops`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+
+                                            <li
+                                                className={openDropdown === 'program' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('program', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('program', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'program' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('program', 'click', e)} style={getLinkStyle(`/${locale}/program`, 'program')}>
                                                     {t('program')} <i className={`fa-solid ${openDropdown === 'program' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('program')}>
@@ -153,12 +149,14 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                     <li><Link href={`/${locale}/preconference-workshops`}>{t('workshops')}</Link></li>
                                                 </ul>
                                             </li>
-                                            <li className={openDropdown === 'abstracts' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('abstracts', e)}
-                                                    style={{ color: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) || openDropdown === 'abstracts' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/call-for-abstracts`) || isActive(`/${locale}/abstract-submission-guideline`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+
+                                            <li
+                                                className={openDropdown === 'abstracts' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('abstracts', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('abstracts', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'abstracts' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('abstracts', 'click', e)} style={getLinkStyle(`/${locale}/call-for-abstracts`, 'abstracts')}>
                                                     {t('callForAbstracts')} <i className={`fa-solid ${openDropdown === 'abstracts' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('abstracts')}>
@@ -166,12 +164,14 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                     <li><Link href={`/${locale}/call-for-abstracts`}>{t('callForAbstracts')}</Link></li>
                                                 </ul>
                                             </li>
-                                            <li className={openDropdown === 'registration' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('registration', e)}
-                                                    style={{ color: isActive(`/${locale}/registration`) || openDropdown === 'registration' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/registration`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+
+                                            <li
+                                                className={openDropdown === 'registration' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('registration', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('registration', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'registration' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('registration', 'click', e)} style={getLinkStyle(`/${locale}/registration`, 'registration')}>
                                                     {t('registration')} <i className={`fa-solid ${openDropdown === 'registration' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('registration')}>
@@ -179,12 +179,14 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                     <li><Link href={`/${locale}/registration-policies`}>{t('policies')}</Link></li>
                                                 </ul>
                                             </li>
-                                            <li className={openDropdown === 'travel' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('travel', e)}
-                                                    style={{ color: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) || openDropdown === 'travel' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/accommodation`) || isActive(`/${locale}/travel-visa`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+
+                                            <li
+                                                className={openDropdown === 'travel' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('travel', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('travel', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'travel' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('travel', 'click', e)} style={getLinkStyle(`/${locale}/accommodation`, 'travel')}>
                                                     {t('travelAccommodation')} <i className={`fa-solid ${openDropdown === 'travel' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('travel')}>
@@ -192,12 +194,14 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                                                     <li><Link href={`/${locale}/travel-visa`}>{t('travelVisa')}</Link></li>
                                                 </ul>
                                             </li>
-                                            <li className={openDropdown === 'more' ? 'dropdown-open' : ''}>
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => toggleDropdown('more', e)}
-                                                    style={{ color: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) || openDropdown === 'more' ? '#FFBA00' : headerBgWhite ? '#333' : '#fff', fontWeight: isActive(`/${locale}/sponsorship`) || isActive(`/${locale}/gallery`) || isActive(`/${locale}/contact`) ? '600' : 'normal', cursor: 'pointer' }}
-                                                >
+
+                                            <li
+                                                className={openDropdown === 'more' ? 'dropdown-open' : ''}
+                                                onMouseEnter={() => handleDropdownInteraction('more', 'enter')}
+                                                onMouseLeave={() => handleDropdownInteraction('more', 'leave')}
+                                                style={{ position: 'relative', zIndex: openDropdown === 'more' ? 1000 : 'auto' }}
+                                            >
+                                                <a href="#" onClick={(e) => handleDropdownInteraction('more', 'click', e)} style={getLinkStyle(`/${locale}/sponsorship`, 'more')}>
                                                     {t('more')} <i className={`fa-solid ${openDropdown === 'more' ? 'fa-angle-up' : 'fa-angle-down'}`} />
                                                 </a>
                                                 <ul className="dropdown-padding" style={getDropdownStyle('more')}>
@@ -323,7 +327,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu, isSear
                         <div className="mobile-header-elements">
                             <div className="mobile-logo">
                                 <Link href={`/${locale}`}>
-                                    <img src="/assets/img/logo/ACCP-BANGKOK-2026-04.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto' }} />
+                                    <img src="/assets/img/logo/accp_logo_main.png" alt="ACCP 2026" className="mobile-logo-img" />
                                 </Link>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

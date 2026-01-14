@@ -8,6 +8,7 @@ import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 import { Hourglass } from 'react-loader-spinner';
+import { API_BASE_URL, API_ENDPOINTS } from '@/utils/constants';
 
 type TabType = 'thaiStudent' | 'internationalStudent' | 'thaiProfessional' | 'internationalProfessional';
 
@@ -38,15 +39,12 @@ export default function SignupForm() {
     const [isPending, setIsPending] = useState(false);
     const [step, setStep] = useState(1);
 
-    // Handle file selection (store in state only, no upload yet)
     const handleFileSelect = (file: File) => {
-        // Validate file type
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
             alert(locale === 'th' ? 'รองรับเฉพาะไฟล์ PDF, JPG, PNG' : 'Only PDF, JPG, PNG files are allowed');
             return;
         }
-        // Validate file size (10MB max)
         if (file.size > 10 * 1024 * 1024) {
             alert(locale === 'th' ? 'ไฟล์ใหญ่เกินไป (สูงสุด 10MB)' : 'File too large (max 10MB)');
             return;
@@ -92,19 +90,17 @@ export default function SignupForm() {
                     setIsLoading(false);
                     return;
                 }
-                // TODO: Re-enable validation for production
-                // if (!validateThaiId(idCard)) {
-                //     alert(locale === 'th' ? 'เลขบัตรประชาชนไม่ถูกต้อง' : 'Invalid Thai ID card number');
-                //     setIsLoading(false);
-                //     return;
-                // }
+                if (!validateThaiId(idCard)) {
+                    alert(locale === 'th' ? 'เลขบัตรประชาชนไม่ถูกต้อง' : 'Invalid Thai ID card number');
+                    setIsLoading(false);
+                    return;
+                }
             } else if (!country) {
                 alert(locale === 'th' ? 'กรุณาระบุประเทศ' : 'Please enter country');
                 setIsLoading(false);
                 return;
             }
 
-            // Validate student document for students
             const isStudent = activeTab === 'thaiStudent' || activeTab === 'internationalStudent';
             if (isStudent && !studentDocument) {
                 alert(locale === 'th' ? 'กรุณาเลือกเอกสารยืนยันความเป็นนักศึกษา' : 'Please select student verification document');
@@ -112,7 +108,6 @@ export default function SignupForm() {
                 return;
             }
 
-            // API Call with FormData (file will be uploaded by backend)
             const formData = new FormData();
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
@@ -135,12 +130,10 @@ export default function SignupForm() {
             if (studentDocument) {
                 formDataToSend.append('verificationDoc', studentDocument);
             }
-            // Call Registration API
-            const API_URL = process.env.NEXT_PUBLIC_API_URL;
-            const response = await fetch(`${API_URL}/auth/register`, {
+
+            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SIGNUP}`, {
                 method: 'POST',
-                body: formDataToSend,
-                credentials: 'include',
+                body: formData,
             });
 
             const data = await response.json();
@@ -151,17 +144,13 @@ export default function SignupForm() {
                 return;
             }
 
-            // Success handling (reuse isStudent from above)
             if (isStudent) {
-                // Show pending modal
                 setIsPending(true);
             } else {
-                // Auto login for professionals
                 login({
                     firstName: data.user.firstName,
                     lastName: data.user.lastName,
                     email: data.user.email,
-                    // Map local state to AuthContext type
                     delegateType: activeTab === 'thaiProfessional' ? 'thai_pharmacist' : 'international_pharmacist',
                     isThai: activeTab === 'thaiProfessional',
                     country: country || 'Thailand',

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import RefundSchedule from "@/components/sections/policies/RefundSchedule"
 import PolicyDetails from "@/components/sections/policies/PolicyDetails"
 import PolicyFaq from "@/components/sections/policies/PolicyFaq"
+import '@/styles/registration-responsive.css';
 
 export default function RegistrationPolicies() {
     const t = useTranslations('policies')

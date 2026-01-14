@@ -9,7 +9,6 @@ export default function AddClassBody() {
 		const bodyElement = document.querySelector('body')
 
 		if (bodyElement) {
-			// Remove all classes
 			bodyElement.classList.remove(
 				'homepage1-body',
 				'homepage2-body',
@@ -23,7 +22,6 @@ export default function AddClassBody() {
 				'homepage10-body'
 			)
 
-			// Map pathname to corresponding class
 			const classMap: { [key: string]: string } = {
 				'/index2': 'homepage2-body',
 				'/index3': 'homepage3-body',
@@ -36,17 +34,15 @@ export default function AddClassBody() {
 				'/index10': 'homepage10-body',
 			}
 
-			// Add class based on pathname or default
 			const className = classMap[pathname || ''] || 'homepage1-body'
 			bodyElement.classList.add(className)
 		}
 
-		// Scroll to the top of the page with a slight delay
 		setTimeout(() => {
 			window.scrollTo({
 				top: 0,
 				left: 0,
-				behavior: 'smooth', // Optional for smooth scrolling
+				behavior: 'smooth',
 			})
 		}, 0)
 	}, [pathname])

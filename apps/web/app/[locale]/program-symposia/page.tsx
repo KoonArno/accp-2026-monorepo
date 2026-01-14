@@ -3,6 +3,7 @@ import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useTranslations, useLocale } from 'next-intl';
 import SymposiaList from '@/components/sections/program/SymposiaList';
+import '@/styles/program-responsive.css';
 
 export default function Symposia() {
     const tCommon = useTranslations('common');

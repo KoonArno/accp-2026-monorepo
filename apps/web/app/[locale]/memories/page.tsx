@@ -2,6 +2,7 @@
 import Countdown from '@/components/elements/Countdown'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
+import '@/styles/misc-pages-responsive.css';
 export default function Memories() {
 
 	return (

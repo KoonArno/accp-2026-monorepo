@@ -41,3 +41,31 @@
     align-items: center !important;
     gap: 10px !important;
 }
+
+/* Fix Dropdown Width - FORCE OVERRIDE */
+/* Using specific selectors to beat main.css specificity */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li ul.dropdown-padding,
+.header-area.homepage1 .main-menu ul li ul.dropdown-padding {
+    width: 270px !important;
+    min-width: 270px !important;
+}
+
+/* Ensure link text wraps if needed or stays on one line if preferred */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li ul.dropdown-padding li a,
+.header-area.homepage1 .main-menu ul li ul.dropdown-padding li a {
+    white-space: nowrap !important;
+    padding-right: 20px !important;
+    padding-left: 20px !important; /* Consistent indentation */
+}
+
+/* Adjust hover/active alignment to prevent shifting */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li ul.dropdown-padding li a:hover,
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li ul.dropdown-padding li.active a {
+    padding-left: 25px !important; /* Slightly shift on hover/active if desired, or keep consistent */
+}
+
+/* Fix yellow bar position to align with padding */
+.homepage1-body .header-area.homepage1 .header-elements .main-menu ul li ul.dropdown-padding li a::after,
+.header-area.homepage1 .main-menu ul li ul.dropdown-padding li a::after {
+    left: 6px !important; /* Position indicator nicely */
+}

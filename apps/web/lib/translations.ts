@@ -15,7 +15,7 @@ export const translations = {
         galaDinner: { th: 'งานเลี้ยงกาล่าดินเนอร์', en: 'Gala Dinner' },
         workshops: { th: 'เวิร์คช็อป', en: 'Workshops' },
         callForAbstracts: { th: 'เชิญส่งบทคัดย่อ', en: 'Call for Abstracts' },
-        abstractGuideline: { th: 'แนวทางการส่งบทคัดย่อ', en: 'Abstract Submission Guideline' },
+        abstractGuideline: { th: 'แนวทางการส่งบทคัดย่อ', en: 'Submission Guideline' },
         registration: { th: 'ลงทะเบียน', en: 'Registration' },
         registrationInfo: { th: 'ข้อมูลการลงทะเบียน', en: 'Registration Information' },
         policies: { th: 'นโยบาย', en: 'Policies' },

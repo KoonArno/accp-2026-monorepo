@@ -86,8 +86,7 @@ export default function RegistrationThaiFees() {
                             <div className="pricing-boxarea" style={option.highlighted ? { border: '2px solid #FFBA00' } : {}}>
                                 <h5>{option.title}</h5>
                                 <div className="space20" />
-                                <h2>{option.price} <span>{t('earlyBird')}</span></h2>
-                                <p style={{ fontSize: '14px', color: '#666' }}>{option.regularPrice}</p>
+                                <h2>{option.price}</h2>
                                 <div className="space8" />
                                 <ul>
                                     {option.features.map((feature, idx) => (

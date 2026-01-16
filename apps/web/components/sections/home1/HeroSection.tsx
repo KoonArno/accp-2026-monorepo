@@ -21,12 +21,15 @@ const heroStyles = {
         fontWeight: '700'
     },
     subtitle: {
-        fontSize: '36px',
+        fontSize: '50px',
+        lineHeight: '1.2',
         fontWeight: '600',
         color: '#fff',
         textTransform: 'uppercase' as const,
-        marginBottom: '30px',
-        letterSpacing: '2px'
+        marginBottom: '40px',
+        letterSpacing: '1px',
+        marginTop: '0px',
+        whiteSpace: 'nowrap' as const
     },
     description: {
         fontSize: '18px',
@@ -79,6 +82,7 @@ export default function HeroSection() {
                     /* Adjust Headline Sizes */
                     .hero1-header h1 {
                         font-size: 48px !important;
+                        margin-bottom: 5px !important;
                     }
                     
                     .hero1-header h2 {
@@ -110,9 +114,8 @@ export default function HeroSection() {
                                     {t('hero.subtitle')}
                                 </h5>
                                 <div className="space16" />
-                                <h1 className="text-anime-style-3">
-                                    ACCP <span className="gold-text">2026</span> <br className="d-lg-block d-none" />
-                                    {t('hero.location')}
+                                <h1 className="text-anime-style-3" style={{ marginBottom: '0' }}>
+                                    ACCP <span className="gold-text">2026</span>
                                 </h1>
                                 <h2 style={heroStyles.subtitle}>
                                     {t('hero.location')}

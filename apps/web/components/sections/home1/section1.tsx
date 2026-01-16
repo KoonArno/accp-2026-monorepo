@@ -30,8 +30,7 @@ export default function Section1() {
                                 </h5>
                                 <div className="space16" />
                                 <h1 className="text-anime-style-3">
-                                    ACCP 2026 <br className="d-lg-block d-none" />
-                                    {t('กรุงเทพมหานคร ประเทศไทย', 'Bangkok, Thailand')}
+                                    ACCP 2026
                                 </h1>
                                 <div className="space16" />
                                 <p data-aos="fade-left" data-aos-duration={900}>

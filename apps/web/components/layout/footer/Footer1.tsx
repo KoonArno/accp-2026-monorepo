@@ -20,8 +20,8 @@ export default function Footer1() {
 						{/* Logo & Description */}
 						<div className="col-lg-3 col-md-6">
 							<div className="footer-logo-area">
-								<img src="/assets/img/logo/accp_logo_main.png" alt="ACCP 2026" style={{ height: '160px', width: 'auto', background: 'white', padding: '15px', borderRadius: '10px' }} />
-								<div className="space16" />
+								<img src="/assets/img/logo/footer-logo-new.png" alt="ACCP 2026" style={{ height: '60px', width: 'auto', display: 'block', margin: '0 auto' }} />
+								<div style={{ height: '30px' }} />
 								<p>{t('footer.description')}</p>
 								<div className="space24" />
 								<ul>

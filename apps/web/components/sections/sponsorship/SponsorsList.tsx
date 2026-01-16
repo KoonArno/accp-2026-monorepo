@@ -7,7 +7,7 @@ export default function SponsorsList() {
     const tCommon = useTranslations('common');
 
     return (
-        <div className="brands1-section-area sp2">
+        <div className="brands1-section-area sp2" style={{ background: '#ffffff' }}>
             <div className="container">
                 <div className="row">
                     <div className="col-lg-5 m-auto">
